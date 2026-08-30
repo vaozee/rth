@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal RTH — Ruang Terbuka Hijau</title>
+<title>Portal RTH — Rumah Tinggal Hijau | PT. Persada Sejahtera Agro Makmur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
@@ -328,14 +328,19 @@ button{font-family:inherit;cursor:pointer;}
       </div>
       <div>
         <div class="brand-name">Portal RTH</div>
-        <span class="brand-sub" id="brandSub">Ruang Terbuka Hijau</span>
+        <span class="brand-sub" id="brandSub">Rumah Tinggal Hijau · PSAM</span>
+      </div>
+    </div>
+    <div style="padding:0 4px 18px;margin-top:-6px;">
+      <div style="font-size:10.5px;color:rgba(246,241,230,.6);line-height:1.5;">
+        PT. Persada Sejahtera Agro Makmur<br>Desa Rantau Bangkiang, Katingan, Kalteng
       </div>
     </div>
 
     <nav class="nav">
-      <button class="nav-item active" data-view="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
-        Dasbor Data
+      <button class="nav-item active" data-view="beranda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
+        Beranda
       </button>
       <button class="nav-item" data-view="documents">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
@@ -361,40 +366,32 @@ button{font-family:inherit;cursor:pointer;}
   <!-- MAIN -->
   <main class="main">
 
-    <!-- ===== DASHBOARD ===== -->
-    <section class="view active" id="view-dashboard">
+    <!-- ===== BERANDA / BERITA ===== -->
+    <section class="view active" id="view-beranda">
       <div class="topbar">
         <div>
-          <div class="eyebrow">Sistem Informasi</div>
-          <h1 class="page-title" id="dashTitle">Dasbor Ruang Terbuka Hijau</h1>
-          <p class="page-desc">Laporan data RTH tertanam langsung dari Looker Studio, dilengkapi arsip dokumen dan galeri foto dalam satu portal.</p>
+          <div class="eyebrow">Portal Informasi</div>
+          <h1 class="page-title" id="berandaTitle">Berita &amp; Informasi RTH — Rumah Tinggal Hijau</h1>
+          <p class="page-desc">Kumpulan berita, artikel, dan dokumen program Rumah Tinggal Hijau (RTH) PT. Persada Sejahtera Agro Makmur — diperbarui otomatis dari arsip Drive.</p>
         </div>
-        <a class="btn" id="openReportTab" href="#" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-          Buka Tab Baru
-        </a>
-      </div>
-
-      <div class="panel dash-panel">
-        <div class="panel-gold-rule"></div>
-        <div class="dash-head">
-          <div class="dash-head-l"><span class="rec-dot"></span> Laporan Langsung</div>
-          <button class="btn btn-sm" id="btnDashFullscreen">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            Layar Penuh
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <button class="btn btn-primary" id="btnRefreshBeranda">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            Perbarui Sekarang
           </button>
-        </div>
-        <div class="report-embed-wrap" id="reportWrap">
-          <iframe id="reportFrame" src="" loading="lazy" allowfullscreen title="Laporan Data RTH"></iframe>
+          <span style="font-size:11px;color:var(--ink-dim);" id="lastUpdatedText">Belum pernah diperbarui</span>
         </div>
       </div>
 
-      <div class="dash-info-row">
-        <div class="panel stat-card"><div class="stat-label">Total Dokumen</div><div class="stat-value" id="statDocs">0</div></div>
+      <div class="dash-info-row" style="margin-bottom:24px;">
+        <div class="panel stat-card"><div class="stat-label">Total Berita &amp; Dokumen</div><div class="stat-value" id="statDocs">0</div></div>
         <div class="panel stat-card"><div class="stat-label">Total Foto</div><div class="stat-value" id="statPhotos">0</div></div>
         <div class="panel stat-card"><div class="stat-label">Sumber Arsip</div><div class="stat-value" id="statStorage">Lokal</div></div>
         <div class="panel stat-card"><div class="stat-label">Status Drive</div><div class="stat-value" id="statDrive">Terputus</div></div>
       </div>
+
+      <div id="berandaFeatured"></div>
+      <div class="grid" id="berandaGrid" style="margin-top:18px;"></div>
     </section>
 
     <!-- ===== DOCUMENTS ===== -->
@@ -471,16 +468,18 @@ button{font-family:inherit;cursor:pointer;}
         </div>
 
         <div class="panel settings-panel">
-          <h3>Sumber Laporan &amp; Nama Portal</h3>
+          <h3>Nama Portal</h3>
           <div class="field">
             <label>Nama Portal</label>
-            <input type="text" id="siteNameInput" placeholder="Portal RTH — Ruang Terbuka Hijau">
-          </div>
-          <div class="field">
-            <label>URL Laporan Looker Studio</label>
-            <input type="text" id="reportUrlInput" value="">
+            <input type="text" id="siteNameInput" placeholder="Portal RTH — Rumah Tinggal Hijau PSAM">
           </div>
           <button class="btn btn-primary" id="btnSaveReportUrl">Simpan Pengaturan</button>
+
+          <h3 style="margin-top:24px;">Auto-Perbarui Beranda</h3>
+          <div class="field field-check">
+            <input type="checkbox" id="autoRefreshToggle" checked>
+            <label for="autoRefreshToggle" style="margin:0;">Perbarui berita otomatis setiap 5 menit</label>
+          </div>
 
           <h3 style="margin-top:24px;">Data Peramban (Lokal)</h3>
           <p class="desc">Dokumen/foto yang ditambahkan tanpa koneksi Drive tersimpan sementara di peramban ini.</p>
@@ -560,7 +559,7 @@ button{font-family:inherit;cursor:pointer;}
 
       <div class="field">
         <label>Tag / Catatan Singkat (opsional)</label>
-        <input type="text" id="docTags" placeholder="mis. taman kota, arsip 2026">
+        <input type="text" id="docTags" placeholder="mis. blok perumahan, arsip 2026">
       </div>
 
       <div class="modal-actions">
@@ -672,7 +671,8 @@ button{font-family:inherit;cursor:pointer;}
 /* ==========================================================
    PORTAL RTH — app.js (inline)
    ========================================================== */
-const DEFAULT_REPORT_VIEW_URL = "https://datastudio.google.com/u/0/reporting/f0c7b91a-2f16-40ae-8303-b89848132ee9/page/zsCqC?s=i4ZK4URVm2w";
+let lastUpdatedAt = null;
+let autoRefreshTimer = null;
 
 const $ = (s,ctx=document)=>ctx.querySelector(s);
 const $$ = (s,ctx=document)=>Array.from(ctx.querySelectorAll(s));
@@ -698,6 +698,342 @@ function loadSettings(){ try{ return JSON.parse(localStorage.getItem(LS_SETTINGS
 function saveSettings(s){ localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); }
 
 let localDocs = loadArr(LS_DOCS);
+
+/* ==========================================================
+   KONTEN AWAL — ditulis ulang dari materi resmi Portal RTH PSAM
+   Muncul otomatis di Beranda saat pertama kali dibuka. Bisa diedit/
+   dihapus kapan saja lewat menu Dokumen & Artikel.
+   ========================================================== */
+const SEED_FLAG = 'rth_seed_v1_loaded';
+const SEED_ARTICLES = [
+{
+  title: "Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM",
+  tags: "profil, definisi, tujuan",
+  content: `# Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM
+
+Program Rumah Tinggal Hijau (RTH) adalah wujud komitmen PT Persada Sejahtera Agro Makmur (PSAM) untuk menghadirkan hunian karyawan yang aman, nyaman, dan produktif di Desa Rantau Bangkiang, Kecamatan Katingan, Kalimantan Tengah.
+
+## Sekapur Sirih
+
+Tim RTH mengucapkan terima kasih kepada seluruh karyawan yang telah berkontribusi dalam pembangunan portal ini. Besar harapan portal ini mampu menjembatani kegiatan sekaligus keluhan karyawan, sehingga setiap kondisi dapat dirasakan bersama dan dicarikan solusi terbaik demi keharmonisan, ketenteraman, dan kesejahteraan seluruh karyawan.
+
+## Definisi Program
+
+RTH dibangun untuk menciptakan hunian perumahan/emplasment yang aman, nyaman, dan produktif bagi karyawan. Pelaksanaannya membutuhkan kolaborasi tim operasional dan departemen pendukung untuk bersama-sama mencari akar masalah dan menyusun program kerja prioritas. Agar berkesinambungan, kegiatan sehari-hari selanjutnya diserahkan kepada penghuni perumahan melalui wadah paguyuban.
+
+## Tujuan Program
+
+- Menciptakan kebetahan karyawan untuk tinggal dan bekerja di perusahaan
+- Meningkatkan derajat kesehatan karyawan
+- Meningkatkan produktivitas karyawan
+- Mendukung pencapaian **Sustainability Yield Growth** perusahaan`
+},
+{
+  title: "Latar Belakang: Mengapa Program RTH Dibutuhkan",
+  tags: "latar belakang, turnover karyawan",
+  content: `# Latar Belakang Program RTH
+
+Tingginya angka turnover tenaga kerja lapangan menjadi salah satu tantangan utama di PT PSAM. Kondisi ini mendasari lahirnya program Rumah Tinggal Hijau sebagai pendekatan menyeluruh untuk menjaga kenyamanan dan kebetahan karyawan.
+
+## Kondisi yang Melatarbelakangi
+
+- Tingginya turnover karyawan menyebabkan kekurangan porsi tenaga kerja lapangan
+- Turnover karyawan menjadi tanggung jawab pimpinan site
+- Tenaga lapangan sulit didapatkan karena seluruh perusahaan di sekitar juga membutuhkan
+- Rendahnya produktivitas karyawan yang dipengaruhi faktor HKNE
+- Kurangnya kolaborasi tim dalam memetakan turnover, sehingga perbaikan yang dilakukan masih parsial dan kurang tepat sasaran
+- Minimnya sentuhan kepada karyawan membuat akar masalah sulit ditemukan
+- Proses perbaikan serta pengajuan SPP/SPPI/PDDO belum tersampaikan secara optimal
+- Kick off Budget tahunan "Optimalisasi Support dan Operasional menuju MSAL Best Performance (Sustainable Yield Growth & Rumah Tinggal Hijau)" menjadi momentum penguatan program`
+},
+{
+  title: "Kegiatan Rutin & Tahapan Pelaksanaan Program RTH",
+  tags: "kegiatan, tahapan program",
+  content: `# Kegiatan Rutin Rumah Tinggal Hijau
+
+Untuk menjaga kebersamaan dan kualitas hidup di lingkungan perumahan, RTH menjalankan sembilan kategori kegiatan rutin di setiap Afdeling.
+
+## Kegiatan Rutin Meliputi
+
+1. Kegiatan keagamaan
+2. Kegiatan gotong royong
+3. Kegiatan Posyandu / kesehatan keluarga / TPA
+4. Olahraga dan kesehatan
+5. Siskamling / pos ronda / kegiatan ronda malam
+6. Koperasi karyawan, ketahanan pangan, arisan, UMKM, dan kreativitas usaha mandiri
+7. Kegiatan kesenian, budaya, dan muatan kearifan lokal
+8. Peningkatan kerja tim / tim pemanen terbaik
+9. Peningkatan kerja tim / kualitas pekerjaan
+
+## Tahapan Pelaksanaan Program
+
+1. Membentuk tim yang terdiri dari fasilitator (Pimpinan Site), pendamping (Departemen), ketua, sekretaris, dan anggota, yang kemudian dikukuhkan lewat SK Pimpinan Lokasi
+2. Melakukan pertemuan dan kunjungan lapangan
+3. Membuat parameter pemeriksaan / check list
+4. Menyusun PICA (*Problem Identification Corrective Action*) sebagai bagian tak terpisahkan dari siklus PDCA agar tujuan tercapai
+5. Evaluasi dan standarisasi
+
+Sebagai bagian dari kegiatan rutin, RTH juga menjalankan pengadaan bibit, Jumat bersih, dan kelompok belajar anak-anak karyawan di lingkungan perumahan.`
+},
+{
+  title: "Empat Program Unggulan RTH: Bersih, Pangan, Belajar, dan Ibadah",
+  tags: "program, jumat bersih, ketahanan pangan",
+  content: `# Empat Program Unggulan RTH
+
+Dashboard Program RTH menyoroti empat pilar kegiatan yang rutin dijalankan di lingkungan perumahan karyawan PT PSAM.
+
+## Program Jumat Bersih
+
+Kegiatan kerja bakti rutin membersihkan lingkungan perumahan, melibatkan karyawan dan keluarga di setiap Afdeling.
+
+## Program Ketahanan Pangan
+
+Pemanfaatan lahan di sekitar perumahan untuk bercocok tanam sebagai upaya mendukung kemandirian pangan keluarga karyawan.
+
+## Program Kelompok Belajar
+
+Wadah belajar bersama bagi anak-anak karyawan, mendukung tumbuh kembang pendidikan di lingkungan perumahan kebun.
+
+## Program Keagamaan
+
+Kegiatan ibadah bersama serta sosialisasi dan kekerabatan antarwarga, memperkuat kerukunan di lingkungan perumahan.`
+},
+{
+  title: "Paguyuban RTH: Merawat Kebersamaan lewat Seni dan Gotong Royong",
+  tags: "paguyuban, seni, gotong royong",
+  content: `# Paguyuban RTH
+
+Paguyuban menjadi wadah bagi penghuni perumahan untuk menjalankan kegiatan RTH secara mandiri dan berkesinambungan.
+
+## Seni Rebana & Seni Jaranan
+
+Kesenian rebana dan jaranan rutin ditampilkan sebagai bagian dari pelestarian budaya sekaligus hiburan bagi warga perumahan.
+
+## Gotong Royong Perbaikan Rumah
+
+Warga saling bahu-membahu memperbaiki rumah tinggal yang membutuhkan perbaikan, mencerminkan semangat kekeluargaan antarkaryawan.
+
+## Data Paguyuban & Kegiatan Sosial
+
+Struktur kepengurusan paguyuban tercatat rapi di tiap Afdeling, lengkap dengan kegiatan pemberian bibit, ibadah bersama, hingga dongeng cerita anak yang menghibur sekaligus mendidik generasi muda di lingkungan perumahan.`
+},
+{
+  title: "Kalender Event: Safari Malam ke Afdeling",
+  tags: "safari, kalender event",
+  content: `# Kalender Event / Safari ke Afdeling
+
+Safari ke Afdeling adalah kegiatan kunjungan malam hari setelah jam kerja usai, melibatkan tiga tim utama.
+
+## Tim Klinik
+
+Melakukan pemeriksaan kesehatan seluruh karyawan di Afdeling yang dikunjungi, baik berupa cek-up rutin maupun pengobatan langsung bila diperlukan.
+
+## Tim Kantor
+
+Diwakili HRD, Agronomi, Teknik, HSE, dan departemen lainnya untuk memberikan reward bagi pemanen dan perawatan terbaik, mencatat dan menindaklanjuti keluhan kondisi perumahan, serta menyosialisasikan RTH, peraturan perusahaan, keselamatan kerja, dan BPJS.
+
+## Tim Koperasi Karyawan
+
+Mengirimkan pesanan sembako serta menyosialisasikan keanggotaan dan produk UMKM koperasi.
+
+## Kendala yang Masih Dihadapi
+
+- Belum tersedianya unit ambulans khusus, sehingga kegiatan kadang tertunda mengikuti ketersediaan unit lain (AJK, DT, atau Terios)
+- Tindak lanjut ke departemen terkait masih dalam proses — volume keluhan yang cukup banyak membutuhkan waktu, tenaga, dan biaya, sehingga penyelesaiannya diupayakan bertahap secara swakelola oleh masing-masing Afdeling dengan progres yang terus dipantau`
+},
+{
+  title: "Gemba (SPT): Menjaga Kualitas Panen dan Lingkungan Perumahan",
+  tags: "gemba, spt, kualitas panen",
+  content: `# Gemba (SPT)
+
+Gemba pada mulanya adalah kegiatan kembali ke ancak pemanen untuk mengecek potensi losis di lapangan serta kualitas dan kuantitas proses panen. Seiring berjalannya waktu, cakupannya berkembang menjadi pengecekan menyeluruh: kondisi jalan, kondisi perumahan, hingga kondisi tanaman dari segi unsur hara maupun potensi hama penyakit.
+
+Setiap kegiatan Gemba dilakukan mandiri di masing-masing Afdeling, sekaligus melibatkan perwakilan dari berbagai departemen — Teknik, Administrasi, Pabrik, Humas, BQC, HSE, Agronomi, dan R&D — agar kendala lintas departemen bisa segera ditindaklanjuti.
+
+## Contoh Data Sampel Lapangan
+
+| Afdeling | Blok | Alas Karung | Pkk Sampel | BM | Buah Tinggal |
+|---|---|---|---|---|---|
+| 3 | K50 | Ada | 160 | 1 | 2 |
+| 3 | J53 | Ada | 153 | 3 | 0 |
+| 5 | U51 | Ada | 82 | 9 | 0 |
+| 5 | P50 | Ada | 215 | 0 | 0 |
+| 7 | X56 | Ada | 130 | 10 | 0 |
+| 7 | W56 | Ada | 134 | 8 | 0 |
+| 8 | Y56 | Ada | 202 | 0 | 0 |
+| 10 | X33 | Ada | 162 | 0 | 3 |
+| 99 | V25 | Ada | 178 | 0 | 3 |`
+},
+{
+  title: "Strategi Pengoperasian Tim (SPT): Budaya Perbaikan Berkelanjutan",
+  tags: "spt, organisasi, pdca",
+  content: `# Strategi Pengoperasian Tim (SPT)
+
+SPT lahir dari kesadaran untuk melakukan perubahan yang lebih baik, di tengah masalah lintas departemen yang membutuhkan penyelesaian bersama dan target manajemen yang menuntut kejelasan tenggat waktu.
+
+## Permasalahan yang Ingin Diatasi
+
+Ego sektoral antardepartemen, saling menyalahkan, mencari pembenaran, dan kurangnya kekompakan tim.
+
+## Prinsip Dasar
+
+Keterbukaan, kejujuran, Gemba, penguatan kerja sama, kemajuan bersama, dan penerapan Sapta Budaya MSAL Group.
+
+## Target
+
+Sinergi, pencapaian target, produktivitas, keselamatan dan kesehatan kerja, serta *continual improvement*.
+
+## Struktur Organisasi SPT
+
+- **Penanggung jawab:** Direktur Operasional
+- **Pembina:** Direktur Area & Dept. Head Engineering
+- **Pengarah:** GM dan AMC
+- **Ketua:** Ka. Bun / Askep Mill / Ka. Teknik
+- **Sekretaris:** Ka. TU
+- **Anggota:** Ka. Bun / Askep Mill / Ka. Teknik
+
+## Perangkat Kerja (Tools)
+
+5W1H, *fishbone diagram*, PICA (*Problem Identification Corrective Action*), dan PDCA (*Plan – Do – Check – Action*).
+
+## Jenis Pertemuan
+
+Pertemuan rutin dilaksanakan setiap bulan sebelum tanggal 10, mencakup kunjungan kebun, kunjungan pabrik, dan pertemuan dalam ruangan untuk membahas hasil kunjungan lapangan hingga penyusunan PICA. Pertemuan tidak rutin digelar bila ditemukan kondisi di luar kebiasaan, seperti turunnya OER, naiknya FFA, tingginya stok janjang kosong, lambatnya sirkulasi kendaraan, atau kerusakan jalan.`
+},
+{
+  title: "Sertifikasi ISPO: Komitmen Keberlanjutan PT PSAM",
+  tags: "ispo, sertifikasi, keberlanjutan",
+  content: `# Sertifikasi ISPO PT PSAM
+
+Setelah proses selama tiga tahun, PT PSAM akhirnya berhasil mendapatkan sertifikasi Indonesian Sustainable Palm Oil (ISPO) — standar mutu pengelolaan bisnis kelapa sawit berkelanjutan di Indonesia yang diatur dalam Perpres 44/2020 dan Permentan 38/2020.
+
+## Apa itu ISPO
+
+ISPO adalah kebijakan Pemerintah Indonesia melalui Kementerian Pertanian untuk meningkatkan daya saing minyak sawit nasional di pasar dunia, sekaligus mendukung komitmen pengurangan gas rumah kaca dan perhatian terhadap isu lingkungan. Sistem ini dibentuk sejak 2009 untuk memastikan seluruh pelaku usaha kelapa sawit memenuhi standar pertanian yang berkelanjutan dan bertanggung jawab.
+
+## Manfaat Sertifikasi bagi Perusahaan
+
+- Membantu perusahaan memenuhi kepatuhan hukum terkait peraturan lingkungan dan pertanahan
+- Meningkatkan kesiapan menghadapi tekanan pasar yang hanya menyerap produk dari kebun tersertifikasi
+- Memenuhi tuntutan pasar nasional maupun internasional
+- Meningkatkan daya saing lewat pengelolaan sawit yang produktif
+- Turut menjaga kelestarian lingkungan
+
+## Dasar Hukum
+
+Payung hukum utama ISPO adalah PP No. 61 Tahun 2015, didukung sejumlah peraturan turunan dari Kementerian Pertanian, Kementerian Lingkungan Hidup dan Kehutanan, Kementerian ATR/BPN, hingga Kemenko Perekonomian — mengatur mulai dari petunjuk teknis sertifikasi, pengelolaan lingkungan kebun, hak atas tanah, sampai evaluasi kinerja implementasi.`
+},
+{
+  title: "Silaturahmi Adat: Kunjungan Panglima Jilah ke PT PSAM",
+  tags: "panglima jilah, adat, silaturahmi",
+  content: `# Kunjungan Panglima Jilah
+
+Panglima Jilah, atau Pangalangok Jilah, adalah pemimpin besar pasukan merah Tariu Borneo Bangkule Rajakng (TBBR) dari suku Dayak Kanayatn. Ia berasal dari Kabupaten Mempawah, Kalimantan Barat, tepatnya Desa Sambora, Kecamatan Toho, dan dikenal luas sebagai tokoh yang peduli terhadap adat, budaya, serta berbagai persoalan yang terjadi di tanah Kalimantan.
+
+Pada 19 September, di sela jadwalnya yang padat, Panglima Jilah berkenan hadir di PT PSAM dalam rangka silaturahmi bersama warga dan tokoh masyarakat di sekitar perusahaan — mempererat hubungan antara perusahaan dan komunitas adat setempat.`
+},
+{
+  title: "Apresiasi Cincin Masa Bakti 5 Tahun untuk Delapan Staf",
+  tags: "penghargaan, cincin, masa bakti",
+  content: `# Penyerahan Cincin Apresiasi Masa Bakti 5 Tahun
+
+PT PSAM memberikan apresiasi berupa cincin kepada delapan staf yang telah mengabdi selama lima tahun, sebagai bentuk penghargaan atas dedikasi mereka. Penyerahan dilaksanakan pada Kamis, 30 Agustus 2023 pukul 19.00 WIB.
+
+## Penerima Apresiasi
+
+1. Fitriadi R. Husaini (Asst. Humas)
+2. Novie Andhika F. (Kasie HRGA)
+3. Herwin (Asst. GIS)
+4. Yusuf Ruchban (Asst. Afdeling)
+5. Permahadi Prasetyo (Asst. Humas)
+6. Putra Adil T. (Asst. R&D)
+7. Valentinus Ixmanto (Asst. QC)
+8. Ibnu Maulana (Asst. Afdeling)`
+},
+{
+  title: "Semangat Kemerdekaan di Lingkungan RTH: HUT RI",
+  tags: "hut ri, kemerdekaan",
+  content: `# HUT RI di Lingkungan RTH
+
+Peringatan HUT Kemerdekaan Republik Indonesia dirayakan meriah di lingkungan perumahan karyawan, mulai dari upacara bendera hingga aneka lomba yang melibatkan karyawan beserta keluarga.
+
+## Kata-Kata Bijak Bung Karno
+
+> "Berpedomanlah pada harapan dan ketetapan hati. Berpedomanlah pada cita-cita, berpedomanlah pada impian dan angan-angan." — Ir. Soekarno
+
+> "Kita bangsa besar, kita bukan bangsa tempe. Kita tidak akan mengemis, kita tidak akan minta-minta." — Ir. Soekarno
+
+> "Seribu orang tua bisa bermimpi, satu orang pemuda bisa mengubah dunia." — Ir. Soekarno
+
+Semangat kemerdekaan ini menjadi pengingat bagi seluruh keluarga besar RTH PSAM untuk terus bergotong royong membangun lingkungan perumahan yang mandiri dan sejahtera.`
+},
+{
+  title: "Jalan Sehat Meriahkan Akhir Pekan Karyawan",
+  tags: "jalan sehat, koperasi karyawan",
+  content: `# Jalan Sehat Minggu Pagi
+
+Kegiatan Jalan Sehat tahun lalu, yang digelar Minggu pagi 20 Agustus 2023, sukses mendapatkan antusiasme tinggi dari seluruh karyawan PT PSAM. Selain doorprize aneka perangkat elektronik, ratusan bingkisan sembako turut dibagikan berkat sponsor dari Koperasi Karyawan Sejahtera Untuk Semua.
+
+Perwakilan dari masing-masing kebun turut hadir memeriahkan acara, diiringi musik yang membuat suasana semakin akrab — memperkuat kebersamaan sekaligus menambah kebetahan karyawan bekerja di PT PSAM.
+
+## Rencana Tahun Ini
+
+Jalan Sehat kembali direncanakan pada Minggu, 18 Agustus 2024, dengan rute mengelilingi areal perumahan Kebun 2, disponsori Koperasi Karyawan dengan hadiah utama sepeda, mesin cuci, dispenser, setrika, magic com, dan sekitar 100 bingkisan sembako. Kegiatan ini terbuka gratis bagi seluruh karyawan, baik anggota koperasi maupun bukan.
+
+Pelaksanaan dimulai pukul 06.30 WIB dan ditutup sekitar pukul 15.00 WIB, dengan panitia gabungan dari staf, tim administrasi, mandor, hingga karyawan emplasment yang berperan besar dalam kesuksesan acara.`
+},
+{
+  title: "Juara RTH 2024: Afdeling 5 Raih Predikat Terbaik",
+  tags: "juara rth, penghargaan afdeling",
+  content: `# Juara RTH di PT PSAM
+
+Penilaian Rumah Tinggal Hijau untuk kompleks perumahan beserta seluruh kegiatannya — mencakup kebersihan lingkungan, paguyuban, hingga ketahanan pangan — telah rampung dilakukan. Dari 16 Afdeling yang dinilai, tiga besar berhasil ditetapkan:
+
+1. **Juara 1:** Afdeling 5, Kebun 2
+2. **Juara 2:** Afdeling 11, Kebun 3
+3. **Juara 3:** Afdeling 3, Kebun 1
+
+Masing-masing juara menerima piagam penghargaan serta uang tunai untuk mendukung progres perbaikan kompleks perumahan yang lebih baik ke depannya.
+
+## Apresiasi Lain yang Turut Diberikan
+
+Selain Juara RTH, penghargaan juga diberikan kepada tiga pemanen terbaik di masing-masing kebun — dinilai dari kehadiran, hasil kerja, kualitas panen, dan kualitas ancak — hasil kerja sama Tim SPT lintas departemen dalam kegiatan Gemba dan Safari ke Afdeling. Turnamen bola voli putra antarkebun turut digelar untuk mendukung semangat olahraga, dengan Kebun 3 sebagai juara 1, Kebun 1 juara 2, dan Kebun 2 juara 3.
+
+Penghargaan ini diharapkan memicu semangat karyawan dalam mengelola ekosistem lingkungan yang kondusif dan nyaman di masing-masing Afdeling, sekaligus menekan potensi turnover karyawan demi tercapainya produktivitas dan *Sustainability Yield Growth* di seluruh wilayah PT PSAM.`
+},
+{
+  title: "Buletin MSAL Group: 14 Edisi Kabar Perusahaan",
+  tags: "buletin, msal group",
+  content: `# Buletin MSAL Group
+
+Buletin MSAL Group hadir sebagai media informasi rutin bagi seluruh karyawan di lingkungan grup perusahaan, memuat kabar terbaru mulai dari kebijakan manajemen, kisah inspiratif planter, hingga capaian kinerja perusahaan.
+
+Hingga saat ini, Buletin MSAL Group telah terbit sebanyak 14 edisi, mengangkat beragam tema — mulai dari pertemuan tahunan staf, sosok penggerak keberlanjutan, kaderisasi planter, hingga refleksi tahun baru perusahaan. Seluruh edisi dapat diakses dan diunduh melalui portal RTH pada menu Buletin.`
+}
+];
+
+function seedInitialArticles(){
+  try{
+    if(localStorage.getItem(SEED_FLAG)) return;
+    if(localDocs.length === 0){
+      const now = Date.now();
+      SEED_ARTICLES.forEach((a, i)=>{
+        localDocs.push({
+          id: uid(),
+          mode: 'note',
+          title: a.title,
+          content: a.content,
+          tags: a.tags,
+          createdAt: now - i*3600000,
+          updatedAt: now - i*3600000
+        });
+      });
+      saveArr(LS_DOCS, localDocs);
+    }
+    localStorage.setItem(SEED_FLAG, '1');
+  }catch(e){ /* abaikan jika localStorage tidak tersedia */ }
+}
+
 let localPhotos = loadArr(LS_PHOTOS);
 let settings = loadSettings();
 let remoteDocs = [];
@@ -778,42 +1114,132 @@ $$('.nav-item').forEach(btn=>{
     btn.classList.add('active');
     $$('.view').forEach(v=>v.classList.remove('active'));
     $('#view-'+btn.dataset.view).classList.add('active');
+    if(btn.dataset.view==='beranda') refreshBeranda();
     if(btn.dataset.view==='documents') refreshRemoteDocs();
     if(btn.dataset.view==='gallery') refreshRemotePhotos();
   });
 });
 
 /* ==========================================================
-   DASBOR
+   PENGATURAN NAMA PORTAL
    ========================================================== */
-function initDashboard(){
-  const url = settings.reportViewUrl || DEFAULT_REPORT_VIEW_URL;
-  const embedUrl = settings.reportEmbedUrl || url.replace('/u/0/reporting/', '/embed/u/0/reporting/');
-  $('#reportFrame').src = embedUrl;
-  $('#openReportTab').href = url;
-  $('#reportUrlInput').value = url;
-  $('#siteNameInput').value = settings.siteName || 'Portal RTH — Ruang Terbuka Hijau';
+function initSiteName(){
+  $('#siteNameInput').value = settings.siteName || 'Portal RTH — Rumah Tinggal Hijau PSAM';
+  $('#autoRefreshToggle').checked = settings.autoRefresh !== false;
   if(settings.siteName){
     document.title = settings.siteName;
     $('#brandSub').textContent = settings.siteName;
-    $('#dashTitle').textContent = settings.siteName;
+    $('#berandaTitle').textContent = settings.siteName;
   }
 }
 $('#btnSaveReportUrl').addEventListener('click', ()=>{
-  const val = $('#reportUrlInput').value.trim();
-  if(!val){ toast('Isi tautan laporan terlebih dahulu', true); return; }
-  settings.reportViewUrl = val;
-  settings.reportEmbedUrl = val.includes('/embed/') ? val : val.replace('/u/0/reporting/', '/embed/u/0/reporting/');
   settings.siteName = $('#siteNameInput').value.trim() || settings.siteName;
+  settings.autoRefresh = $('#autoRefreshToggle').checked;
   saveSettings(settings);
-  initDashboard();
+  initSiteName();
+  setupAutoRefresh();
   toast('Pengaturan disimpan');
 });
-$('#btnDashFullscreen').addEventListener('click', ()=>{
-  const el = $('#reportWrap');
-  if(!document.fullscreenElement) el.requestFullscreen?.();
-  else document.exitFullscreen?.();
-});
+
+/* ==========================================================
+   BERANDA / BERITA — dibangun dari dokumen &amp; artikel
+   ========================================================== */
+function relativeTime(date){
+  const diff = Math.floor((Date.now()-date.getTime())/1000);
+  if(diff<60) return 'baru saja';
+  if(diff<3600) return Math.floor(diff/60)+' menit lalu';
+  if(diff<86400) return Math.floor(diff/3600)+' jam lalu';
+  return date.toLocaleString('id-ID',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function updateLastUpdatedText(){
+  $('#lastUpdatedText').textContent = lastUpdatedAt ? 'Diperbarui '+relativeTime(lastUpdatedAt) : 'Belum pernah diperbarui';
+}
+setInterval(updateLastUpdatedText, 30000);
+
+async function refreshBeranda(){
+  await Promise.all([refreshRemoteDocs(), refreshRemotePhotos()]);
+  lastUpdatedAt = new Date();
+  updateLastUpdatedText();
+  renderBeranda();
+}
+$('#btnRefreshBeranda').addEventListener('click', ()=>{ toast('Memperbarui berita…'); refreshBeranda(); });
+
+function docExcerpt(doc, isRemote){
+  if(isRemote) return 'Dokumen arsip Google Drive. Klik untuk membuka dalam mode baca layar penuh.';
+  if(doc.mode==='note') return (doc.content||'').replace(/[#*-]/g,'').slice(0,140) + ((doc.content||'').length>140?'…':'');
+  if(doc.mode==='drive') return 'Tautan dokumen Google Drive. Klik untuk membaca.';
+  return 'Dokumen tersimpan di peramban ini. Klik untuk membaca.';
+}
+function renderBeranda(){
+  const all = [...remoteDocs, ...localDocs].sort((a,b)=>{
+    const ta = new Date(a.modified||a.createdAt||0).getTime();
+    const tb = new Date(b.modified||b.createdAt||0).getTime();
+    return tb-ta;
+  });
+  const featuredWrap = $('#berandaFeatured');
+  const grid = $('#berandaGrid');
+  featuredWrap.innerHTML = '';
+  grid.innerHTML = '';
+
+  if(all.length===0){
+    grid.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
+      <h4>Belum ada berita atau dokumen</h4>
+      <p>Tambahkan artikel, unggah dokumen, atau sambungkan Google Drive di menu Dokumen &amp; Artikel.</p>
+    </div>`;
+    return;
+  }
+
+  const [first, ...rest] = all;
+  const isRemoteFirst = first.mode==='remote';
+  const kindFirst = isRemoteFirst ? kindFromMime(first.mimeType) : (first.mode==='local' ? 'localfile' : (first.mode==='note' ? 'note' : first.kind));
+  const badgeTextFirst = isRemoteFirst ? 'DRIVE' : (first.mode==='local' ? 'PERAMBAN' : (first.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
+  const dateFirst = first.modified || first.createdAt;
+  const featEl = document.createElement('div');
+  featEl.className = 'panel';
+  featEl.style.cssText = 'padding:0;overflow:hidden;cursor:pointer;margin-bottom:4px;';
+  featEl.innerHTML = `
+    <div class="panel-gold-rule"></div>
+    <div style="padding:26px 28px;">
+      <div class="card-meta" style="margin-bottom:12px;">
+        <span class="badge ${isRemoteFirst?'b-drive':(first.mode==='local'?'b-local':'b-note')}">${badgeTextFirst}</span>
+        <span>${dateFirst ? new Date(dateFirst).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
+      </div>
+      <h2 style="font-family:var(--font-display);font-size:24px;font-weight:600;line-height:1.3;margin-bottom:10px;">${escapeHtml(first.title||first.name||'Tanpa judul')}</h2>
+      <p style="color:var(--ink-muted);font-size:13.5px;line-height:1.7;max-width:680px;">${escapeHtml(docExcerpt(first, isRemoteFirst))}</p>
+      <button class="btn btn-gold" style="margin-top:16px;">Baca Selengkapnya</button>
+    </div>`;
+  featEl.addEventListener('click', ()=> openReader(first, isRemoteFirst));
+  featuredWrap.appendChild(featEl);
+
+  rest.forEach(doc=>{
+    const isRemote = doc.mode==='remote';
+    const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
+    const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
+    const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
+    const dateStr = doc.modified || doc.createdAt;
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <div class="card-top">
+        <div class="card-icon">${ICONS[kind]||ICONS.gfile}</div>
+      </div>
+      <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+      <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote))}</div>
+      <div class="card-meta">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+        <span>${dateStr ? new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
+      </div>`;
+    el.addEventListener('click', ()=> openReader(doc, isRemote));
+    grid.appendChild(el);
+  });
+}
+function setupAutoRefresh(){
+  clearInterval(autoRefreshTimer);
+  if(settings.autoRefresh !== false){
+    autoRefreshTimer = setInterval(refreshBeranda, 5*60*1000);
+  }
+}
 
 /* ==========================================================
    APPS SCRIPT API
@@ -868,6 +1294,7 @@ async function refreshRemoteDocs(){
     else { toast('Gagal memuat dari Drive: '+r.error, true); }
   }catch(e){ /* diam-diam gagal, tetap tampilkan data lokal */ }
   renderDocs();
+  if(document.getElementById('view-beranda')?.classList.contains('active')) renderBeranda();
 }
 function kindFromMime(mime){
   if(mime==='application/vnd.google-apps.document') return 'gdoc';
@@ -1366,15 +1793,24 @@ $('#btnResetAll').addEventListener('click', async ()=>{
    ========================================================== */
 (async function init(){
   await openDB().catch(()=> toast('Penyimpanan lokal (IndexedDB) tidak tersedia di browser ini', true));
-  initDashboard();
+  seedInitialArticles();
+  initSiteName();
   renderDocs();
   renderPhotos();
+  renderBeranda();
   if(hasScript()){
-    try{ const r = await apiGet('ping'); refreshDriveStatusUI(r.ok); if(r.ok){ refreshRemoteDocs(); refreshRemotePhotos(); } }
+    try{
+      const r = await apiGet('ping');
+      refreshDriveStatusUI(r.ok);
+      if(r.ok) await refreshBeranda();
+    }
     catch(e){ refreshDriveStatusUI(false); }
   } else {
     refreshDriveStatusUI(false);
+    lastUpdatedAt = new Date();
+    updateLastUpdatedText();
   }
+  setupAutoRefresh();
 })();
 </script>
 </body>
