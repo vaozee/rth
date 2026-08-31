@@ -8,43 +8,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <style>
-/* ============ TOKENS — MODERN KLASIK ============ */
 :root{
-  --ivory:#f6f1e6;
-  --paper:#fffdf8;
-  --paper-alt:#fbf6ec;
-  --ink:#242820;
-  --ink-muted:#6d7263;
-  --ink-dim:#9a9a8a;
-  --forest:#1f3d2f;
-  --forest-deep:#132a20;
-  --forest-soft:#e7efe8;
-  --gold:#b3854e;
-  --gold-soft:#dcb98a;
-  --line:#e3d9c4;
-  --line-strong:#cdbe9e;
-  --danger:#9c3b32;
-  --success:#3f6b4a;
-  --radius:6px;
-  --shadow: 0 12px 32px -18px rgba(31,61,47,.28);
-  --font-display:'Fraunces',serif;
-  --font-body:'Inter',sans-serif;
-  --font-read:'Source Serif 4',serif;
+  --ivory:#f6f1e6; --paper:#fffdf8; --paper-alt:#fbf6ec;
+  --ink:#242820; --ink-muted:#6d7263; --ink-dim:#9a9a8a;
+  --forest:#1f3d2f; --forest-deep:#132a20; --forest-soft:#e7efe8;
+  --gold:#b3854e; --gold-soft:#dcb98a;
+  --line:#e3d9c4; --line-strong:#cdbe9e;
+  --danger:#9c3b32; --success:#3f6b4a;
+  --radius:6px; --shadow: 0 12px 32px -18px rgba(31,61,47,.28);
+  --font-display:'Fraunces',serif; --font-body:'Inter',sans-serif; --font-read:'Source Serif 4',serif;
+  --sidebar-w:242px; --sidebar-w-collapsed:74px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
-body{
-  background:var(--ivory);
-  color:var(--ink);
-  font-family:var(--font-body);
-  min-height:100%;
-  -webkit-font-smoothing:antialiased;
-}
-body::before{
-  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
-  background-image:radial-gradient(rgba(31,61,47,.05) 1px, transparent 1px);
-  background-size:3px 3px;
-}
+body{background:var(--ivory);color:var(--ink);font-family:var(--font-body);min-height:100%;-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;background-image:radial-gradient(rgba(31,61,47,.05) 1px, transparent 1px);background-size:3px 3px;}
 ::selection{background:rgba(179,133,78,.28);}
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;cursor:pointer;}
@@ -54,76 +32,94 @@ button{font-family:inherit;cursor:pointer;}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px;}
 .eyebrow{font-family:var(--font-display);font-style:italic;font-size:12.5px;letter-spacing:.03em;color:var(--gold);}
 
-/* ============ LAYOUT ============ */
 .app{position:relative;z-index:1;display:flex;min-height:100vh;}
 
 /* ---- Sidebar ---- */
-.sidebar{
-  width:242px;flex:none;
-  background:linear-gradient(185deg, var(--forest), var(--forest-deep));
-  color:var(--paper);
-  display:flex;flex-direction:column;
-  padding:26px 18px;
-  position:sticky;top:0;height:100vh;
-}
-.brand{display:flex;align-items:center;gap:12px;padding:2px 4px 28px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:20px;}
-.brand-mark{width:38px;height:38px;flex:none;}
+.sidebar{width:var(--sidebar-w);flex:none;background:linear-gradient(185deg, var(--forest), var(--forest-deep));color:var(--paper);
+  display:flex;flex-direction:column;padding:18px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;
+  transition:width .22s ease;}
+.sidebar.collapsed{width:var(--sidebar-w-collapsed);padding:18px 12px;}
+.sidebar-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:14px;}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;}
+.brand-mark{width:34px;height:34px;flex:none;}
 .brand-mark svg{width:100%;height:100%;}
-.brand-name{font-family:var(--font-display);font-weight:600;font-size:16.5px;letter-spacing:.01em;line-height:1.2;}
-.brand-sub{display:block;font-size:10px;color:rgba(246,241,230,.55);letter-spacing:.09em;margin-top:3px;text-transform:uppercase;}
+.brand-text{min-width:0;overflow:hidden;white-space:nowrap;transition:opacity .15s;}
+.sidebar.collapsed .brand-text{opacity:0;width:0;}
+.brand-name{font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:.01em;line-height:1.2;}
+.brand-sub{display:block;font-size:9.5px;color:rgba(246,241,230,.55);letter-spacing:.07em;margin-top:2px;text-transform:uppercase;}
+.sidebar-toggle{width:30px;height:30px;flex:none;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:rgba(246,241,230,.85);display:flex;align-items:center;justify-content:center;}
+.sidebar-toggle:hover{border-color:var(--gold-soft);color:var(--gold-soft);}
+.sidebar-toggle svg{width:15px;height:15px;transition:transform .2s;}
+.sidebar.collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 
+.company-block{padding:0 2px 14px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.12);font-size:10px;line-height:1.55;color:rgba(246,241,230,.58);white-space:nowrap;overflow:hidden;transition:opacity .15s,max-height .15s;}
+.sidebar.collapsed .company-block{opacity:0;max-height:0;padding:0;margin:0;border:none;}
+
+.nav-group-label{font-size:9.5px;letter-spacing:.1em;color:rgba(246,241,230,.4);text-transform:uppercase;padding:10px 10px 5px;white-space:nowrap;overflow:hidden;}
+.sidebar.collapsed .nav-group-label{opacity:0;height:6px;padding:6px 0 0;}
 .nav{display:flex;flex-direction:column;gap:3px;}
-.nav-item{
-  display:flex;align-items:center;gap:12px;
-  padding:11px 12px;border-radius:5px;
-  color:rgba(246,241,230,.72);font-size:13.5px;font-weight:500;
-  border:none;border-left:2px solid transparent;background:none;width:100%;text-align:left;
-  transition:.15s;
-}
-.nav-item svg{width:17px;height:17px;flex:none;opacity:.85;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 11px;border-radius:5px;color:rgba(246,241,230,.72);
+  font-size:13px;font-weight:500;border:none;border-left:2px solid transparent;background:none;width:100%;text-align:left;
+  transition:.15s;white-space:nowrap;overflow:hidden;}
+.nav-item svg{width:16px;height:16px;flex:none;opacity:.85;}
+.nav-item .label{overflow:hidden;text-overflow:ellipsis;transition:opacity .15s;}
+.sidebar.collapsed .nav-item{justify-content:center;padding:10px 6px;}
+.sidebar.collapsed .nav-item .label,.sidebar.collapsed .nav-item .tag{display:none;}
 .nav-item:hover{color:var(--paper);background:rgba(255,255,255,.05);}
-.nav-item.active{
-  color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--gold-soft);
-}
-.nav-item .tag{
-  margin-left:auto;font-size:9.5px;color:rgba(246,241,230,.55);
-  border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:1px 6px;
-}
+.nav-item.active{color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--gold-soft);}
+.nav-item.locked svg.lock-ic{opacity:.55;}
+.nav-item .tag{margin-left:auto;font-size:9.5px;color:rgba(246,241,230,.55);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:1px 6px;}
 
-.sidebar-foot{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);}
-.status-pill{display:flex;align-items:center;gap:8px;font-size:10.5px;color:rgba(246,241,230,.55);padding:8px 4px;}
-.status-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);}
+.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);}
+.status-pill{display:flex;align-items:center;gap:8px;font-size:10px;color:rgba(246,241,230,.55);padding:6px 4px;white-space:nowrap;overflow:hidden;}
+.sidebar.collapsed .status-pill .label{display:none;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
 .status-dot.on{background:#7fbf8e;box-shadow:0 0 6px #7fbf8e;}
 
-/* ---- Main ---- */
-.main{flex:1;min-width:0;padding:30px 40px 60px;}
-.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:28px;flex-wrap:wrap;}
-.page-title{font-family:var(--font-display);font-size:29px;font-weight:600;letter-spacing:.005em;margin-top:6px;}
-.page-desc{color:var(--ink-muted);font-size:13.5px;margin-top:8px;max-width:560px;line-height:1.6;}
+/* ---- Main / top header ---- */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.topheader{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:12px 30px;background:rgba(246,241,230,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+.breadcrumb{font-size:12px;color:var(--ink-muted);font-weight:600;letter-spacing:.02em;}
+.breadcrumb b{color:var(--forest);}
+.topheader-right{display:flex;align-items:center;gap:14px;font-size:11px;color:var(--ink-dim);}
 
-.view{display:none;animation:fadein .35s ease;}
+.headline-ticker-wrap{background:var(--forest-deep);overflow:hidden;position:relative;}
+.headline-ticker-wrap::after{content:"";position:absolute;top:0;right:0;bottom:0;width:36px;background:linear-gradient(90deg, transparent, var(--forest-deep));pointer-events:none;}
+.headline-ticker{display:flex;gap:10px;padding:9px 20px;overflow-x:auto;scrollbar-width:none;cursor:grab;user-select:none;}
+.headline-ticker.dragging{cursor:grabbing;}
+.headline-ticker::-webkit-scrollbar{display:none;}
+.headline-chip{flex:none;display:flex;align-items:center;gap:7px;padding:6px 13px;border-radius:99px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);color:rgba(246,241,230,.85);font-size:11.5px;white-space:nowrap;transition:.15s;}
+.headline-chip:hover{border-color:var(--gold-soft);color:#fff;background:rgba(255,255,255,.12);}
+.headline-chip .dot{width:5px;height:5px;border-radius:50%;background:var(--gold-soft);flex:none;}
+
+.content-wrap{padding:26px 30px 60px;flex:1;}
+.page-title{font-family:var(--font-display);font-size:26px;font-weight:600;letter-spacing:.005em;}
+.page-desc{color:var(--ink-muted);font-size:13px;margin-top:6px;max-width:600px;line-height:1.6;}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap;}
+
+.view{display:none;animation:fadein .3s ease;}
 .view.active{display:block;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
-/* ---- Panel ---- */
-.panel{
-  background:var(--paper);
-  border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow);
-}
-.panel-gold-rule{height:3px;background:linear-gradient(90deg, var(--forest), var(--gold));}
+/* ---- Category tabs ("sub-halaman") ---- */
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;border-bottom:1px solid var(--line);padding-bottom:0;}
+.cat-tab{padding:10px 16px;font-size:12.5px;font-weight:600;color:var(--ink-muted);background:none;border:none;
+  border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;}
+.cat-tab:hover{color:var(--forest);}
+.cat-tab.active{color:var(--forest);border-bottom-color:var(--gold);}
 
-/* ---- Dashboard ---- */
-.dash-panel{overflow:hidden;padding:0;}
-.dash-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line);background:var(--paper-alt);}
-.dash-head-l{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-muted);}
-.rec-dot{width:7px;height:7px;border-radius:50%;background:var(--success);}
-.btn{
-  display:inline-flex;align-items:center;gap:7px;
-  padding:9px 15px;border-radius:5px;border:1px solid var(--line-strong);
-  background:var(--paper);color:var(--ink);font-size:12.5px;font-weight:600;
-  transition:.15s;white-space:nowrap;
-}
+/* ---- Panel ---- */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.panel-gold-rule{height:3px;background:linear-gradient(90deg, var(--forest), var(--gold));}
+.dash-info-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px;}
+.stat-card{padding:15px 17px;}
+.stat-label{font-size:9.5px;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase;}
+.stat-value{font-family:var(--font-display);font-size:19px;margin-top:7px;color:var(--forest);}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:5px;border:1px solid var(--line-strong);
+  background:var(--paper);color:var(--ink);font-size:12.5px;font-weight:600;transition:.15s;white-space:nowrap;}
 .btn svg{width:14px;height:14px;}
 .btn:hover{border-color:var(--gold);color:var(--gold);}
 .btn-primary{background:var(--forest);color:var(--paper);border-color:var(--forest);}
@@ -134,23 +130,11 @@ button{font-family:inherit;cursor:pointer;}
 .btn-danger:hover{border-color:var(--danger);color:var(--danger);}
 .btn-sm{padding:6px 11px;font-size:11.5px;}
 
-.report-embed-wrap{position:relative;width:100%;aspect-ratio:16/10;background:#0d1712;}
-.report-embed-wrap iframe{width:100%;height:100%;border:0;display:block;}
-.report-embed-wrap:fullscreen iframe{height:100vh;}
-.dash-info-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:18px;}
-.stat-card{padding:16px 18px;}
-.stat-label{font-size:10px;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase;}
-.stat-value{font-family:var(--font-display);font-size:21px;margin-top:8px;color:var(--forest);}
-
-/* ---- Toolbars & grids ---- */
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:16px;}
-.card{padding:17px;display:flex;flex-direction:column;gap:10px;transition:.18s;cursor:pointer;}
+.card{padding:17px;display:flex;flex-direction:column;gap:10px;transition:.18s;cursor:pointer;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);}
 .card:hover{transform:translateY(-2px);box-shadow:0 16px 34px -18px rgba(31,61,47,.4);border-color:var(--gold-soft);}
-.card-icon{
-  width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;
-  background:var(--forest-soft);border:1px solid var(--line);color:var(--forest);flex:none;
-}
+.card-icon{width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--forest-soft);border:1px solid var(--line);color:var(--forest);flex:none;}
 .card-icon svg{width:18px;height:18px;}
 .card-top{display:flex;align-items:center;gap:10px;justify-content:space-between;}
 .card-title{font-family:var(--font-display);font-size:14.5px;font-weight:600;line-height:1.35;}
@@ -159,71 +143,50 @@ button{font-family:inherit;cursor:pointer;}
 .badge.b-drive{border-color:var(--gold-soft);color:#8a6326;background:#fbf1de;}
 .badge.b-local{border-color:#b9cdbe;color:var(--forest);background:var(--forest-soft);}
 .badge.b-note{border-color:var(--line-strong);color:var(--ink-muted);}
-.card-desc{font-size:12.5px;color:var(--ink-muted);line-height:1.55;flex:1;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.badge.b-cat{border-color:var(--forest);color:var(--forest);background:var(--forest-soft);font-weight:600;}
+.card-desc{font-size:12.5px;color:var(--ink-muted);line-height:1.55;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .card-actions{display:flex;gap:6px;margin-top:2px;}
-.icon-btn{
-  width:28px;height:28px;border-radius:5px;border:1px solid var(--line);background:var(--paper-alt);
-  display:flex;align-items:center;justify-content:center;color:var(--ink-muted);
-}
+.icon-btn{width:28px;height:28px;border-radius:5px;border:1px solid var(--line);background:var(--paper-alt);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);}
 .icon-btn svg{width:13px;height:13px;}
 .icon-btn:hover{color:var(--gold);border-color:var(--gold);}
 .icon-btn.danger:hover{color:var(--danger);border-color:var(--danger);}
 
-.empty-state{
-  border:1px dashed var(--line-strong);border-radius:var(--radius);padding:54px 20px;
-  text-align:center;color:var(--ink-muted);grid-column:1/-1;background:var(--paper);
-}
+.empty-state{border:1px dashed var(--line-strong);border-radius:var(--radius);padding:54px 20px;text-align:center;color:var(--ink-muted);grid-column:1/-1;background:var(--paper);}
 .empty-state svg{width:32px;height:32px;color:var(--ink-dim);margin-bottom:12px;}
 .empty-state h4{font-family:var(--font-display);font-size:15px;color:var(--ink);margin-bottom:6px;}
 .empty-state p{font-size:12.5px;max-width:360px;margin:0 auto;}
 
-/* ---- Photo grid ---- */
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px;}
-.photo-tile{
-  position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--line);
-  aspect-ratio:1/1;background:var(--paper-alt);cursor:pointer;
-}
+.photo-tile{position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;background:var(--paper-alt);cursor:pointer;}
 .photo-tile img{width:100%;height:100%;object-fit:cover;display:block;transition:.35s;}
 .photo-tile:hover img{transform:scale(1.05);}
-.photo-tile .p-overlay{
-  position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%, rgba(19,42,32,.82));
-  display:flex;flex-direction:column;justify-content:flex-end;padding:10px;opacity:0;transition:.2s;
-}
+.photo-tile .p-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%, rgba(19,42,32,.82));display:flex;flex-direction:column;justify-content:flex-end;padding:10px;opacity:0;transition:.2s;}
 .photo-tile:hover .p-overlay{opacity:1;}
 .p-overlay .p-title{font-size:11.5px;font-weight:600;color:#fff;}
 .p-overlay .p-actions{display:flex;gap:6px;margin-top:6px;}
 .p-overlay .icon-btn{background:rgba(19,42,32,.65);border-color:rgba(255,255,255,.2);color:#fff;}
 
-/* ============ MODAL ============ */
-.modal-backdrop{
-  position:fixed;inset:0;background:rgba(19,29,22,.55);backdrop-filter:blur(3px);
-  display:none;align-items:center;justify-content:center;z-index:200;padding:20px;
-}
+/* ---- Buletin ---- */
+.buletin-frame-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--paper);}
+.buletin-frame-wrap iframe{width:100%;height:74vh;border:0;display:block;}
+
+/* ---- Modal ---- */
+.modal-backdrop{position:fixed;inset:0;background:rgba(19,29,22,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
 .modal-backdrop.open{display:flex;}
-.modal{
-  width:100%;max-width:500px;background:var(--paper);border:1px solid var(--line);
-  border-radius:10px;padding:24px;box-shadow:0 30px 80px -20px rgba(19,42,32,.4);
-  max-height:88vh;overflow-y:auto;
-}
+.modal{width:100%;max-width:500px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:24px;box-shadow:0 30px 80px -20px rgba(19,42,32,.4);max-height:88vh;overflow-y:auto;}
+.modal.modal-sm{max-width:360px;}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
 .modal-title{font-family:var(--font-display);font-size:17px;font-weight:600;}
 .modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:none;color:var(--ink-muted);display:flex;align-items:center;justify-content:center;}
 .modal-close svg{width:14px;height:14px;}
 .field{margin-bottom:15px;}
 .field label{display:block;font-size:11px;letter-spacing:.03em;color:var(--ink-muted);font-weight:600;margin-bottom:7px;}
-.field input[type=text],.field input[type=url],.field textarea,.field select{
-  width:100%;background:var(--paper-alt);border:1px solid var(--line-strong);border-radius:6px;
-  padding:11px 12px;color:var(--ink);font-size:13px;font-family:inherit;
-}
+.field input[type=text],.field input[type=url],.field input[type=password],.field textarea,.field select{width:100%;background:var(--paper-alt);border:1px solid var(--line-strong);border-radius:6px;padding:11px 12px;color:var(--ink);font-size:13px;font-family:inherit;}
 .field textarea{resize:vertical;min-height:120px;line-height:1.6;font-family:var(--font-read);}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold);}
 .field-hint{font-size:11.5px;color:var(--ink-dim);margin-top:6px;line-height:1.5;}
 .field-check{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-muted);}
-.upload-drop{
-  border:1px dashed var(--line-strong);border-radius:8px;padding:24px;text-align:center;
-  color:var(--ink-muted);font-size:12.5px;cursor:pointer;transition:.15s;background:var(--paper-alt);
-}
+.upload-drop{border:1px dashed var(--line-strong);border-radius:8px;padding:24px;text-align:center;color:var(--ink-muted);font-size:12.5px;cursor:pointer;transition:.15s;background:var(--paper-alt);}
 .upload-drop:hover,.upload-drop.drag{border-color:var(--gold);color:var(--gold);}
 .upload-drop svg{width:22px;height:22px;margin-bottom:8px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
@@ -232,15 +195,10 @@ button{font-family:inherit;cursor:pointer;}
 .tab-switch button.active{background:var(--forest);color:#fff;}
 .tab-switch button:disabled{opacity:.35;cursor:not-allowed;}
 
-/* ============ FULLSCREEN READER ============ */
+/* ---- Reader / Lightbox (unchanged pattern) ---- */
 .reader-overlay{position:fixed;inset:0;background:#0f1a14;z-index:300;display:none;flex-direction:column;}
 .reader-overlay.open{display:flex;}
-.reader-header{
-  position:absolute;top:0;left:0;right:0;z-index:5;
-  display:flex;align-items:center;justify-content:space-between;padding:15px 24px;
-  background:linear-gradient(180deg, rgba(19,42,32,.92), transparent);
-  transform:translateY(-100%);opacity:0;transition:.28s ease;
-}
+.reader-header{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:15px 24px;background:linear-gradient(180deg, rgba(19,42,32,.92), transparent);transform:translateY(-100%);opacity:0;transition:.28s ease;}
 .reader-header.show{transform:translateY(0);opacity:1;}
 .reader-header-l{display:flex;align-items:center;gap:12px;min-width:0;}
 .reader-header-l .card-icon{width:32px;height:32px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#dcb98a;}
@@ -254,28 +212,21 @@ button{font-family:inherit;cursor:pointer;}
 .reader-body iframe{width:100%;height:100%;border:0;display:block;background:#fff;}
 .reader-hover-zone{position:absolute;top:0;left:0;right:0;height:70px;z-index:4;}
 .reader-note-area{max-width:740px;margin:0 auto;height:100%;overflow-y:auto;padding:120px 26px 100px;background:var(--paper);}
-.reader-note-area textarea{width:100%;min-height:60vh;background:transparent;border:none;color:var(--ink);
-  font-size:17px;line-height:1.9;font-family:var(--font-read);resize:vertical;}
+.reader-note-area textarea{width:100%;min-height:60vh;background:transparent;border:none;color:var(--ink);font-size:17px;line-height:1.9;font-family:var(--font-read);resize:vertical;}
 .reader-note-area .note-render{font-family:var(--font-read);font-size:17px;line-height:1.95;color:#2a2f26;}
-.reader-note-area .note-render h1,.reader-note-area .note-render h2,.reader-note-area .note-render h3{
-  font-family:var(--font-display);margin:28px 0 12px;color:var(--forest);}
+.reader-note-area .note-render h1,.reader-note-area .note-render h2,.reader-note-area .note-render h3{font-family:var(--font-display);margin:28px 0 12px;color:var(--forest);}
 .reader-note-area .note-render p{margin-bottom:15px;}
 .reader-note-area .note-render ul{margin:0 0 15px 22px;}
 .no-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:rgba(255,255,255,.6);text-align:center;padding:20px;background:var(--forest-deep);}
 .no-preview svg{width:40px;height:40px;color:rgba(255,255,255,.35);}
 
-/* ============ LIGHTBOX ============ */
 .lightbox{position:fixed;inset:0;background:#0b0f0c;z-index:300;display:none;align-items:center;justify-content:center;flex-direction:column;}
 .lightbox.open{display:flex;}
-.lightbox-header{
-  position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:15px 24px;
-  background:linear-gradient(180deg, rgba(0,0,0,.6), transparent);transform:translateY(-100%);opacity:0;transition:.28s ease;color:#fff;
-}
+.lightbox-header{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:15px 24px;background:linear-gradient(180deg, rgba(0,0,0,.6), transparent);transform:translateY(-100%);opacity:0;transition:.28s ease;color:#fff;}
 .lightbox-header.show{transform:translateY(0);opacity:1;}
 .lightbox-stage{flex:1;width:100%;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
 .lightbox-stage img{max-width:92vw;max-height:88vh;object-fit:contain;border-radius:3px;box-shadow:0 30px 90px -20px rgba(0,0,0,.7);}
-.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;
-  background:rgba(19,42,32,.5);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(19,42,32,.5);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;}
 .lb-nav svg{width:18px;height:18px;}
 .lb-prev{left:20px;}.lb-next{right:20px;}
 .lb-nav:hover{border-color:var(--gold-soft);color:var(--gold-soft);}
@@ -283,14 +234,11 @@ button{font-family:inherit;cursor:pointer;}
 .lb-counter{font-size:11px;color:rgba(255,255,255,.65);}
 .lightbox-header .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff;}
 
-/* ============ TOAST ============ */
 .toast-wrap{position:fixed;bottom:22px;right:22px;z-index:400;display:flex;flex-direction:column;gap:10px;}
-.toast{background:var(--forest);color:var(--paper);border-left:3px solid var(--gold);
-  padding:12px 16px;border-radius:6px;font-size:12.5px;min-width:230px;box-shadow:0 15px 40px -12px rgba(0,0,0,.35);animation:toastin .25s ease;}
+.toast{background:var(--forest);color:var(--paper);border-left:3px solid var(--gold);padding:12px 16px;border-radius:6px;font-size:12.5px;min-width:230px;box-shadow:0 15px 40px -12px rgba(0,0,0,.35);animation:toastin .25s ease;}
 .toast.err{border-left-color:var(--danger);background:#3d1f1c;}
 @keyframes toastin{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:none;}}
 
-/* ============ SETTINGS ============ */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
 .settings-panel{padding:22px;}
 .settings-panel h3{font-family:var(--font-display);font-size:15.5px;margin-bottom:8px;color:var(--forest);}
@@ -299,15 +247,19 @@ button{font-family:inherit;cursor:pointer;}
 .drive-status .status-dot{background:var(--ink-dim);}
 .drive-status.connected .status-dot{background:var(--success);box-shadow:0 0 6px var(--success);}
 
+.lock-icon-wrap{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--forest-soft);color:var(--forest);margin:0 auto 14px;}
+.lock-icon-wrap svg{width:24px;height:24px;}
+
 @media (max-width:880px){
-  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%;height:auto;flex-direction:row;padding:8px 10px;z-index:100;}
-  .brand,.sidebar-foot{display:none;}
-  .nav{flex-direction:row;width:100%;justify-content:space-around;}
-  .nav-item{flex-direction:column;gap:4px;font-size:9.5px;padding:8px 6px;border-left:none;border-top:2px solid transparent;}
+  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%!important;height:auto;flex-direction:row;padding:8px 10px;z-index:100;}
+  .sidebar-top,.company-block,.nav-group-label,.sidebar-foot{display:none;}
+  .nav{flex-direction:row;width:100%;justify-content:space-around;overflow-x:auto;}
+  .nav-item{flex-direction:column;gap:4px;font-size:9px;padding:8px 6px;border-left:none;border-top:2px solid transparent;}
   .nav-item.active{border-top-color:var(--gold-soft);}
   .nav-item .tag{display:none;}
-  .nav-item svg{width:18px;height:18px;}
-  .main{padding:22px 16px 90px;}
+  .nav-item svg{width:17px;height:17px;}
+  .content-wrap{padding:20px 16px 90px;}
+  .topheader{padding:10px 16px;}
   .settings-grid{grid-template-columns:1fr;}
 }
 </style>
@@ -315,187 +267,269 @@ button{font-family:inherit;cursor:pointer;}
 <body>
 
 <div class="app">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 40 40" fill="none">
-          <circle cx="20" cy="20" r="18" stroke="#dcb98a" stroke-width="1.4"/>
-          <path d="M20 30c-6-2-9-7-8-14 5 1 9 5 8 14z" fill="#dcb98a"/>
-          <path d="M20 30c6-2 9-7 8-14-5 1-9 5-8 14z" fill="#f6f1e6" opacity=".85"/>
-          <path d="M20 30V15" stroke="#132a20" stroke-width="1.2"/>
-        </svg>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="18" stroke="#dcb98a" stroke-width="1.4"/>
+            <path d="M20 30c-6-2-9-7-8-14 5 1 9 5 8 14z" fill="#dcb98a"/>
+            <path d="M20 30c6-2 9-7 8-14-5 1-9 5-8 14z" fill="#f6f1e6" opacity=".85"/>
+            <path d="M20 30V15" stroke="#132a20" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">Portal RTH</div>
+          <span class="brand-sub" id="brandSub">Rumah Tinggal Hijau</span>
+        </div>
       </div>
-      <div>
-        <div class="brand-name">Portal RTH</div>
-        <span class="brand-sub" id="brandSub">Rumah Tinggal Hijau · PSAM</span>
-      </div>
-    </div>
-    <div style="padding:0 4px 18px;margin-top:-6px;">
-      <div style="font-size:10.5px;color:rgba(246,241,230,.6);line-height:1.5;">
-        PT. Persada Sejahtera Agro Makmur<br>Desa Rantau Bangkiang, Katingan, Kalteng
-      </div>
+      <button class="sidebar-toggle" id="sidebarToggleBtn" title="Ciutkan/luaskan sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
     </div>
 
+    <div class="company-block">
+      PT. Persada Sejahtera Agro Makmur<br>Desa Rantau Bangkiang, Katingan, Kalteng
+    </div>
+
+    <div class="nav-group-label">Utama</div>
     <nav class="nav">
-      <button class="nav-item active" data-view="beranda">
+      <button class="nav-item active" data-view="beranda" title="Beranda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
-        Beranda
+        <span class="label">Beranda</span>
       </button>
-      <button class="nav-item" data-view="documents">
+    </nav>
+
+    <div class="nav-group-label">Berita &amp; Arsip</div>
+    <nav class="nav">
+      <button class="nav-item" data-view="konten" data-category="artikel" title="Artikel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5V6a2 2 0 0 1 2-2h13v15.5"/><path d="M6 22a2 2 0 0 1-2-2V6"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+        <span class="label">Artikel</span>
+      </button>
+      <button class="nav-item" data-view="konten" data-category="berita" title="Berita Terkini">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/><circle cx="18" cy="16" r="0" /></svg>
+        <span class="label">Berita Terkini</span>
+      </button>
+      <button class="nav-item" data-view="konten" data-category="dokumentasi" title="Dokumentasi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
-        Dokumen &amp; Artikel
+        <span class="label">Dokumentasi</span>
         <span class="tag" id="navDocCount">0</span>
       </button>
-      <button class="nav-item" data-view="gallery">
+      <button class="nav-item" data-view="buletin" title="Buletin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5V6a2 2 0 0 1 2-2h13v15.5"/><path d="M6 22a2 2 0 0 1-2-2V6"/><rect x="8" y="7" width="6" height="6" rx="1"/><path d="M8 16h8M8 19h5"/></svg>
+        <span class="label">Buletin</span>
+      </button>
+    </nav>
+
+    <div class="nav-group-label">Media &amp; Sistem</div>
+    <nav class="nav">
+      <button class="nav-item" data-view="gallery" title="Galeri Foto">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>
-        Galeri Foto
+        <span class="label">Galeri Foto</span>
         <span class="tag" id="navPhotoCount">0</span>
       </button>
-      <button class="nav-item" data-view="settings">
+      <button class="nav-item locked" data-view="settings" title="Pengaturan (terkunci)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/></svg>
-        Pengaturan
+        <span class="label">Pengaturan</span>
+        <svg class="lock-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;margin-left:auto;"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
       </button>
     </nav>
 
     <div class="sidebar-foot">
-      <div class="status-pill"><span class="status-dot" id="sideStatusDot"></span> <span id="sideStatusText">Mode lokal</span></div>
+      <div class="status-pill"><span class="status-dot" id="sideStatusDot"></span> <span class="label" id="sideStatusText">Mode lokal</span></div>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
+    <div class="topheader">
+      <div class="breadcrumb"><b>Portal RTH</b> <span id="breadcrumbText">/ Beranda</span></div>
+      <div class="topheader-right"><span id="clockText"></span></div>
+    </div>
 
-    <!-- ===== BERANDA / BERITA ===== -->
-    <section class="view active" id="view-beranda">
-      <div class="topbar">
-        <div>
-          <div class="eyebrow">Portal Informasi</div>
-          <h1 class="page-title" id="berandaTitle">Berita &amp; Informasi RTH — Rumah Tinggal Hijau</h1>
-          <p class="page-desc">Kumpulan berita, artikel, dan dokumen program Rumah Tinggal Hijau (RTH) PT. Persada Sejahtera Agro Makmur — diperbarui otomatis dari arsip Drive.</p>
+    <div class="headline-ticker-wrap" id="tickerWrap">
+      <div class="headline-ticker" id="headlineTicker"></div>
+    </div>
+
+    <div class="content-wrap">
+
+      <!-- ===== BERANDA ===== -->
+      <section class="view active" id="view-beranda">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Portal Informasi</div>
+            <h1 class="page-title" id="berandaTitle">Berita &amp; Informasi RTH — Rumah Tinggal Hijau</h1>
+            <p class="page-desc">Kumpulan berita, artikel, dan dokumen program Rumah Tinggal Hijau (RTH) PT. Persada Sejahtera Agro Makmur — diperbarui otomatis dari arsip Drive.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+            <button class="btn btn-primary" id="btnRefreshBeranda">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+              Perbarui Sekarang
+            </button>
+            <span style="font-size:11px;color:var(--ink-dim);" id="lastUpdatedText">Belum pernah diperbarui</span>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
-          <button class="btn btn-primary" id="btnRefreshBeranda">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-            Perbarui Sekarang
+
+        <div class="dash-info-row">
+          <div class="panel stat-card"><div class="stat-label">Total Berita &amp; Dokumen</div><div class="stat-value" id="statDocs">0</div></div>
+          <div class="panel stat-card"><div class="stat-label">Total Foto</div><div class="stat-value" id="statPhotos">0</div></div>
+          <div class="panel stat-card"><div class="stat-label">Sumber Arsip</div><div class="stat-value" id="statStorage">Lokal</div></div>
+          <div class="panel stat-card"><div class="stat-label">Status Drive</div><div class="stat-value" id="statDrive">Terputus</div></div>
+        </div>
+
+        <div id="berandaFeatured"></div>
+        <div class="grid" id="berandaGrid" style="margin-top:18px;"></div>
+      </section>
+
+      <!-- ===== KONTEN BERKATEGORI (Artikel / Berita Terkini / Dokumentasi) ===== -->
+      <section class="view" id="view-konten">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Berita &amp; Arsip</div>
+            <h1 class="page-title" id="kontenTitle">Artikel</h1>
+            <p class="page-desc" id="kontenDesc">Kumpulan tulisan seputar program Rumah Tinggal Hijau.</p>
+          </div>
+          <button class="btn btn-primary" id="btnAddDoc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Konten
           </button>
-          <span style="font-size:11px;color:var(--ink-dim);" id="lastUpdatedText">Belum pernah diperbarui</span>
         </div>
-      </div>
 
-      <div class="dash-info-row" style="margin-bottom:24px;">
-        <div class="panel stat-card"><div class="stat-label">Total Berita &amp; Dokumen</div><div class="stat-value" id="statDocs">0</div></div>
-        <div class="panel stat-card"><div class="stat-label">Total Foto</div><div class="stat-value" id="statPhotos">0</div></div>
-        <div class="panel stat-card"><div class="stat-label">Sumber Arsip</div><div class="stat-value" id="statStorage">Lokal</div></div>
-        <div class="panel stat-card"><div class="stat-label">Status Drive</div><div class="stat-value" id="statDrive">Terputus</div></div>
-      </div>
-
-      <div id="berandaFeatured"></div>
-      <div class="grid" id="berandaGrid" style="margin-top:18px;"></div>
-    </section>
-
-    <!-- ===== DOCUMENTS ===== -->
-    <section class="view" id="view-documents">
-      <div class="topbar">
-        <div>
-          <div class="eyebrow">Arsip Digital</div>
-          <h1 class="page-title">Dokumen &amp; Artikel</h1>
-          <p class="page-desc">Unggah, tambahkan tautan, atau tulis artikel — tersimpan langsung ke Google Drive melalui Apps Script. Klik dokumen untuk membaca dalam mode layar penuh.</p>
+        <div class="cat-tabs" id="catTabs">
+          <button class="cat-tab" data-cat="semua">Semua Kategori</button>
+          <button class="cat-tab" data-cat="artikel">Artikel</button>
+          <button class="cat-tab" data-cat="berita">Berita Terkini</button>
+          <button class="cat-tab" data-cat="dokumentasi">Dokumentasi</button>
         </div>
-      </div>
 
-      <div class="toolbar">
-        <button class="btn btn-primary" id="btnAddDoc">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          Tambah Dokumen
-        </button>
-        <button class="btn" id="btnRefreshDocs">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-          Muat Ulang dari Drive
-        </button>
-      </div>
+        <div class="grid" id="kontenGrid"></div>
+      </section>
 
-      <div class="grid" id="docGrid"></div>
-    </section>
-
-    <!-- ===== GALLERY ===== -->
-    <section class="view" id="view-gallery">
-      <div class="topbar">
-        <div>
-          <div class="eyebrow">Dokumentasi Visual</div>
-          <h1 class="page-title">Galeri Foto</h1>
-          <p class="page-desc">Tambahkan foto dari tautan share atau unggah dari perangkat. Klik foto untuk melihat dalam mode layar penuh.</p>
-        </div>
-      </div>
-
-      <div class="toolbar">
-        <button class="btn btn-primary" id="btnAddPhoto">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          Tambah Foto
-        </button>
-        <button class="btn" id="btnRefreshPhotos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-          Muat Ulang dari Drive
-        </button>
-      </div>
-
-      <div class="photo-grid" id="photoGrid"></div>
-    </section>
-
-    <!-- ===== SETTINGS ===== -->
-    <section class="view" id="view-settings">
-      <div class="topbar">
-        <div>
-          <div class="eyebrow">Konfigurasi</div>
-          <h1 class="page-title">Pengaturan Portal</h1>
-          <p class="page-desc">Sambungkan Google Apps Script agar unggah, edit, dan baca dokumen tersimpan langsung di Google Drive.</p>
-        </div>
-      </div>
-
-      <div class="settings-grid">
-        <div class="panel settings-panel">
-          <h3>Koneksi Google Apps Script</h3>
-          <p class="desc">Deploy kode <code>Code.gs</code> yang disertakan sebagai Web App di akun Google Drive-mu, lalu tempel URL-nya di sini. Setelah tersambung, unggah/edit/tulis artikel akan tersimpan langsung ke folder Drive yang kamu tentukan.</p>
-          <div class="drive-status" id="driveStatus"><span class="status-dot"></span> <span id="driveStatusText">Belum tersambung</span></div>
-          <div class="field">
-            <label>Apps Script Web App URL</label>
-            <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/xxxx/exec">
-            <div class="field-hint">Dapatkan URL ini setelah deploy di script.google.com → Deploy → New deployment → Web app.</div>
+      <!-- ===== BULETIN (langsung dari folder Google Drive) ===== -->
+      <section class="view" id="view-buletin">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Publikasi Berkala</div>
+            <h1 class="page-title">Buletin MSAL Group</h1>
+            <p class="page-desc">Ditarik langsung dari folder Google Drive resmi — edisi terbaru otomatis tampil begitu ditambahkan ke folder.</p>
           </div>
-          <div class="modal-actions" style="justify-content:flex-start;">
-            <button class="btn btn-primary" id="btnSaveTestScript">Simpan &amp; Uji Koneksi</button>
+          <a class="btn" id="openBuletinFolder" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+            Buka di Google Drive
+          </a>
+        </div>
+        <div class="buletin-frame-wrap">
+          <iframe id="buletinFrame" src="" loading="lazy" title="Folder Buletin Google Drive"></iframe>
+        </div>
+      </section>
+
+      <!-- ===== GALLERY ===== -->
+      <section class="view" id="view-gallery">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Dokumentasi Visual</div>
+            <h1 class="page-title">Galeri Foto</h1>
+            <p class="page-desc">Tambahkan foto dari tautan share atau unggah dari perangkat. Klik foto untuk melihat dalam mode layar penuh.</p>
           </div>
         </div>
-
-        <div class="panel settings-panel">
-          <h3>Nama Portal</h3>
-          <div class="field">
-            <label>Nama Portal</label>
-            <input type="text" id="siteNameInput" placeholder="Portal RTH — Rumah Tinggal Hijau PSAM">
-          </div>
-          <button class="btn btn-primary" id="btnSaveReportUrl">Simpan Pengaturan</button>
-
-          <h3 style="margin-top:24px;">Auto-Perbarui Beranda</h3>
-          <div class="field field-check">
-            <input type="checkbox" id="autoRefreshToggle" checked>
-            <label for="autoRefreshToggle" style="margin:0;">Perbarui berita otomatis setiap 5 menit</label>
-          </div>
-
-          <h3 style="margin-top:24px;">Data Peramban (Lokal)</h3>
-          <p class="desc">Dokumen/foto yang ditambahkan tanpa koneksi Drive tersimpan sementara di peramban ini.</p>
-          <button class="btn btn-danger" id="btnResetAll">Hapus Semua Data Lokal</button>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btnAddPhoto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Foto
+          </button>
+          <button class="btn" id="btnRefreshPhotos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            Muat Ulang dari Drive
+          </button>
         </div>
-      </div>
-    </section>
+        <div class="photo-grid" id="photoGrid"></div>
+      </section>
 
+      <!-- ===== SETTINGS ===== -->
+      <section class="view" id="view-settings">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Konfigurasi</div>
+            <h1 class="page-title">Pengaturan Portal</h1>
+            <p class="page-desc">Area ini terkunci password untuk mencegah perubahan tidak sengaja.</p>
+          </div>
+        </div>
+        <div class="settings-grid">
+          <div class="panel settings-panel">
+            <h3>Koneksi Google Apps Script</h3>
+            <p class="desc">Backend Apps Script sudah tertanam secara default. Ubah hanya jika ingin memakai deployment lain.</p>
+            <div class="drive-status" id="driveStatus"><span class="status-dot"></span> <span id="driveStatusText">Belum tersambung</span></div>
+            <div class="field">
+              <label>Apps Script Web App URL</label>
+              <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/xxxx/exec">
+            </div>
+            <div class="modal-actions" style="justify-content:flex-start;">
+              <button class="btn btn-primary" id="btnSaveTestScript">Simpan &amp; Uji Koneksi</button>
+            </div>
+          </div>
+
+          <div class="panel settings-panel">
+            <h3>Folder Buletin (Google Drive)</h3>
+            <p class="desc">Folder publik yang ditampilkan langsung di menu Buletin.</p>
+            <div class="field">
+              <label>URL Folder Drive</label>
+              <input type="text" id="buletinFolderInput" placeholder="https://drive.google.com/drive/folders/....">
+            </div>
+            <button class="btn btn-primary" id="btnSaveBuletinFolder">Simpan Folder Buletin</button>
+          </div>
+
+          <div class="panel settings-panel">
+            <h3>Nama Portal</h3>
+            <div class="field">
+              <label>Nama Portal</label>
+              <input type="text" id="siteNameInput" placeholder="Portal RTH — Rumah Tinggal Hijau PSAM">
+            </div>
+            <div class="field field-check">
+              <input type="checkbox" id="autoRefreshToggle" checked>
+              <label for="autoRefreshToggle" style="margin:0;">Perbarui berita otomatis setiap 5 menit</label>
+            </div>
+            <button class="btn btn-primary" id="btnSaveReportUrl">Simpan Pengaturan</button>
+          </div>
+
+          <div class="panel settings-panel">
+            <h3>Keamanan &amp; Data Lokal</h3>
+            <p class="desc">Password pengaturan disimpan sebagai hash SHA-256, bukan teks biasa, di dalam kode halaman ini.</p>
+            <button class="btn" id="btnLockSettings">Kunci Ulang Pengaturan</button>
+            <h3 style="margin-top:20px;">Data Peramban (Lokal)</h3>
+            <p class="desc">Dokumen/foto yang ditambahkan tanpa koneksi Drive tersimpan sementara di peramban ini.</p>
+            <button class="btn btn-danger" id="btnResetAll">Hapus Semua Data Lokal</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
   </main>
+</div>
+
+<!-- ================= MODAL: PASSWORD PENGATURAN ================= -->
+<div class="modal-backdrop" id="modalPassword">
+  <div class="modal modal-sm">
+    <div class="lock-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    </div>
+    <div class="modal-title" style="text-align:center;margin-bottom:6px;">Pengaturan Terkunci</div>
+    <p style="text-align:center;font-size:12.5px;color:var(--ink-muted);margin-bottom:18px;">Masukkan kata sandi untuk mengakses halaman Pengaturan.</p>
+    <form id="formPassword">
+      <div class="field">
+        <input type="password" id="passwordInput" placeholder="Kata sandi" autocomplete="off">
+      </div>
+      <div class="modal-actions" style="justify-content:center;">
+        <button type="button" class="btn" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Buka</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- ================= MODAL: ADD DOCUMENT ================= -->
 <div class="modal-backdrop" id="modalDoc">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title" id="docModalTitle">Tambah Dokumen</div>
+      <div class="modal-title" id="docModalTitle">Tambah Konten</div>
       <button class="modal-close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
 
@@ -510,6 +544,15 @@ button{font-family:inherit;cursor:pointer;}
       <input type="hidden" id="docEditRemote" value="">
       <input type="hidden" id="docMode" value="link">
 
+      <div class="field">
+        <label>Kategori</label>
+        <select id="docCategory">
+          <option value="artikel">Artikel</option>
+          <option value="berita">Berita Terkini</option>
+          <option value="dokumentasi">Dokumentasi</option>
+        </select>
+      </div>
+
       <div class="doc-tab-panel" data-panel="link">
         <div class="field">
           <label>Judul</label>
@@ -518,7 +561,7 @@ button{font-family:inherit;cursor:pointer;}
         <div class="field">
           <label>Link Share Google Drive</label>
           <input type="url" id="docDriveUrl" placeholder="https://drive.google.com/file/d/....">
-          <div class="field-hint">Berlaku untuk file yang dibagikan publik ("siapa saja yang memiliki tautan"). Hanya ditampilkan di peramban ini, tidak diunggah ke folder Drive Portal RTH.</div>
+          <div class="field-hint">Berlaku untuk file yang dibagikan publik ("siapa saja yang memiliki tautan").</div>
         </div>
       </div>
 
@@ -545,7 +588,7 @@ button{font-family:inherit;cursor:pointer;}
       <div class="doc-tab-panel" data-panel="note" style="display:none;">
         <div class="field">
           <label>Judul Artikel</label>
-          <input type="text" id="docTitleNote" placeholder="mis. Catatan Pemeliharaan Taman">
+          <input type="text" id="docTitleNote" placeholder="mis. Catatan Pemeliharaan">
         </div>
         <div class="field">
           <label>Isi</label>
@@ -564,7 +607,7 @@ button{font-family:inherit;cursor:pointer;}
 
       <div class="modal-actions">
         <button type="button" class="btn" data-close>Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan Dokumen</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
       </div>
     </form>
   </div>
@@ -631,7 +674,6 @@ button{font-family:inherit;cursor:pointer;}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
         Edit
       </button>
-      <button class="btn btn-sm btn-ghost" id="readerSaveBtn" style="display:none;">Simpan</button>
       <button class="btn btn-sm btn-ghost" id="readerFullscreenBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
@@ -671,8 +713,15 @@ button{font-family:inherit;cursor:pointer;}
 /* ==========================================================
    PORTAL RTH — app.js (inline)
    ========================================================== */
-let lastUpdatedAt = null;
-let autoRefreshTimer = null;
+const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKmF2MeicmWJSUhmo6sAK4MoZujJqu4HOuJ9Mf3v3qnP0qme-NPifxidSAz-YAxDZsbA/exec";
+const DEFAULT_BULETIN_FOLDER_ID = "1yGrM4nGKsJmhUecaLQcONME0WYRla-4i";
+const SETTINGS_PW_HASH = "4289d6cd73d0f4f882c58908e492d7c536c069b1de5651e8225203a8b7f65a2b";
+const CATEGORY_LABELS = { artikel:'Artikel', berita:'Berita Terkini', dokumentasi:'Dokumentasi' };
+const CATEGORY_DESC = {
+  artikel:'Tulisan mendalam seputar tujuan, definisi, dan program Rumah Tinggal Hijau.',
+  berita:'Kabar dan liputan kegiatan terbaru di lingkungan RTH PT PSAM.',
+  dokumentasi:'Data, struktur organisasi, dan referensi resmi program RTH.'
+};
 
 const $ = (s,ctx=document)=>ctx.querySelector(s);
 const $$ = (s,ctx=document)=>Array.from(ctx.querySelectorAll(s));
@@ -688,28 +737,36 @@ function toast(msg, isErr=false){
   setTimeout(()=>{ el.style.opacity='0'; el.style.transition='.3s'; setTimeout(()=>el.remove(),300); }, 3400);
 }
 
-/* ---------- local storage (metadata untuk item non-Drive) ---------- */
-const LS_DOCS = 'rth_docs_local_v1';
+async function sha256Hex(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ---------- local storage ---------- */
+const LS_DOCS = 'rth_docs_local_v2';
 const LS_PHOTOS = 'rth_photos_local_v1';
-const LS_SETTINGS = 'rth_settings_v1';
+const LS_SETTINGS = 'rth_settings_v2';
 function loadArr(key){ try{ return JSON.parse(localStorage.getItem(key)) || []; }catch(e){ return []; } }
 function saveArr(key,arr){ localStorage.setItem(key, JSON.stringify(arr)); }
 function loadSettings(){ try{ return JSON.parse(localStorage.getItem(LS_SETTINGS)) || {}; }catch(e){ return {}; } }
 function saveSettings(s){ localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); }
 
 let localDocs = loadArr(LS_DOCS);
+let localPhotos = loadArr(LS_PHOTOS);
+let settings = loadSettings();
+let remoteDocs = [];
+let remotePhotos = [];
+let lastUpdatedAt = null;
+let autoRefreshTimer = null;
+let currentCategory = 'semua';
 
 /* ==========================================================
    KONTEN AWAL — ditulis ulang dari materi resmi Portal RTH PSAM
-   Muncul otomatis di Beranda saat pertama kali dibuka. Bisa diedit/
-   dihapus kapan saja lewat menu Dokumen & Artikel.
    ========================================================== */
-const SEED_FLAG = 'rth_seed_v1_loaded';
+const SEED_FLAG = 'rth_seed_v2_loaded';
 const SEED_ARTICLES = [
-{
-  title: "Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM",
-  tags: "profil, definisi, tujuan",
-  content: `# Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM
+{ category:'artikel', title: "Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM", tags: "profil, definisi, tujuan", content: `# Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM
 
 Program Rumah Tinggal Hijau (RTH) adalah wujud komitmen PT Persada Sejahtera Agro Makmur (PSAM) untuk menghadirkan hunian karyawan yang aman, nyaman, dan produktif di Desa Rantau Bangkiang, Kecamatan Katingan, Kalimantan Tengah.
 
@@ -726,12 +783,8 @@ RTH dibangun untuk menciptakan hunian perumahan/emplasment yang aman, nyaman, da
 - Menciptakan kebetahan karyawan untuk tinggal dan bekerja di perusahaan
 - Meningkatkan derajat kesehatan karyawan
 - Meningkatkan produktivitas karyawan
-- Mendukung pencapaian **Sustainability Yield Growth** perusahaan`
-},
-{
-  title: "Latar Belakang: Mengapa Program RTH Dibutuhkan",
-  tags: "latar belakang, turnover karyawan",
-  content: `# Latar Belakang Program RTH
+- Mendukung pencapaian **Sustainability Yield Growth** perusahaan` },
+{ category:'artikel', title: "Latar Belakang: Mengapa Program RTH Dibutuhkan", tags: "latar belakang, turnover karyawan", content: `# Latar Belakang Program RTH
 
 Tingginya angka turnover tenaga kerja lapangan menjadi salah satu tantangan utama di PT PSAM. Kondisi ini mendasari lahirnya program Rumah Tinggal Hijau sebagai pendekatan menyeluruh untuk menjaga kenyamanan dan kebetahan karyawan.
 
@@ -744,12 +797,8 @@ Tingginya angka turnover tenaga kerja lapangan menjadi salah satu tantangan utam
 - Kurangnya kolaborasi tim dalam memetakan turnover, sehingga perbaikan yang dilakukan masih parsial dan kurang tepat sasaran
 - Minimnya sentuhan kepada karyawan membuat akar masalah sulit ditemukan
 - Proses perbaikan serta pengajuan SPP/SPPI/PDDO belum tersampaikan secara optimal
-- Kick off Budget tahunan "Optimalisasi Support dan Operasional menuju MSAL Best Performance (Sustainable Yield Growth & Rumah Tinggal Hijau)" menjadi momentum penguatan program`
-},
-{
-  title: "Kegiatan Rutin & Tahapan Pelaksanaan Program RTH",
-  tags: "kegiatan, tahapan program",
-  content: `# Kegiatan Rutin Rumah Tinggal Hijau
+- Kick off Budget tahunan "Optimalisasi Support dan Operasional menuju MSAL Best Performance (Sustainable Yield Growth & Rumah Tinggal Hijau)" menjadi momentum penguatan program` },
+{ category:'artikel', title: "Kegiatan Rutin & Tahapan Pelaksanaan Program RTH", tags: "kegiatan, tahapan program", content: `# Kegiatan Rutin Rumah Tinggal Hijau
 
 Untuk menjaga kebersamaan dan kualitas hidup di lingkungan perumahan, RTH menjalankan sembilan kategori kegiatan rutin di setiap Afdeling.
 
@@ -773,12 +822,8 @@ Untuk menjaga kebersamaan dan kualitas hidup di lingkungan perumahan, RTH menjal
 4. Menyusun PICA (*Problem Identification Corrective Action*) sebagai bagian tak terpisahkan dari siklus PDCA agar tujuan tercapai
 5. Evaluasi dan standarisasi
 
-Sebagai bagian dari kegiatan rutin, RTH juga menjalankan pengadaan bibit, Jumat bersih, dan kelompok belajar anak-anak karyawan di lingkungan perumahan.`
-},
-{
-  title: "Empat Program Unggulan RTH: Bersih, Pangan, Belajar, dan Ibadah",
-  tags: "program, jumat bersih, ketahanan pangan",
-  content: `# Empat Program Unggulan RTH
+Sebagai bagian dari kegiatan rutin, RTH juga menjalankan pengadaan bibit, Jumat bersih, dan kelompok belajar anak-anak karyawan di lingkungan perumahan.` },
+{ category:'artikel', title: "Empat Program Unggulan RTH: Bersih, Pangan, Belajar, dan Ibadah", tags: "program, jumat bersih, ketahanan pangan", content: `# Empat Program Unggulan RTH
 
 Dashboard Program RTH menyoroti empat pilar kegiatan yang rutin dijalankan di lingkungan perumahan karyawan PT PSAM.
 
@@ -796,12 +841,8 @@ Wadah belajar bersama bagi anak-anak karyawan, mendukung tumbuh kembang pendidik
 
 ## Program Keagamaan
 
-Kegiatan ibadah bersama serta sosialisasi dan kekerabatan antarwarga, memperkuat kerukunan di lingkungan perumahan.`
-},
-{
-  title: "Paguyuban RTH: Merawat Kebersamaan lewat Seni dan Gotong Royong",
-  tags: "paguyuban, seni, gotong royong",
-  content: `# Paguyuban RTH
+Kegiatan ibadah bersama serta sosialisasi dan kekerabatan antarwarga, memperkuat kerukunan di lingkungan perumahan.` },
+{ category:'artikel', title: "Paguyuban RTH: Merawat Kebersamaan lewat Seni dan Gotong Royong", tags: "paguyuban, seni, gotong royong", content: `# Paguyuban RTH
 
 Paguyuban menjadi wadah bagi penghuni perumahan untuk menjalankan kegiatan RTH secara mandiri dan berkesinambungan.
 
@@ -815,12 +856,8 @@ Warga saling bahu-membahu memperbaiki rumah tinggal yang membutuhkan perbaikan, 
 
 ## Data Paguyuban & Kegiatan Sosial
 
-Struktur kepengurusan paguyuban tercatat rapi di tiap Afdeling, lengkap dengan kegiatan pemberian bibit, ibadah bersama, hingga dongeng cerita anak yang menghibur sekaligus mendidik generasi muda di lingkungan perumahan.`
-},
-{
-  title: "Kalender Event: Safari Malam ke Afdeling",
-  tags: "safari, kalender event",
-  content: `# Kalender Event / Safari ke Afdeling
+Struktur kepengurusan paguyuban tercatat rapi di tiap Afdeling, lengkap dengan kegiatan pemberian bibit, ibadah bersama, hingga dongeng cerita anak yang menghibur sekaligus mendidik generasi muda di lingkungan perumahan.` },
+{ category:'berita', title: "Kalender Event: Safari Malam ke Afdeling", tags: "safari, kalender event", content: `# Kalender Event / Safari ke Afdeling
 
 Safari ke Afdeling adalah kegiatan kunjungan malam hari setelah jam kerja usai, melibatkan tiga tim utama.
 
@@ -839,12 +876,8 @@ Mengirimkan pesanan sembako serta menyosialisasikan keanggotaan dan produk UMKM 
 ## Kendala yang Masih Dihadapi
 
 - Belum tersedianya unit ambulans khusus, sehingga kegiatan kadang tertunda mengikuti ketersediaan unit lain (AJK, DT, atau Terios)
-- Tindak lanjut ke departemen terkait masih dalam proses — volume keluhan yang cukup banyak membutuhkan waktu, tenaga, dan biaya, sehingga penyelesaiannya diupayakan bertahap secara swakelola oleh masing-masing Afdeling dengan progres yang terus dipantau`
-},
-{
-  title: "Gemba (SPT): Menjaga Kualitas Panen dan Lingkungan Perumahan",
-  tags: "gemba, spt, kualitas panen",
-  content: `# Gemba (SPT)
+- Tindak lanjut ke departemen terkait masih dalam proses — volume keluhan yang cukup banyak membutuhkan waktu, tenaga, dan biaya, sehingga penyelesaiannya diupayakan bertahap secara swakelola oleh masing-masing Afdeling dengan progres yang terus dipantau` },
+{ category:'dokumentasi', title: "Gemba (SPT): Menjaga Kualitas Panen dan Lingkungan Perumahan", tags: "gemba, spt, kualitas panen", content: `# Gemba (SPT)
 
 Gemba pada mulanya adalah kegiatan kembali ke ancak pemanen untuk mengecek potensi losis di lapangan serta kualitas dan kuantitas proses panen. Seiring berjalannya waktu, cakupannya berkembang menjadi pengecekan menyeluruh: kondisi jalan, kondisi perumahan, hingga kondisi tanaman dari segi unsur hara maupun potensi hama penyakit.
 
@@ -852,22 +885,16 @@ Setiap kegiatan Gemba dilakukan mandiri di masing-masing Afdeling, sekaligus mel
 
 ## Contoh Data Sampel Lapangan
 
-| Afdeling | Blok | Alas Karung | Pkk Sampel | BM | Buah Tinggal |
-|---|---|---|---|---|---|
-| 3 | K50 | Ada | 160 | 1 | 2 |
-| 3 | J53 | Ada | 153 | 3 | 0 |
-| 5 | U51 | Ada | 82 | 9 | 0 |
-| 5 | P50 | Ada | 215 | 0 | 0 |
-| 7 | X56 | Ada | 130 | 10 | 0 |
-| 7 | W56 | Ada | 134 | 8 | 0 |
-| 8 | Y56 | Ada | 202 | 0 | 0 |
-| 10 | X33 | Ada | 162 | 0 | 3 |
-| 99 | V25 | Ada | 178 | 0 | 3 |`
-},
-{
-  title: "Strategi Pengoperasian Tim (SPT): Budaya Perbaikan Berkelanjutan",
-  tags: "spt, organisasi, pdca",
-  content: `# Strategi Pengoperasian Tim (SPT)
+- Afdeling 3, Blok K50 — Alas karung: ada, Pkk sampel 160, BM 1, buah tinggal 2
+- Afdeling 3, Blok J53 — Alas karung: ada, Pkk sampel 153, BM 3, buah tinggal 0
+- Afdeling 5, Blok U51 — Alas karung: ada, Pkk sampel 82, BM 9, buah tinggal 0
+- Afdeling 5, Blok P50 — Alas karung: ada, Pkk sampel 215, BM 0, buah tinggal 0
+- Afdeling 7, Blok X56 — Alas karung: ada, Pkk sampel 130, BM 10, buah tinggal 0
+- Afdeling 7, Blok W56 — Alas karung: ada, Pkk sampel 134, BM 8, buah tinggal 0
+- Afdeling 8, Blok Y56 — Alas karung: ada, Pkk sampel 202, BM 0, buah tinggal 0
+- Afdeling 10, Blok X33 — Alas karung: ada, Pkk sampel 162, BM 0, buah tinggal 3
+- Afdeling 99, Blok V25 — Alas karung: ada, Pkk sampel 178, BM 0, buah tinggal 3` },
+{ category:'dokumentasi', title: "Strategi Pengoperasian Tim (SPT): Budaya Perbaikan Berkelanjutan", tags: "spt, organisasi, pdca", content: `# Strategi Pengoperasian Tim (SPT)
 
 SPT lahir dari kesadaran untuk melakukan perubahan yang lebih baik, di tengah masalah lintas departemen yang membutuhkan penyelesaian bersama dan target manajemen yang menuntut kejelasan tenggat waktu.
 
@@ -898,12 +925,8 @@ Sinergi, pencapaian target, produktivitas, keselamatan dan kesehatan kerja, sert
 
 ## Jenis Pertemuan
 
-Pertemuan rutin dilaksanakan setiap bulan sebelum tanggal 10, mencakup kunjungan kebun, kunjungan pabrik, dan pertemuan dalam ruangan untuk membahas hasil kunjungan lapangan hingga penyusunan PICA. Pertemuan tidak rutin digelar bila ditemukan kondisi di luar kebiasaan, seperti turunnya OER, naiknya FFA, tingginya stok janjang kosong, lambatnya sirkulasi kendaraan, atau kerusakan jalan.`
-},
-{
-  title: "Sertifikasi ISPO: Komitmen Keberlanjutan PT PSAM",
-  tags: "ispo, sertifikasi, keberlanjutan",
-  content: `# Sertifikasi ISPO PT PSAM
+Pertemuan rutin dilaksanakan setiap bulan sebelum tanggal 10, mencakup kunjungan kebun, kunjungan pabrik, dan pertemuan dalam ruangan untuk membahas hasil kunjungan lapangan hingga penyusunan PICA. Pertemuan tidak rutin digelar bila ditemukan kondisi di luar kebiasaan, seperti turunnya OER, naiknya FFA, tingginya stok janjang kosong, lambatnya sirkulasi kendaraan, atau kerusakan jalan.` },
+{ category:'dokumentasi', title: "Sertifikasi ISPO: Komitmen Keberlanjutan PT PSAM", tags: "ispo, sertifikasi, keberlanjutan", content: `# Sertifikasi ISPO PT PSAM
 
 Setelah proses selama tiga tahun, PT PSAM akhirnya berhasil mendapatkan sertifikasi Indonesian Sustainable Palm Oil (ISPO) — standar mutu pengelolaan bisnis kelapa sawit berkelanjutan di Indonesia yang diatur dalam Perpres 44/2020 dan Permentan 38/2020.
 
@@ -921,21 +944,13 @@ ISPO adalah kebijakan Pemerintah Indonesia melalui Kementerian Pertanian untuk m
 
 ## Dasar Hukum
 
-Payung hukum utama ISPO adalah PP No. 61 Tahun 2015, didukung sejumlah peraturan turunan dari Kementerian Pertanian, Kementerian Lingkungan Hidup dan Kehutanan, Kementerian ATR/BPN, hingga Kemenko Perekonomian — mengatur mulai dari petunjuk teknis sertifikasi, pengelolaan lingkungan kebun, hak atas tanah, sampai evaluasi kinerja implementasi.`
-},
-{
-  title: "Silaturahmi Adat: Kunjungan Panglima Jilah ke PT PSAM",
-  tags: "panglima jilah, adat, silaturahmi",
-  content: `# Kunjungan Panglima Jilah
+Payung hukum utama ISPO adalah PP No. 61 Tahun 2015, didukung sejumlah peraturan turunan dari Kementerian Pertanian, Kementerian Lingkungan Hidup dan Kehutanan, Kementerian ATR/BPN, hingga Kemenko Perekonomian — mengatur mulai dari petunjuk teknis sertifikasi, pengelolaan lingkungan kebun, hak atas tanah, sampai evaluasi kinerja implementasi.` },
+{ category:'berita', title: "Silaturahmi Adat: Kunjungan Panglima Jilah ke PT PSAM", tags: "panglima jilah, adat, silaturahmi", content: `# Kunjungan Panglima Jilah
 
 Panglima Jilah, atau Pangalangok Jilah, adalah pemimpin besar pasukan merah Tariu Borneo Bangkule Rajakng (TBBR) dari suku Dayak Kanayatn. Ia berasal dari Kabupaten Mempawah, Kalimantan Barat, tepatnya Desa Sambora, Kecamatan Toho, dan dikenal luas sebagai tokoh yang peduli terhadap adat, budaya, serta berbagai persoalan yang terjadi di tanah Kalimantan.
 
-Pada 19 September, di sela jadwalnya yang padat, Panglima Jilah berkenan hadir di PT PSAM dalam rangka silaturahmi bersama warga dan tokoh masyarakat di sekitar perusahaan — mempererat hubungan antara perusahaan dan komunitas adat setempat.`
-},
-{
-  title: "Apresiasi Cincin Masa Bakti 5 Tahun untuk Delapan Staf",
-  tags: "penghargaan, cincin, masa bakti",
-  content: `# Penyerahan Cincin Apresiasi Masa Bakti 5 Tahun
+Pada 19 September, di sela jadwalnya yang padat, Panglima Jilah berkenan hadir di PT PSAM dalam rangka silaturahmi bersama warga dan tokoh masyarakat di sekitar perusahaan — mempererat hubungan antara perusahaan dan komunitas adat setempat.` },
+{ category:'berita', title: "Apresiasi Cincin Masa Bakti 5 Tahun untuk Delapan Staf", tags: "penghargaan, cincin, masa bakti", content: `# Penyerahan Cincin Apresiasi Masa Bakti 5 Tahun
 
 PT PSAM memberikan apresiasi berupa cincin kepada delapan staf yang telah mengabdi selama lima tahun, sebagai bentuk penghargaan atas dedikasi mereka. Penyerahan dilaksanakan pada Kamis, 30 Agustus 2023 pukul 19.00 WIB.
 
@@ -948,29 +963,21 @@ PT PSAM memberikan apresiasi berupa cincin kepada delapan staf yang telah mengab
 5. Permahadi Prasetyo (Asst. Humas)
 6. Putra Adil T. (Asst. R&D)
 7. Valentinus Ixmanto (Asst. QC)
-8. Ibnu Maulana (Asst. Afdeling)`
-},
-{
-  title: "Semangat Kemerdekaan di Lingkungan RTH: HUT RI",
-  tags: "hut ri, kemerdekaan",
-  content: `# HUT RI di Lingkungan RTH
+8. Ibnu Maulana (Asst. Afdeling)` },
+{ category:'berita', title: "Semangat Kemerdekaan di Lingkungan RTH: HUT RI", tags: "hut ri, kemerdekaan", content: `# HUT RI di Lingkungan RTH
 
 Peringatan HUT Kemerdekaan Republik Indonesia dirayakan meriah di lingkungan perumahan karyawan, mulai dari upacara bendera hingga aneka lomba yang melibatkan karyawan beserta keluarga.
 
 ## Kata-Kata Bijak Bung Karno
 
-> "Berpedomanlah pada harapan dan ketetapan hati. Berpedomanlah pada cita-cita, berpedomanlah pada impian dan angan-angan." — Ir. Soekarno
+*"Berpedomanlah pada harapan dan ketetapan hati. Berpedomanlah pada cita-cita, berpedomanlah pada impian dan angan-angan." — Ir. Soekarno*
 
-> "Kita bangsa besar, kita bukan bangsa tempe. Kita tidak akan mengemis, kita tidak akan minta-minta." — Ir. Soekarno
+*"Kita bangsa besar, kita bukan bangsa tempe. Kita tidak akan mengemis, kita tidak akan minta-minta." — Ir. Soekarno*
 
-> "Seribu orang tua bisa bermimpi, satu orang pemuda bisa mengubah dunia." — Ir. Soekarno
+*"Seribu orang tua bisa bermimpi, satu orang pemuda bisa mengubah dunia." — Ir. Soekarno*
 
-Semangat kemerdekaan ini menjadi pengingat bagi seluruh keluarga besar RTH PSAM untuk terus bergotong royong membangun lingkungan perumahan yang mandiri dan sejahtera.`
-},
-{
-  title: "Jalan Sehat Meriahkan Akhir Pekan Karyawan",
-  tags: "jalan sehat, koperasi karyawan",
-  content: `# Jalan Sehat Minggu Pagi
+Semangat kemerdekaan ini menjadi pengingat bagi seluruh keluarga besar RTH PSAM untuk terus bergotong royong membangun lingkungan perumahan yang mandiri dan sejahtera.` },
+{ category:'berita', title: "Jalan Sehat Meriahkan Akhir Pekan Karyawan", tags: "jalan sehat, koperasi karyawan", content: `# Jalan Sehat Minggu Pagi
 
 Kegiatan Jalan Sehat tahun lalu, yang digelar Minggu pagi 20 Agustus 2023, sukses mendapatkan antusiasme tinggi dari seluruh karyawan PT PSAM. Selain doorprize aneka perangkat elektronik, ratusan bingkisan sembako turut dibagikan berkat sponsor dari Koperasi Karyawan Sejahtera Untuk Semua.
 
@@ -980,12 +987,8 @@ Perwakilan dari masing-masing kebun turut hadir memeriahkan acara, diiringi musi
 
 Jalan Sehat kembali direncanakan pada Minggu, 18 Agustus 2024, dengan rute mengelilingi areal perumahan Kebun 2, disponsori Koperasi Karyawan dengan hadiah utama sepeda, mesin cuci, dispenser, setrika, magic com, dan sekitar 100 bingkisan sembako. Kegiatan ini terbuka gratis bagi seluruh karyawan, baik anggota koperasi maupun bukan.
 
-Pelaksanaan dimulai pukul 06.30 WIB dan ditutup sekitar pukul 15.00 WIB, dengan panitia gabungan dari staf, tim administrasi, mandor, hingga karyawan emplasment yang berperan besar dalam kesuksesan acara.`
-},
-{
-  title: "Juara RTH 2024: Afdeling 5 Raih Predikat Terbaik",
-  tags: "juara rth, penghargaan afdeling",
-  content: `# Juara RTH di PT PSAM
+Pelaksanaan dimulai pukul 06.30 WIB dan ditutup sekitar pukul 15.00 WIB, dengan panitia gabungan dari staf, tim administrasi, mandor, hingga karyawan emplasment yang berperan besar dalam kesuksesan acara.` },
+{ category:'berita', title: "Juara RTH 2024: Afdeling 5 Raih Predikat Terbaik", tags: "juara rth, penghargaan afdeling", content: `# Juara RTH di PT PSAM
 
 Penilaian Rumah Tinggal Hijau untuk kompleks perumahan beserta seluruh kegiatannya — mencakup kebersihan lingkungan, paguyuban, hingga ketahanan pangan — telah rampung dilakukan. Dari 16 Afdeling yang dinilai, tiga besar berhasil ditetapkan:
 
@@ -999,17 +1002,12 @@ Masing-masing juara menerima piagam penghargaan serta uang tunai untuk mendukung
 
 Selain Juara RTH, penghargaan juga diberikan kepada tiga pemanen terbaik di masing-masing kebun — dinilai dari kehadiran, hasil kerja, kualitas panen, dan kualitas ancak — hasil kerja sama Tim SPT lintas departemen dalam kegiatan Gemba dan Safari ke Afdeling. Turnamen bola voli putra antarkebun turut digelar untuk mendukung semangat olahraga, dengan Kebun 3 sebagai juara 1, Kebun 1 juara 2, dan Kebun 2 juara 3.
 
-Penghargaan ini diharapkan memicu semangat karyawan dalam mengelola ekosistem lingkungan yang kondusif dan nyaman di masing-masing Afdeling, sekaligus menekan potensi turnover karyawan demi tercapainya produktivitas dan *Sustainability Yield Growth* di seluruh wilayah PT PSAM.`
-},
-{
-  title: "Buletin MSAL Group: 14 Edisi Kabar Perusahaan",
-  tags: "buletin, msal group",
-  content: `# Buletin MSAL Group
+Penghargaan ini diharapkan memicu semangat karyawan dalam mengelola ekosistem lingkungan yang kondusif dan nyaman di masing-masing Afdeling, sekaligus menekan potensi turnover karyawan demi tercapainya produktivitas dan *Sustainability Yield Growth* di seluruh wilayah PT PSAM.` },
+{ category:'dokumentasi', title: "Buletin MSAL Group: 14 Edisi Kabar Perusahaan", tags: "buletin, msal group", content: `# Buletin MSAL Group
 
 Buletin MSAL Group hadir sebagai media informasi rutin bagi seluruh karyawan di lingkungan grup perusahaan, memuat kabar terbaru mulai dari kebijakan manajemen, kisah inspiratif planter, hingga capaian kinerja perusahaan.
 
-Hingga saat ini, Buletin MSAL Group telah terbit sebanyak 14 edisi, mengangkat beragam tema — mulai dari pertemuan tahunan staf, sosok penggerak keberlanjutan, kaderisasi planter, hingga refleksi tahun baru perusahaan. Seluruh edisi dapat diakses dan diunduh melalui portal RTH pada menu Buletin.`
-}
+Hingga saat ini, Buletin MSAL Group telah terbit sebanyak 14 edisi. Seluruh edisi dapat diakses dan diunduh langsung melalui menu **Buletin** pada portal ini, yang terhubung langsung ke folder Google Drive resmi.` }
 ];
 
 function seedInitialArticles(){
@@ -1018,46 +1016,20 @@ function seedInitialArticles(){
     if(localDocs.length === 0){
       const now = Date.now();
       SEED_ARTICLES.forEach((a, i)=>{
-        localDocs.push({
-          id: uid(),
-          mode: 'note',
-          title: a.title,
-          content: a.content,
-          tags: a.tags,
-          createdAt: now - i*3600000,
-          updatedAt: now - i*3600000
-        });
+        localDocs.push({ id: uid(), mode:'note', category: a.category, title: a.title, content: a.content, tags: a.tags, createdAt: now - i*3600000, updatedAt: now - i*3600000 });
       });
       saveArr(LS_DOCS, localDocs);
     }
     localStorage.setItem(SEED_FLAG, '1');
-  }catch(e){ /* abaikan jika localStorage tidak tersedia */ }
+  }catch(e){}
 }
 
-let localPhotos = loadArr(LS_PHOTOS);
-let settings = loadSettings();
-let remoteDocs = [];
-let remotePhotos = [];
-
-/* ---------- IndexedDB (blob lokal, fallback tanpa Drive) ---------- */
-let idb;
-function openDB(){
-  return new Promise((res,rej)=>{
-    const req = indexedDB.open('rth_local_store', 1);
-    req.onupgradeneeded = e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('blobs')) db.createObjectStore('blobs',{keyPath:'id'}); };
-    req.onsuccess = e=>{ idb=e.target.result; res(idb); };
-    req.onerror = e=>rej(e);
-  });
-}
-function idbPut(id,data){ return new Promise((res,rej)=>{ const tx=idb.transaction('blobs','readwrite'); tx.objectStore('blobs').put({id,data}); tx.oncomplete=()=>res(); tx.onerror=rej; }); }
-function idbGet(id){ return new Promise((res,rej)=>{ const tx=idb.transaction('blobs','readonly'); const r=tx.objectStore('blobs').get(id); r.onsuccess=()=>res(r.result?r.result.data:null); r.onerror=rej; }); }
-function idbDelete(id){ return new Promise((res,rej)=>{ const tx=idb.transaction('blobs','readwrite'); tx.objectStore('blobs').delete(id); tx.oncomplete=()=>res(); tx.onerror=rej; }); }
-function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
-
-/* ---------- Google Drive link parsing (untuk tab "Tautan Drive") ---------- */
+/* ---------- Google Drive link parsing ---------- */
 function extractDriveId(url){
   if(!url) return null;
   let m = url.match(/\/d\/([a-zA-Z0-9_-]{15,})/);
+  if(m) return m[1];
+  m = url.match(/\/folders\/([a-zA-Z0-9_-]{15,})/);
   if(m) return m[1];
   m = url.match(/[?&]id=([a-zA-Z0-9_-]{15,})/);
   if(m) return m[1];
@@ -1077,7 +1049,6 @@ function driveEmbedUrl(kind,id){
 }
 function driveImageUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`; }
 
-/* ---------- render markdown ringan & aman ---------- */
 function renderNote(text){
   const esc = escapeHtml(text||'');
   const lines = esc.split('\n');
@@ -1086,7 +1057,7 @@ function renderNote(text){
     if(/^### (.*)/.test(line)){ if(inList){html+='</ul>';inList=false;} html+=`<h3>${line.replace(/^### /,'')}</h3>`; }
     else if(/^## (.*)/.test(line)){ if(inList){html+='</ul>';inList=false;} html+=`<h2>${line.replace(/^## /,'')}</h2>`; }
     else if(/^# (.*)/.test(line)){ if(inList){html+='</ul>';inList=false;} html+=`<h1>${line.replace(/^# /,'')}</h1>`; }
-    else if(/^-\s+(.*)/.test(line)){ if(!inList){html+='<ul>';inList=true;} html+=`<li>${line.replace(/^-\s+/,'')}</li>`; }
+    else if(/^[-\d]+[.)]?\s+(.*)/.test(line) && /^-\s+/.test(line)){ if(!inList){html+='<ul>';inList=true;} html+=`<li>${line.replace(/^-\s+/,'')}</li>`; }
     else if(line.trim()===''){ if(inList){html+='</ul>';inList=false;} }
     else { if(inList){html+='</ul>';inList=false;} html+=`<p>${line.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>')}</p>`; }
   }
@@ -1094,7 +1065,6 @@ function renderNote(text){
   return html;
 }
 
-/* ---------- ikon per tipe ---------- */
 const ICONS = {
   gdoc: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6M9 9h2"/></svg>`,
   gsheet:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 12h8M8 16h8M12 12v8"/></svg>`,
@@ -1106,22 +1076,87 @@ const ICONS = {
 const KIND_LABEL = {gdoc:'Google Docs', gsheet:'Google Sheets', gslide:'Google Slides', gfile:'File Drive', localfile:'File (peramban)', note:'Artikel'};
 
 /* ==========================================================
-   NAVIGASI
+   SIDEBAR COLLAPSE
    ========================================================== */
-$$('.nav-item').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    $$('.nav-item').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    $$('.view').forEach(v=>v.classList.remove('active'));
-    $('#view-'+btn.dataset.view).classList.add('active');
-    if(btn.dataset.view==='beranda') refreshBeranda();
-    if(btn.dataset.view==='documents') refreshRemoteDocs();
-    if(btn.dataset.view==='gallery') refreshRemotePhotos();
-  });
+const sidebarEl = $('#sidebar');
+function applySidebarState(){
+  const collapsed = localStorage.getItem('rth_sidebar_collapsed') === '1';
+  sidebarEl.classList.toggle('collapsed', collapsed);
+}
+$('#sidebarToggleBtn').addEventListener('click', ()=>{
+  const collapsed = !sidebarEl.classList.contains('collapsed');
+  sidebarEl.classList.toggle('collapsed', collapsed);
+  localStorage.setItem('rth_sidebar_collapsed', collapsed ? '1':'0');
+});
+applySidebarState();
+
+/* ==========================================================
+   CLOCK
+   ========================================================== */
+function tickClock(){
+  $('#clockText').textContent = new Date().toLocaleString('id-ID',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+tickClock(); setInterval(tickClock, 30000);
+
+/* ==========================================================
+   PASSWORD GATE — Pengaturan
+   ========================================================== */
+function isSettingsUnlocked(){ return sessionStorage.getItem('rth_settings_unlocked')==='1'; }
+const modalPassword = $('#modalPassword');
+function openPasswordModal(){ $('#passwordInput').value=''; modalPassword.classList.add('open'); setTimeout(()=>$('#passwordInput').focus(),50); }
+$('#formPassword').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const val = $('#passwordInput').value;
+  const hash = await sha256Hex(val);
+  if(hash === SETTINGS_PW_HASH){
+    sessionStorage.setItem('rth_settings_unlocked','1');
+    modalPassword.classList.remove('open');
+    toast('Pengaturan terbuka');
+    activateNav($('.nav-item[data-view="settings"]'));
+  } else {
+    toast('Kata sandi salah', true);
+  }
+});
+$('#btnLockSettings').addEventListener('click', ()=>{
+  sessionStorage.removeItem('rth_settings_unlocked');
+  toast('Pengaturan dikunci ulang');
+  activateNav($('.nav-item[data-view="beranda"]'));
 });
 
 /* ==========================================================
-   PENGATURAN NAMA PORTAL
+   NAVIGASI
+   ========================================================== */
+function activateNav(btn){
+  if(!btn) return;
+  if(btn.dataset.view==='settings' && !isSettingsUnlocked()){ openPasswordModal(); return; }
+  $$('.nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  const view = btn.dataset.view;
+  $('#view-'+view).classList.add('active');
+
+  let crumb = btn.querySelector('.label')?.textContent || view;
+  if(view==='konten'){ currentCategory = btn.dataset.category || 'semua'; crumb = CATEGORY_LABELS[currentCategory] || 'Berita & Artikel'; }
+  $('#breadcrumbText').textContent = '/ ' + crumb;
+
+  if(view==='beranda') refreshBeranda();
+  if(view==='konten'){ renderKonten(); refreshRemoteDocs(); }
+  if(view==='gallery') refreshRemotePhotos();
+  if(view==='buletin') {}
+}
+$$('.nav-item').forEach(btn=> btn.addEventListener('click', ()=> activateNav(btn)) );
+
+$$('.cat-tab').forEach(t=> t.addEventListener('click', ()=>{
+  currentCategory = t.dataset.cat;
+  renderKonten();
+  const navMatch = $(`.nav-item[data-view="konten"][data-category="${currentCategory}"]`);
+  $$('.nav-item').forEach(b=>b.classList.remove('active'));
+  if(navMatch) navMatch.classList.add('active');
+  $('#breadcrumbText').textContent = '/ ' + (CATEGORY_LABELS[currentCategory] || 'Semua Kategori');
+}));
+
+/* ==========================================================
+   PENGATURAN NAMA PORTAL & LAINNYA
    ========================================================== */
 function initSiteName(){
   $('#siteNameInput').value = settings.siteName || 'Portal RTH — Rumah Tinggal Hijau PSAM';
@@ -1142,106 +1177,6 @@ $('#btnSaveReportUrl').addEventListener('click', ()=>{
 });
 
 /* ==========================================================
-   BERANDA / BERITA — dibangun dari dokumen &amp; artikel
-   ========================================================== */
-function relativeTime(date){
-  const diff = Math.floor((Date.now()-date.getTime())/1000);
-  if(diff<60) return 'baru saja';
-  if(diff<3600) return Math.floor(diff/60)+' menit lalu';
-  if(diff<86400) return Math.floor(diff/3600)+' jam lalu';
-  return date.toLocaleString('id-ID',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
-}
-function updateLastUpdatedText(){
-  $('#lastUpdatedText').textContent = lastUpdatedAt ? 'Diperbarui '+relativeTime(lastUpdatedAt) : 'Belum pernah diperbarui';
-}
-setInterval(updateLastUpdatedText, 30000);
-
-async function refreshBeranda(){
-  await Promise.all([refreshRemoteDocs(), refreshRemotePhotos()]);
-  lastUpdatedAt = new Date();
-  updateLastUpdatedText();
-  renderBeranda();
-}
-$('#btnRefreshBeranda').addEventListener('click', ()=>{ toast('Memperbarui berita…'); refreshBeranda(); });
-
-function docExcerpt(doc, isRemote){
-  if(isRemote) return 'Dokumen arsip Google Drive. Klik untuk membuka dalam mode baca layar penuh.';
-  if(doc.mode==='note') return (doc.content||'').replace(/[#*-]/g,'').slice(0,140) + ((doc.content||'').length>140?'…':'');
-  if(doc.mode==='drive') return 'Tautan dokumen Google Drive. Klik untuk membaca.';
-  return 'Dokumen tersimpan di peramban ini. Klik untuk membaca.';
-}
-function renderBeranda(){
-  const all = [...remoteDocs, ...localDocs].sort((a,b)=>{
-    const ta = new Date(a.modified||a.createdAt||0).getTime();
-    const tb = new Date(b.modified||b.createdAt||0).getTime();
-    return tb-ta;
-  });
-  const featuredWrap = $('#berandaFeatured');
-  const grid = $('#berandaGrid');
-  featuredWrap.innerHTML = '';
-  grid.innerHTML = '';
-
-  if(all.length===0){
-    grid.innerHTML = `<div class="empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
-      <h4>Belum ada berita atau dokumen</h4>
-      <p>Tambahkan artikel, unggah dokumen, atau sambungkan Google Drive di menu Dokumen &amp; Artikel.</p>
-    </div>`;
-    return;
-  }
-
-  const [first, ...rest] = all;
-  const isRemoteFirst = first.mode==='remote';
-  const kindFirst = isRemoteFirst ? kindFromMime(first.mimeType) : (first.mode==='local' ? 'localfile' : (first.mode==='note' ? 'note' : first.kind));
-  const badgeTextFirst = isRemoteFirst ? 'DRIVE' : (first.mode==='local' ? 'PERAMBAN' : (first.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
-  const dateFirst = first.modified || first.createdAt;
-  const featEl = document.createElement('div');
-  featEl.className = 'panel';
-  featEl.style.cssText = 'padding:0;overflow:hidden;cursor:pointer;margin-bottom:4px;';
-  featEl.innerHTML = `
-    <div class="panel-gold-rule"></div>
-    <div style="padding:26px 28px;">
-      <div class="card-meta" style="margin-bottom:12px;">
-        <span class="badge ${isRemoteFirst?'b-drive':(first.mode==='local'?'b-local':'b-note')}">${badgeTextFirst}</span>
-        <span>${dateFirst ? new Date(dateFirst).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
-      </div>
-      <h2 style="font-family:var(--font-display);font-size:24px;font-weight:600;line-height:1.3;margin-bottom:10px;">${escapeHtml(first.title||first.name||'Tanpa judul')}</h2>
-      <p style="color:var(--ink-muted);font-size:13.5px;line-height:1.7;max-width:680px;">${escapeHtml(docExcerpt(first, isRemoteFirst))}</p>
-      <button class="btn btn-gold" style="margin-top:16px;">Baca Selengkapnya</button>
-    </div>`;
-  featEl.addEventListener('click', ()=> openReader(first, isRemoteFirst));
-  featuredWrap.appendChild(featEl);
-
-  rest.forEach(doc=>{
-    const isRemote = doc.mode==='remote';
-    const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
-    const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
-    const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
-    const dateStr = doc.modified || doc.createdAt;
-    const el = document.createElement('div');
-    el.className = 'card';
-    el.innerHTML = `
-      <div class="card-top">
-        <div class="card-icon">${ICONS[kind]||ICONS.gfile}</div>
-      </div>
-      <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
-      <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote))}</div>
-      <div class="card-meta">
-        <span class="badge ${badgeClass}">${badgeText}</span>
-        <span>${dateStr ? new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
-      </div>`;
-    el.addEventListener('click', ()=> openReader(doc, isRemote));
-    grid.appendChild(el);
-  });
-}
-function setupAutoRefresh(){
-  clearInterval(autoRefreshTimer);
-  if(settings.autoRefresh !== false){
-    autoRefreshTimer = setInterval(refreshBeranda, 5*60*1000);
-  }
-}
-
-/* ==========================================================
    APPS SCRIPT API
    ========================================================== */
 function hasScript(){ return !!(settings.scriptUrl); }
@@ -1253,14 +1188,9 @@ async function apiGet(action, params={}){
   return res.json();
 }
 async function apiPost(action, payload={}){
-  const res = await fetch(settings.scriptUrl, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify({action, ...payload})
-  });
+  const res = await fetch(settings.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...payload}) });
   return res.json();
 }
-
 function refreshDriveStatusUI(connected){
   $('#driveStatus').classList.toggle('connected', !!connected);
   $('#driveStatusText').textContent = connected ? 'Tersambung ke Google Drive' : 'Belum tersambung';
@@ -1269,7 +1199,6 @@ function refreshDriveStatusUI(connected){
   $('#sideStatusDot').classList.toggle('on', !!connected);
   $('#sideStatusText').textContent = connected ? 'Tersambung ke Drive' : 'Mode lokal';
 }
-
 $('#btnSaveTestScript').addEventListener('click', async ()=>{
   const url = $('#scriptUrlInput').value.trim();
   if(!url){ toast('Isi URL Web App terlebih dahulu', true); return; }
@@ -1282,19 +1211,28 @@ $('#btnSaveTestScript').addEventListener('click', async ()=>{
     else { refreshDriveStatusUI(false); toast('Gagal: '+(r.error||'Tidak diketahui'), true); }
   }catch(e){ refreshDriveStatusUI(false); toast('Tidak bisa menghubungi Apps Script. Periksa URL & pengaturan deploy.', true); }
 });
+$('#btnSaveBuletinFolder').addEventListener('click', ()=>{
+  const url = $('#buletinFolderInput').value.trim();
+  const id = extractDriveId(url) || DEFAULT_BULETIN_FOLDER_ID;
+  settings.buletinFolderId = id;
+  saveSettings(settings);
+  initBuletin();
+  toast('Folder Buletin disimpan');
+});
 
 /* ==========================================================
-   DOKUMEN — ambil daftar dari Drive
+   KONTEN (Artikel / Berita Terkini / Dokumentasi)
    ========================================================== */
 async function refreshRemoteDocs(){
-  if(!hasScript()) { remoteDocs=[]; renderDocs(); return; }
+  if(!hasScript()) { remoteDocs=[]; renderKonten(); if($('#view-beranda').classList.contains('active')) renderBeranda(); return; }
   try{
     const r = await apiGet('list', {folder:'dokumen'});
-    if(r.ok){ remoteDocs = r.files.map(f=>({...f, mode:'remote', title:f.name, source:'folder'})); refreshDriveStatusUI(true); }
+    if(r.ok){ remoteDocs = r.files.map(f=>({...f, mode:'remote', category:'dokumentasi', title:f.name})); refreshDriveStatusUI(true); }
     else { toast('Gagal memuat dari Drive: '+r.error, true); }
-  }catch(e){ /* diam-diam gagal, tetap tampilkan data lokal */ }
-  renderDocs();
-  if(document.getElementById('view-beranda')?.classList.contains('active')) renderBeranda();
+  }catch(e){}
+  renderKonten();
+  renderTicker();
+  if($('#view-beranda').classList.contains('active')) renderBeranda();
 }
 function kindFromMime(mime){
   if(mime==='application/vnd.google-apps.document') return 'gdoc';
@@ -1302,79 +1240,90 @@ function kindFromMime(mime){
   if(mime==='application/vnd.google-apps.presentation') return 'gslide';
   return 'gfile';
 }
+function allDocs(){ return [...remoteDocs, ...localDocs]; }
+function docCategory(doc){ return doc.category || 'dokumentasi'; }
 
-function renderDocs(){
-  const grid = $('#docGrid');
+function docCardHtml(doc, isRemote, kind){
+  const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
+  const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
+  return `
+    <div class="card-top">
+      <div class="card-icon">${ICONS[kind]||ICONS.gfile}</div>
+      <div class="card-actions">
+        <button class="icon-btn" data-act="edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+        <button class="icon-btn danger" data-act="delete" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button>
+      </div>
+    </div>
+    <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+    <div class="card-desc">${escapeHtml(doc.tags || (doc.mode==='note' ? (doc.content||'').replace(/[#*-]/g,'').slice(0,90) : 'Klik untuk membaca dalam mode layar penuh.'))}</div>
+    <div class="card-meta">
+      <span class="badge b-cat">${CATEGORY_LABELS[docCategory(doc)]||'Dokumentasi'}</span>
+      <span class="badge ${badgeClass}">${badgeText}</span>
+    </div>`;
+}
+function attachCardHandlers(el, doc, isRemote, kind){
+  el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openReader(doc, isRemote); });
+  el.querySelector('[data-act="edit"]').addEventListener('click', async (e)=>{
+    e.stopPropagation();
+    if(isRemote){
+      if(kind==='gdoc'){
+        const r = await apiGet('docText', {id: doc.id});
+        if(r.ok) openDocModal({id:doc.id, mode:'note', category:'dokumentasi', title:doc.title, content:r.text, isRemote:true});
+        else toast('Gagal memuat isi dokumen: '+r.error, true);
+      } else {
+        const nn = prompt('Ganti nama dokumen:', doc.title);
+        if(nn && nn.trim()){
+          const r = await apiPost('rename', {id:doc.id, name:nn.trim()});
+          if(r.ok){ toast('Nama diperbarui'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
+        }
+      }
+    } else { openDocModal(doc); }
+  });
+  el.querySelector('[data-act="delete"]').addEventListener('click', async (e)=>{
+    e.stopPropagation();
+    if(!confirm('Hapus konten ini?')) return;
+    if(isRemote){
+      const r = await apiPost('delete', {id: doc.id});
+      if(r.ok){ toast('Dihapus dari Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
+    } else {
+      if(doc.mode==='local') await idbDelete(doc.id);
+      localDocs = localDocs.filter(d=>d.id!==doc.id);
+      saveArr(LS_DOCS, localDocs);
+      renderKonten(); renderBeranda();
+      toast('Konten dihapus');
+    }
+  });
+}
+function renderKonten(){
+  $$('.cat-tab').forEach(t=> t.classList.toggle('active', t.dataset.cat===currentCategory));
+  const label = currentCategory==='semua' ? 'Semua Kategori' : (CATEGORY_LABELS[currentCategory]||'Konten');
+  $('#kontenTitle').textContent = label;
+  $('#kontenDesc').textContent = CATEGORY_DESC[currentCategory] || 'Seluruh konten arsip Portal RTH dalam satu tempat.';
+  const list = allDocs().filter(d => currentCategory==='semua' || docCategory(d)===currentCategory)
+    .sort((a,b)=> new Date(b.modified||b.createdAt||0) - new Date(a.modified||a.createdAt||0));
+  $('#navDocCount').textContent = allDocs().length;
+  $('#statDocs').textContent = allDocs().length;
+  const grid = $('#kontenGrid');
   grid.innerHTML = '';
-  const all = [...remoteDocs, ...localDocs];
-  $('#navDocCount').textContent = all.length;
-  $('#statDocs').textContent = all.length;
-  if(all.length===0){
+  if(list.length===0){
     grid.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
-      <h4>Belum ada dokumen</h4>
-      <p>Tambahkan dokumen dari tautan Google Drive, unggah file, atau tulis artikel baru.</p>
+      <h4>Belum ada konten di kategori ini</h4>
+      <p>Tambahkan artikel, unggah dokumen, atau sambungkan Google Drive.</p>
     </div>`;
     return;
   }
-  all.forEach(doc=>{
-    const el = document.createElement('div');
-    el.className = 'card';
+  list.forEach(doc=>{
     const isRemote = doc.mode==='remote';
     const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
-    const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
-    const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
-    el.innerHTML = `
-      <div class="card-top">
-        <div class="card-icon">${ICONS[kind]||ICONS.gfile}</div>
-        <div class="card-actions">
-          <button class="icon-btn" data-act="edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
-          <button class="icon-btn danger" data-act="delete" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button>
-        </div>
-      </div>
-      <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
-      <div class="card-desc">${escapeHtml(doc.tags || (doc.mode==='note' ? (doc.content||'').slice(0,90) : 'Klik untuk membaca dalam mode layar penuh.'))}</div>
-      <div class="card-meta">
-        <span class="badge ${badgeClass}">${badgeText}</span>
-        <span>${isRemote ? (KIND_LABEL[kind]||'File') : (KIND_LABEL[kind]||'')}</span>
-      </div>`;
-    el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openReader(doc, isRemote); });
-    el.querySelector('[data-act="edit"]').addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      if(isRemote){
-        if(kind==='gdoc'){
-          const r = await apiGet('docText', {id: doc.id});
-          if(r.ok) openDocModal({id:doc.id, mode:'note', title:doc.title, content:r.text, isRemote:true});
-          else toast('Gagal memuat isi dokumen: '+r.error, true);
-        } else {
-          const nn = prompt('Ganti nama dokumen:', doc.title);
-          if(nn && nn.trim()){
-            const r = await apiPost('rename', {id:doc.id, name:nn.trim()});
-            if(r.ok){ toast('Nama diperbarui'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
-          }
-        }
-      } else {
-        openDocModal(doc);
-      }
-    });
-    el.querySelector('[data-act="delete"]').addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      if(!confirm('Hapus dokumen ini?')) return;
-      if(isRemote){
-        const r = await apiPost('delete', {id: doc.id});
-        if(r.ok){ toast('Dokumen dihapus dari Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
-      } else {
-        if(doc.mode==='local') await idbDelete(doc.id);
-        localDocs = localDocs.filter(d=>d.id!==doc.id);
-        saveArr(LS_DOCS, localDocs);
-        renderDocs();
-        toast('Dokumen dihapus');
-      }
-    });
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = docCardHtml(doc, isRemote, kind);
+    attachCardHandlers(el, doc, isRemote, kind);
     grid.appendChild(el);
   });
 }
-$('#btnRefreshDocs').addEventListener('click', ()=>{ refreshRemoteDocs(); toast('Memuat ulang daftar dokumen…'); });
+$('#btnAddDoc').addEventListener('click', ()=> openDocModal(null));
 
 /* ---------- modal dokumen ---------- */
 const modalDoc = $('#modalDoc');
@@ -1387,15 +1336,17 @@ function openDocModal(existing){
   $('#docFileName').textContent = '';
   let tab = 'link';
   if(existing){
-    $('#docModalTitle').textContent = 'Edit Dokumen';
+    $('#docModalTitle').textContent = 'Edit Konten';
     tab = existing.mode==='local' ? 'upload' : (existing.mode==='note' ? 'note' : 'link');
     $('#docTags').value = existing.tags || '';
+    $('#docCategory').value = existing.category || 'artikel';
     if(tab==='link'){ $('#docTitleLink').value = existing.title; $('#docDriveUrl').value = existing.originalUrl||''; }
     if(tab==='upload'){ $('#docTitleUpload').value = existing.title; $('#docFileName').textContent = existing.fileName||''; }
     if(tab==='note'){ $('#docTitleNote').value = existing.title; $('#docNoteContent').value = existing.content||''; $('#docNoteSaveToDrive').checked = !!existing.isRemote; $('#docNoteSaveToDrive').disabled = !!existing.isRemote; }
     $$('#docTabs button').forEach(b=> b.disabled = (b.dataset.tab!==tab));
   } else {
-    $('#docModalTitle').textContent = 'Tambah Dokumen';
+    $('#docModalTitle').textContent = 'Tambah Konten';
+    $('#docCategory').value = currentCategory !== 'semua' ? currentCategory : 'artikel';
     $$('#docTabs button').forEach(b=> b.disabled=false);
     $('#docSaveToDrive').checked = hasScript();
     $('#docNoteSaveToDrive').checked = hasScript();
@@ -1410,7 +1361,6 @@ function setDocTab(tab){
   $$('.doc-tab-panel', $('#formDoc')).forEach(p=> p.style.display = (p.dataset.panel===tab ? '' : 'none'));
 }
 $('#docTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; setDocTab(b.dataset.tab); });
-
 $('#docDropZone').addEventListener('click', ()=> $('#docFileInput').click());
 $('#docFileInput').addEventListener('change', e=>{
   const f = e.target.files[0]; if(!f) return;
@@ -1428,6 +1378,13 @@ $('#docFileInput').addEventListener('change', e=>{
     }
   });
 });
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+function guessExt(name){ const m = name.match(/\.[a-zA-Z0-9]+$/); return m ? m[0] : ''; }
+function upsertLocalDoc(rec){
+  const idx = localDocs.findIndex(d=>d.id===rec.id);
+  if(idx>=0) localDocs[idx]=rec; else localDocs.push(rec);
+  saveArr(LS_DOCS, localDocs);
+}
 
 $('#formDoc').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -1435,9 +1392,9 @@ $('#formDoc').addEventListener('submit', async e=>{
   const editId = $('#docEditId').value;
   const isRemoteEdit = $('#docEditRemote').value==='1';
   const tags = $('#docTags').value.trim();
+  const category = $('#docCategory').value;
   const submitBtn = $('#formDoc button[type=submit]');
   submitBtn.disabled = true;
-
   try{
     if(mode==='link'){
       const title = $('#docTitleLink').value.trim();
@@ -1446,8 +1403,8 @@ $('#formDoc').addEventListener('submit', async e=>{
       const id = extractDriveId(url);
       if(!id){ toast('Tautan Google Drive tidak dikenali.', true); return; }
       const kind = driveKindFromUrl(url);
-      upsertLocalDoc({id: editId||uid(), mode:'drive', kind, title, originalUrl:url, driveId:id, tags, createdAt: Date.now()});
-      toast(editId ? 'Dokumen diperbarui' : 'Tautan ditambahkan');
+      upsertLocalDoc({id: editId||uid(), mode:'drive', kind, category, title, originalUrl:url, driveId:id, tags, createdAt: Date.now()});
+      toast(editId ? 'Konten diperbarui' : 'Tautan ditambahkan');
     }
     else if(mode==='upload'){
       let title = $('#docTitleUpload').value.trim();
@@ -1466,12 +1423,12 @@ $('#formDoc').addEventListener('submit', async e=>{
           const dataUrl = await fileToDataURL(pendingDocFile);
           const bid = editId || uid();
           await idbPut(bid, dataUrl);
-          upsertLocalDoc({id:bid, mode:'local', title, fileName:pendingDocFile.name, mime:pendingDocFile.type, tags, createdAt: Date.now()});
-          toast('Dokumen disimpan di peramban ini');
+          upsertLocalDoc({id:bid, mode:'local', category, title, fileName:pendingDocFile.name, mime:pendingDocFile.type, tags, createdAt: Date.now()});
+          toast('Konten disimpan di peramban ini');
         }
       } else {
         const existing = localDocs.find(d=>d.id===editId);
-        if(existing) upsertLocalDoc({...existing, title: title||existing.title, tags});
+        if(existing) upsertLocalDoc({...existing, title: title||existing.title, tags, category});
       }
     }
     else if(mode==='note'){
@@ -1480,33 +1437,42 @@ $('#formDoc').addEventListener('submit', async e=>{
       if(!title){ toast('Judul artikel wajib diisi', true); return; }
       const saveDrive = $('#docNoteSaveToDrive').checked && hasScript();
       if(saveDrive){
-        toast('Menyimpan artikel ke Google Drive…');
+        toast('Menyimpan ke Google Drive…');
         if(isRemoteEdit && editId){
           const r = await apiPost('updateNote', {id: editId, title, content});
-          if(r.ok){ toast('Artikel diperbarui di Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
+          if(r.ok){ toast('Diperbarui di Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
         } else {
           const r = await apiPost('createNote', {title, content});
-          if(r.ok){ toast('Artikel tersimpan di Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
+          if(r.ok){ toast('Tersimpan di Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
         }
       } else {
-        upsertLocalDoc({id: editId||uid(), mode:'note', title, content, tags, createdAt: Date.now(), updatedAt: Date.now()});
-        toast('Artikel disimpan di peramban ini');
+        upsertLocalDoc({id: editId||uid(), mode:'note', category, title, content, tags, createdAt: Date.now(), updatedAt: Date.now()});
+        toast('Konten disimpan di peramban ini');
       }
     }
   } finally {
     submitBtn.disabled = false;
     pendingDocFile = null;
     modalDoc.classList.remove('open');
-    renderDocs();
+    renderKonten(); renderBeranda(); renderTicker();
   }
 });
-function guessExt(name){ const m = name.match(/\.[a-zA-Z0-9]+$/); return m ? m[0] : ''; }
-function upsertLocalDoc(rec){
-  const idx = localDocs.findIndex(d=>d.id===rec.id);
-  if(idx>=0) localDocs[idx]=rec; else localDocs.push(rec);
-  saveArr(LS_DOCS, localDocs);
+
+/* ==========================================================
+   IndexedDB (blob lokal)
+   ========================================================== */
+let idb;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req = indexedDB.open('rth_local_store', 1);
+    req.onupgradeneeded = e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('blobs')) db.createObjectStore('blobs',{keyPath:'id'}); };
+    req.onsuccess = e=>{ idb=e.target.result; res(idb); };
+    req.onerror = e=>rej(e);
+  });
 }
-$('#btnAddDoc').addEventListener('click', ()=> openDocModal(null));
+function idbPut(id,data){ return new Promise((res,rej)=>{ const tx=idb.transaction('blobs','readwrite'); tx.objectStore('blobs').put({id,data}); tx.oncomplete=()=>res(); tx.onerror=rej; }); }
+function idbGet(id){ return new Promise((res,rej)=>{ const tx=idb.transaction('blobs','readonly'); const r=tx.objectStore('blobs').get(id); r.onsuccess=()=>res(r.result?r.result.data:null); r.onerror=rej; }); }
+function idbDelete(id){ return new Promise((res,rej)=>{ const tx=idb.transaction('blobs','readwrite'); tx.objectStore('blobs').delete(id); tx.oncomplete=()=>res(); tx.onerror=rej; }); }
 
 /* ==========================================================
    MODE BACA LAYAR PENUH
@@ -1530,9 +1496,8 @@ async function openReader(doc, isRemote){
   currentDocKind = kind;
   $('#readerIcon').innerHTML = ICONS[kind]||ICONS.gfile;
   $('#readerTitle').textContent = doc.title||doc.name;
-  $('#readerSub').textContent = `${KIND_LABEL[kind]||''} · ${isRemote?'Google Drive':(doc.mode==='local'?'Peramban':(doc.mode==='note'?'Artikel lokal':'Tautan'))}`;
+  $('#readerSub').textContent = `${KIND_LABEL[kind]||''} · ${CATEGORY_LABELS[docCategory(doc)]||''}`;
   $('#readerEditBtn').style.display = (kind==='gdoc' || doc.mode==='note') ? 'inline-flex' : 'none';
-  $('#readerSaveBtn').style.display = 'none';
 
   const body = $('#readerBody');
   body.innerHTML = `<div class="no-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><div>Memuat…</div></div>`;
@@ -1596,7 +1561,7 @@ $('#readerEditBtn').addEventListener('click', async ()=>{
   if(currentDocIsRemote && currentDocKind==='gdoc'){
     const r = await apiGet('docText', {id: currentDoc.id});
     closeReader();
-    openDocModal({id: currentDoc.id, mode:'note', title: currentDoc.title, content: r.ok?r.text:'', isRemote:true});
+    openDocModal({id: currentDoc.id, mode:'note', category:'dokumentasi', title: currentDoc.title, content: r.ok?r.text:'', isRemote:true});
   } else {
     closeReader();
     openDocModal(currentDoc);
@@ -1605,14 +1570,135 @@ $('#readerEditBtn').addEventListener('click', async ()=>{
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && readerOverlay.classList.contains('open')) closeReader(); });
 
 /* ==========================================================
+   HEADLINE TICKER (draggable)
+   ========================================================== */
+function renderTicker(){
+  const wrap = $('#headlineTicker');
+  const list = allDocs().sort((a,b)=> new Date(b.modified||b.createdAt||0) - new Date(a.modified||a.createdAt||0)).slice(0,12);
+  wrap.innerHTML = '';
+  list.forEach(doc=>{
+    const isRemote = doc.mode==='remote';
+    const chip = document.createElement('button');
+    chip.className = 'headline-chip';
+    chip.innerHTML = `<span class="dot"></span>${escapeHtml(doc.title||doc.name||'')}`;
+    chip.addEventListener('click', ()=> openReader(doc, isRemote));
+    wrap.appendChild(chip);
+  });
+}
+function makeDraggableScroll(el){
+  let isDown=false, startX=0, scrollLeft=0;
+  el.addEventListener('mousedown', e=>{ isDown=true; el.classList.add('dragging'); startX=e.pageX; scrollLeft=el.scrollLeft; });
+  window.addEventListener('mouseup', ()=>{ isDown=false; el.classList.remove('dragging'); });
+  el.addEventListener('mousemove', e=>{
+    if(!isDown) return;
+    e.preventDefault();
+    const walk = (e.pageX-startX)*1.3;
+    el.scrollLeft = scrollLeft - walk;
+  });
+}
+makeDraggableScroll($('#headlineTicker'));
+
+/* ==========================================================
+   BERANDA
+   ========================================================== */
+function relativeTime(date){
+  const diff = Math.floor((Date.now()-date.getTime())/1000);
+  if(diff<60) return 'baru saja';
+  if(diff<3600) return Math.floor(diff/60)+' menit lalu';
+  if(diff<86400) return Math.floor(diff/3600)+' jam lalu';
+  return date.toLocaleString('id-ID',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function updateLastUpdatedText(){ $('#lastUpdatedText').textContent = lastUpdatedAt ? 'Diperbarui '+relativeTime(lastUpdatedAt) : 'Belum pernah diperbarui'; }
+setInterval(updateLastUpdatedText, 30000);
+
+async function refreshBeranda(){
+  await Promise.all([refreshRemoteDocs(), refreshRemotePhotos()]);
+  lastUpdatedAt = new Date();
+  updateLastUpdatedText();
+  renderBeranda();
+  renderTicker();
+}
+$('#btnRefreshBeranda').addEventListener('click', ()=>{ toast('Memperbarui berita…'); refreshBeranda(); });
+
+function docExcerpt(doc, isRemote){
+  if(isRemote) return 'Dokumen arsip Google Drive. Klik untuk membuka dalam mode baca layar penuh.';
+  if(doc.mode==='note') return (doc.content||'').replace(/[#*-]/g,'').slice(0,140) + ((doc.content||'').length>140?'…':'');
+  if(doc.mode==='drive') return 'Tautan dokumen Google Drive. Klik untuk membaca.';
+  return 'Dokumen tersimpan di peramban ini. Klik untuk membaca.';
+}
+function renderBeranda(){
+  const all = allDocs().sort((a,b)=> new Date(b.modified||b.createdAt||0) - new Date(a.modified||a.createdAt||0));
+  const featuredWrap = $('#berandaFeatured');
+  const grid = $('#berandaGrid');
+  featuredWrap.innerHTML = ''; grid.innerHTML = '';
+  $('#statDocs').textContent = all.length;
+  if(all.length===0){
+    grid.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
+      <h4>Belum ada berita atau dokumen</h4>
+      <p>Tambahkan artikel, unggah dokumen, atau sambungkan Google Drive di menu Berita &amp; Arsip.</p>
+    </div>`;
+    return;
+  }
+  const [first, ...rest] = all;
+  const isRemoteFirst = first.mode==='remote';
+  const dateFirst = first.modified || first.createdAt;
+  const featEl = document.createElement('div');
+  featEl.className = 'panel';
+  featEl.style.cssText = 'padding:0;overflow:hidden;cursor:pointer;margin-bottom:4px;';
+  featEl.innerHTML = `
+    <div class="panel-gold-rule"></div>
+    <div style="padding:26px 28px;">
+      <div class="card-meta" style="margin-bottom:12px;">
+        <span class="badge b-cat">${CATEGORY_LABELS[docCategory(first)]||'Dokumentasi'}</span>
+        <span>${dateFirst ? new Date(dateFirst).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
+      </div>
+      <h2 style="font-family:var(--font-display);font-size:24px;font-weight:600;line-height:1.3;margin-bottom:10px;">${escapeHtml(first.title||first.name||'Tanpa judul')}</h2>
+      <p style="color:var(--ink-muted);font-size:13.5px;line-height:1.7;max-width:680px;">${escapeHtml(docExcerpt(first, isRemoteFirst))}</p>
+      <button class="btn btn-gold" style="margin-top:16px;">Baca Selengkapnya</button>
+    </div>`;
+  featEl.addEventListener('click', ()=> openReader(first, isRemoteFirst));
+  featuredWrap.appendChild(featEl);
+
+  rest.forEach(doc=>{
+    const isRemote = doc.mode==='remote';
+    const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
+    const dateStr = doc.modified || doc.createdAt;
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <div class="card-top"><div class="card-icon">${ICONS[kind]||ICONS.gfile}</div></div>
+      <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+      <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote))}</div>
+      <div class="card-meta">
+        <span class="badge b-cat">${CATEGORY_LABELS[docCategory(doc)]||'Dokumentasi'}</span>
+        <span>${dateStr ? new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
+      </div>`;
+    el.addEventListener('click', ()=> openReader(doc, isRemote));
+    grid.appendChild(el);
+  });
+}
+function setupAutoRefresh(){
+  clearInterval(autoRefreshTimer);
+  if(settings.autoRefresh !== false){ autoRefreshTimer = setInterval(refreshBeranda, 5*60*1000); }
+}
+
+/* ==========================================================
+   BULETIN
+   ========================================================== */
+function initBuletin(){
+  const id = settings.buletinFolderId || DEFAULT_BULETIN_FOLDER_ID;
+  $('#buletinFrame').src = `https://drive.google.com/embeddedfolderview?id=${id}#grid`;
+  $('#openBuletinFolder').href = `https://drive.google.com/drive/folders/${id}`;
+  $('#buletinFolderInput').value = settings.buletinFolderId ? `https://drive.google.com/drive/folders/${settings.buletinFolderId}` : '';
+}
+
+/* ==========================================================
    FOTO
    ========================================================== */
 async function refreshRemotePhotos(){
   if(!hasScript()){ remotePhotos=[]; renderPhotos(); return; }
-  try{
-    const r = await apiGet('list', {folder:'foto'});
-    if(r.ok) remotePhotos = r.files.map(f=>({...f, mode:'remote', title:f.name}));
-  }catch(e){}
+  try{ const r = await apiGet('list', {folder:'foto'}); if(r.ok) remotePhotos = r.files.map(f=>({...f, mode:'remote', title:f.name})); }catch(e){}
   renderPhotos();
 }
 $('#btnRefreshPhotos').addEventListener('click', ()=>{ refreshRemotePhotos(); toast('Memuat ulang galeri…'); });
@@ -1634,38 +1720,25 @@ async function renderPhotos(){
   for(const p of all){
     const el = document.createElement('div');
     el.className = 'photo-tile';
-    let src;
-    if(p.mode==='remote') src = `data:image/placeholder;base64,`; // diisi async di bawah
-    else if(p.mode==='local') src = await idbGet(p.id);
-    else src = p.driveId ? driveImageUrl(p.driveId) : p.url;
     el.innerHTML = `<img alt="${escapeHtml(p.title)}" loading="lazy">
       <div class="p-overlay">
         <div class="p-title">${escapeHtml(p.title||'')}</div>
         <div class="p-actions"><button class="icon-btn danger" data-act="del" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button></div>
       </div>`;
     const imgEl = el.querySelector('img');
-    if(p.mode==='remote'){
-      apiGet('file', {id:p.id}).then(r=>{ if(r.ok) imgEl.src = `data:${r.file.mimeType};base64,${r.file.base64}`; });
-    } else { imgEl.src = src; }
-    el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openLightbox(p.id, p.mode); });
+    if(p.mode==='remote'){ apiGet('file', {id:p.id}).then(r=>{ if(r.ok) imgEl.src = `data:${r.file.mimeType};base64,${r.file.base64}`; }); }
+    else if(p.mode==='local'){ idbGet(p.id).then(src=> imgEl.src = src); }
+    else { imgEl.src = p.driveId ? driveImageUrl(p.driveId) : p.url; }
+    el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openLightbox(p.id); });
     el.querySelector('[data-act="del"]').addEventListener('click', async (e)=>{
       e.stopPropagation();
       if(!confirm('Hapus foto ini?')) return;
-      if(p.mode==='remote'){
-        const r = await apiPost('delete', {id:p.id});
-        if(r.ok){ toast('Foto dihapus dari Drive'); refreshRemotePhotos(); } else toast('Gagal: '+r.error, true);
-      } else {
-        if(p.mode==='local') await idbDelete(p.id);
-        localPhotos = localPhotos.filter(x=>x.id!==p.id);
-        saveArr(LS_PHOTOS, localPhotos);
-        renderPhotos();
-        toast('Foto dihapus');
-      }
+      if(p.mode==='remote'){ const r = await apiPost('delete', {id:p.id}); if(r.ok){ toast('Foto dihapus dari Drive'); refreshRemotePhotos(); } else toast('Gagal: '+r.error, true); }
+      else { if(p.mode==='local') await idbDelete(p.id); localPhotos = localPhotos.filter(x=>x.id!==p.id); saveArr(LS_PHOTOS, localPhotos); renderPhotos(); toast('Foto dihapus'); }
     });
     grid.appendChild(el);
   }
 }
-
 const modalPhoto = $('#modalPhoto');
 let pendingPhotoFile = null;
 $('#btnAddPhoto').addEventListener('click', ()=>{
@@ -1686,7 +1759,6 @@ $('#photoFileInput').addEventListener('change', e=>{
   pendingPhotoFile = f; $('#photoFileName').textContent = f.name;
   if(!$('#photoTitle').value) $('#photoTitle').value = f.name.replace(/\.[^.]+$/,'');
 });
-
 $('#formPhoto').addEventListener('submit', async e=>{
   e.preventDefault();
   const mode = $('#formPhoto').dataset.mode || 'link';
@@ -1718,12 +1790,7 @@ $('#formPhoto').addEventListener('submit', async e=>{
         toast('Foto disimpan di peramban ini');
       }
     }
-  } finally {
-    submitBtn.disabled = false;
-    pendingPhotoFile = null;
-    modalPhoto.classList.remove('open');
-    renderPhotos();
-  }
+  } finally { submitBtn.disabled = false; pendingPhotoFile = null; modalPhoto.classList.remove('open'); renderPhotos(); }
 });
 
 /* ---------- lightbox ---------- */
@@ -1747,11 +1814,7 @@ async function renderLightboxImage(){
   $('#lbImage').src = src;
   $('#lbDownload').href = src;
 }
-function showLbHeader(){
-  $('#lbHeader').classList.add('show');
-  clearTimeout(showLbHeader._t);
-  showLbHeader._t = setTimeout(()=> $('#lbHeader').classList.remove('show'), 2800);
-}
+function showLbHeader(){ $('#lbHeader').classList.add('show'); clearTimeout(showLbHeader._t); showLbHeader._t = setTimeout(()=> $('#lbHeader').classList.remove('show'), 2800); }
 $('#lbHoverZone').addEventListener('mousemove', showLbHeader);
 $('#lbHeader').addEventListener('mousemove', showLbHeader);
 lightbox.addEventListener('mousemove', e=>{ if(e.clientY<90) showLbHeader(); });
@@ -1767,7 +1830,7 @@ document.addEventListener('keydown', e=>{
 lightbox.addEventListener('dblclick', ()=>{ if(!document.fullscreenElement) lightbox.requestFullscreen?.(); else document.exitFullscreen?.(); });
 
 /* ==========================================================
-   MODAL: tutup umum
+   MODAL close umum
    ========================================================== */
 $$('.modal-backdrop').forEach(bd=>{
   bd.addEventListener('click', e=>{ if(e.target===bd) bd.classList.remove('open'); });
@@ -1775,16 +1838,15 @@ $$('.modal-backdrop').forEach(bd=>{
 });
 
 /* ==========================================================
-   PENGATURAN lain
+   RESET DATA
    ========================================================== */
-if(settings.scriptUrl) $('#scriptUrlInput').value = settings.scriptUrl;
 $('#btnResetAll').addEventListener('click', async ()=>{
   if(!confirm('Semua dokumen & foto yang tersimpan lokal (bukan di Drive) akan dihapus permanen. Lanjutkan?')) return;
   localStorage.removeItem(LS_DOCS);
   localStorage.removeItem(LS_PHOTOS);
   indexedDB.deleteDatabase('rth_local_store');
   localDocs = []; localPhotos = [];
-  renderDocs(); renderPhotos();
+  renderKonten(); renderPhotos(); renderBeranda(); renderTicker();
   toast('Data lokal telah dihapus');
 });
 
@@ -1794,16 +1856,17 @@ $('#btnResetAll').addEventListener('click', async ()=>{
 (async function init(){
   await openDB().catch(()=> toast('Penyimpanan lokal (IndexedDB) tidak tersedia di browser ini', true));
   seedInitialArticles();
+  if(!settings.scriptUrl){ settings.scriptUrl = DEFAULT_SCRIPT_URL; saveSettings(settings); }
+  if(!settings.buletinFolderId){ settings.buletinFolderId = DEFAULT_BULETIN_FOLDER_ID; saveSettings(settings); }
+  $('#scriptUrlInput').value = settings.scriptUrl;
   initSiteName();
-  renderDocs();
+  initBuletin();
+  renderKonten();
   renderPhotos();
   renderBeranda();
+  renderTicker();
   if(hasScript()){
-    try{
-      const r = await apiGet('ping');
-      refreshDriveStatusUI(r.ok);
-      if(r.ok) await refreshBeranda();
-    }
+    try{ const r = await apiGet('ping'); refreshDriveStatusUI(r.ok); if(r.ok) await refreshBeranda(); }
     catch(e){ refreshDriveStatusUI(false); }
   } else {
     refreshDriveStatusUI(false);
