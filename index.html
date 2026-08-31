@@ -212,6 +212,17 @@ button{font-family:inherit;cursor:pointer;}
 .reader-body iframe{width:100%;height:100%;border:0;display:block;background:#fff;}
 .reader-hover-zone{position:absolute;top:0;left:0;right:0;height:70px;z-index:4;}
 .reader-note-area{max-width:740px;margin:0 auto;height:100%;overflow-y:auto;padding:120px 26px 100px;background:var(--paper);}
+.folder-browser{max-width:920px;margin:0 auto;height:100%;overflow-y:auto;padding:110px 24px 80px;background:var(--paper);}
+.folder-path{font-size:11.5px;color:var(--ink-dim);margin-bottom:16px;}
+.folder-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+.folder-item{display:flex;align-items:center;gap:11px;padding:13px;border:1px solid var(--line);border-radius:8px;background:var(--paper-alt);cursor:pointer;transition:.15s;text-align:left;}
+.folder-item:hover{border-color:var(--gold);box-shadow:0 8px 20px -12px rgba(31,61,47,.35);}
+.folder-item-icon{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--forest-soft);color:var(--forest);flex:none;}
+.folder-item-icon svg{width:17px;height:17px;}
+.folder-item-info{min-width:0;}
+.folder-item-name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.folder-item-meta{font-size:10.5px;color:var(--ink-dim);margin-top:2px;}
+.folder-loading,.folder-empty{padding:60px 20px;text-align:center;color:var(--ink-muted);font-size:13px;}
 .reader-note-area textarea{width:100%;min-height:60vh;background:transparent;border:none;color:var(--ink);font-size:17px;line-height:1.9;font-family:var(--font-read);resize:vertical;}
 .reader-note-area .note-render{font-family:var(--font-read);font-size:17px;line-height:1.95;color:#2a2f26;}
 .reader-note-area .note-render h1,.reader-note-area .note-render h2,.reader-note-area .note-render h3{font-family:var(--font-display);margin:28px 0 12px;color:var(--forest);}
@@ -654,6 +665,10 @@ button{font-family:inherit;cursor:pointer;}
       </div>
     </div>
     <div class="reader-header-r">
+      <button class="btn btn-sm btn-ghost" id="readerBackBtn" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Kembali
+      </button>
       <button class="btn btn-sm btn-ghost" id="readerEditBtn" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
         Edit
@@ -1020,6 +1035,7 @@ function extractDriveId(url){
   return null;
 }
 function driveKindFromUrl(url){
+  if(/\/folders\//.test(url)) return 'gfolder';
   if(/\/document\//.test(url)) return 'gdoc';
   if(/\/spreadsheets\//.test(url)) return 'gsheet';
   if(/\/presentation\//.test(url)) return 'gslide';
@@ -1054,10 +1070,30 @@ const ICONS = {
   gsheet:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 12h8M8 16h8M12 12v8"/></svg>`,
   gslide:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M8 18v2M16 18v2"/></svg>`,
   gfile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/></svg>`,
+  gfolder:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>`,
+  image:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>`,
+  pdf:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 15h1.5a1.5 1.5 0 0 0 0-3H9v5"/></svg>`,
   localfile:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>`,
   note:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>`
 };
-const KIND_LABEL = {gdoc:'Google Docs', gsheet:'Google Sheets', gslide:'Google Slides', gfile:'File Drive', localfile:'File (peramban)', note:'Artikel'};
+const KIND_LABEL = {gdoc:'Google Docs', gsheet:'Google Sheets', gslide:'Google Slides', gfile:'File Drive', gfolder:'Folder Drive', localfile:'File (peramban)', note:'Artikel'};
+
+function iconForMime(mime){
+  if(!mime) return 'gfile';
+  if(mime==='application/vnd.google-apps.folder') return 'gfolder';
+  if(mime==='application/vnd.google-apps.document') return 'gdoc';
+  if(mime==='application/vnd.google-apps.spreadsheet') return 'gsheet';
+  if(mime==='application/vnd.google-apps.presentation') return 'gslide';
+  if(mime==='application/pdf') return 'pdf';
+  if(mime.startsWith('image/')) return 'image';
+  return 'gfile';
+}
+function formatBytes(n){
+  if(!n) return '';
+  if(n < 1024) return n+' B';
+  if(n < 1024*1024) return (n/1024).toFixed(0)+' KB';
+  return (n/(1024*1024)).toFixed(1)+' MB';
+}
 
 /* ==========================================================
    SIDEBAR COLLAPSE
@@ -1147,15 +1183,12 @@ $$('.nav-item').forEach(btn=> btn.addEventListener('click', ()=> activateNav(btn
 /* ---------- Buletin dibuka lewat reader overlay: tetap dalam HTML,
    header minimalis mengambang, dan bisa fullscreen ---------- */
 function openBuletinReader(){
+  if(!hasScript()){
+    toast('Sambungkan Apps Script di Pengaturan agar Buletin bisa ditampilkan di sini', true);
+    return;
+  }
   const id = settings.buletinFolderId || DEFAULT_BULETIN_FOLDER_ID;
-  currentDoc = null; currentDocIsRemote = false; currentDocKind = 'buletin';
-  $('#readerIcon').innerHTML = ICONS.gfile;
-  $('#readerTitle').textContent = 'Buletin MSAL Group';
-  $('#readerSub').textContent = 'Folder Google Drive · Langsung';
-  $('#readerEditBtn').style.display = 'none';
-  $('#readerBody').innerHTML = `<iframe src="https://drive.google.com/embeddedfolderview?id=${id}#grid"></iframe>`;
-  readerOverlay.classList.add('open');
-  showReaderHeader();
+  openFolderBrowser(id, 'Buletin MSAL Group');
 }
 
 $$('.cat-tab').forEach(t=> t.addEventListener('click', ()=>{
@@ -1511,9 +1544,16 @@ readerHeader.addEventListener('mousemove', showReaderHeader);
 readerOverlay.addEventListener('mousemove', e=>{ if(e.clientY<90) showReaderHeader(); });
 
 async function openReader(doc, isRemote){
+  if(!isRemote && doc.mode==='drive' && doc.kind==='gfolder'){
+    openFolderBrowser(doc.driveId, doc.title);
+    return;
+  }
   currentDoc = doc; currentDocIsRemote = isRemote;
   const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
   currentDocKind = kind;
+  if(kind==='gfolder'){ openFolderBrowser(doc.id, doc.title||doc.name); return; }
+  $('#readerBackBtn').style.display = 'none';
+  folderBrowserState = null;
   $('#readerIcon').innerHTML = ICONS[kind]||ICONS.gfile;
   $('#readerTitle').textContent = doc.title||doc.name;
   $('#readerSub').textContent = `${KIND_LABEL[kind]||''} · ${CATEGORY_LABELS[docCategory(doc)]||''}`;
@@ -1557,6 +1597,79 @@ async function openReader(doc, isRemote){
   readerOverlay.classList.add('open');
   showReaderHeader();
 }
+
+/* ---------- Folder browser: menampilkan isi folder Drive (termasuk subfolder,
+   PDF, dan foto) sepenuhnya di dalam halaman ini, tanpa iframe Google ---------- */
+let folderBrowserState = null;
+async function openFolderBrowser(folderId, title){
+  folderBrowserState = {folderId, title};
+  currentDoc = null; currentDocIsRemote = false; currentDocKind = 'gfolder';
+  $('#readerIcon').innerHTML = ICONS.gfolder;
+  $('#readerTitle').textContent = title;
+  $('#readerSub').textContent = 'Folder Google Drive · Langsung';
+  $('#readerEditBtn').style.display = 'none';
+  $('#readerBackBtn').style.display = 'none';
+  readerOverlay.classList.add('open');
+  showReaderHeader();
+  await renderFolderList(folderId, title);
+}
+async function renderFolderList(folderId, title){
+  const body = $('#readerBody');
+  body.innerHTML = `<div class="folder-browser"><div class="folder-loading">Memuat isi folder…</div></div>`;
+  if(!hasScript()){
+    body.innerHTML = `<div class="folder-browser"><div class="folder-empty">Sambungkan Apps Script di menu Pengaturan agar isi folder ini bisa ditampilkan langsung di sini.</div></div>`;
+    return;
+  }
+  try{
+    const r = await apiGet('listAny', {folderId});
+    if(!r.ok){ body.innerHTML = `<div class="folder-browser"><div class="folder-empty">Gagal memuat folder: ${escapeHtml(r.error||'')}</div></div>`; return; }
+    if(!r.files || r.files.length===0){ body.innerHTML = `<div class="folder-browser"><div class="folder-empty">Folder ini masih kosong.</div></div>`; return; }
+    const items = r.files.map(f=>{
+      const icon = iconForMime(f.mimeType);
+      return `<button class="folder-item" data-id="${f.id}" data-mime="${escapeHtml(f.mimeType)}" data-name="${escapeHtml(f.name)}" data-kind="${f.kind||'file'}">
+        <div class="folder-item-icon">${ICONS[icon]||ICONS.gfile}</div>
+        <div class="folder-item-info">
+          <div class="folder-item-name">${escapeHtml(f.name)}</div>
+          <div class="folder-item-meta">${f.kind==='folder' ? 'Folder' : formatBytes(f.size)}</div>
+        </div>
+      </button>`;
+    }).join('');
+    body.innerHTML = `<div class="folder-browser"><div class="folder-path">${escapeHtml(title)}</div><div class="folder-list">${items}</div></div>`;
+    $$('.folder-item', body).forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const id = el.dataset.id, mime = el.dataset.mime, name = el.dataset.name, kind = el.dataset.kind;
+        if(kind==='folder'){ openFolderBrowser(id, name); }
+        else { openFolderFile({id, mimeType:mime, name}, folderId, title); }
+      });
+    });
+  }catch(e){
+    body.innerHTML = `<div class="folder-browser"><div class="folder-empty">Terjadi kesalahan saat memuat folder.</div></div>`;
+  }
+}
+async function openFolderFile(file, parentFolderId, parentTitle){
+  $('#readerIcon').innerHTML = ICONS[iconForMime(file.mimeType)]||ICONS.gfile;
+  $('#readerTitle').textContent = file.name;
+  $('#readerSub').textContent = 'Folder Google Drive · '+parentTitle;
+  $('#readerBackBtn').style.display = 'inline-flex';
+  const body = $('#readerBody');
+  body.innerHTML = `<div class="no-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><div>Memuat…</div></div>`;
+  const r = await apiGet('file', {id: file.id});
+  if(!r.ok){ body.innerHTML = noPreviewHtml('Gagal memuat file: '+r.error); return; }
+  const dataUrl = `data:${r.file.mimeType};base64,${r.file.base64}`;
+  if((r.file.mimeType||'').includes('pdf')) body.innerHTML = `<iframe src="${dataUrl}"></iframe>`;
+  else if((r.file.mimeType||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
+  else body.innerHTML = noPreviewHtml('Pratinjau untuk jenis file ini belum didukung di browser.', dataUrl, r.file.name);
+}
+$('#readerBackBtn').addEventListener('click', ()=>{
+  $('#readerBackBtn').style.display = 'none';
+  if(folderBrowserState){
+    $('#readerIcon').innerHTML = ICONS.gfolder;
+    $('#readerTitle').textContent = folderBrowserState.title;
+    $('#readerSub').textContent = 'Folder Google Drive · Langsung';
+    renderFolderList(folderBrowserState.folderId, folderBrowserState.title);
+  }
+});
+
 function noPreviewHtml(msg, dataUrl, fileName){
   return `<div class="no-preview">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
