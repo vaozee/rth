@@ -1049,6 +1049,16 @@ function driveEmbedUrl(kind,id){
   return `https://drive.google.com/file/d/${id}/preview`;
 }
 function driveImageUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w2000`; }
+function driveImageUrlAlt(id){ return `https://lh3.googleusercontent.com/d/${id}=w2000`; }
+function setImgWithFallback(imgEl, urls, onFail){
+  let i = 0;
+  imgEl.onerror = ()=>{
+    i++;
+    if(i < urls.length){ imgEl.src = urls[i]; }
+    else { imgEl.onerror = null; if(onFail) onFail(); }
+  };
+  imgEl.src = urls[0];
+}
 
 function renderNote(text){
   const esc = escapeHtml(text||'');
@@ -1899,7 +1909,8 @@ async function renderPhotos(){
         .catch(()=> el.classList.add('photo-error'));
     }
     else if(p.mode==='local'){ idbGet(p.id).then(src=> imgEl.src = src).catch(()=> el.classList.add('photo-error')); }
-    else { imgEl.src = p.driveId ? driveImageUrl(p.driveId) : p.url; }
+    else if(p.driveId){ setImgWithFallback(imgEl, [driveImageUrl(p.driveId), driveImageUrlAlt(p.driveId)], ()=> el.classList.add('photo-error')); }
+    else { imgEl.onerror = ()=> el.classList.add('photo-error'); imgEl.src = p.url; }
     el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openLightbox(p.id); });
     el.querySelector('[data-act="del"]').addEventListener('click', (e)=>{
       e.stopPropagation();
@@ -1987,11 +1998,17 @@ async function renderLightboxImage(){
   try{
     if(p.mode==='remote'){ const r = await apiGet('file',{id:p.id}); src = r.ok ? `data:${r.file.mimeType};base64,${r.file.base64}` : ''; if(!r.ok) toast('Gagal memuat foto: '+r.error, true); }
     else if(p.mode==='local') src = await idbGet(p.id);
-    else src = p.driveId ? driveImageUrl(p.driveId) : p.url;
+    else if(p.driveId) src = driveImageUrl(p.driveId);
+    else src = p.url;
   }catch(err){
     toast(err.message || 'Gagal memuat foto', true);
   }
-  $('#lbImage').src = src;
+  if(p.mode==='link' && p.driveId){
+    setImgWithFallback($('#lbImage'), [driveImageUrl(p.driveId), driveImageUrlAlt(p.driveId)], ()=> toast('Foto gagal dimuat dari Drive', true));
+  } else {
+    $('#lbImage').onerror = null;
+    $('#lbImage').src = src;
+  }
   $('#lbDownload').href = src;
 }
 function showLbHeader(){ $('#lbHeader').classList.add('show'); clearTimeout(showLbHeader._t); showLbHeader._t = setTimeout(()=> $('#lbHeader').classList.remove('show'), 2800); }
@@ -2020,7 +2037,7 @@ $$('.modal-backdrop').forEach(bd=>{
 /* ==========================================================
    RESET DATA
    ========================================================== */
-$('#btnResetAll').addEventListener('click', async ()=>{
+$('#btnResetAll').addEventListener('click', ()=> requireAuth(async ()=>{
   if(!confirm('Semua dokumen & foto yang tersimpan lokal (bukan di Drive) akan dihapus permanen. Lanjutkan?')) return;
   localStorage.removeItem(LS_DOCS);
   localStorage.removeItem(LS_PHOTOS);
@@ -2028,7 +2045,7 @@ $('#btnResetAll').addEventListener('click', async ()=>{
   localDocs = []; localPhotos = [];
   renderKonten(); renderPhotos(); renderBeranda(); renderTicker();
   toast('Data lokal telah dihapus');
-});
+}));
 
 /* ==========================================================
    INIT
