@@ -158,6 +158,7 @@ button{font-family:inherit;cursor:pointer;}
 
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px;}
 .photo-tile{position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;background:var(--paper-alt);cursor:pointer;}
+.photo-tile.photo-error::before{content:"Gagal memuat foto";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:11px;color:var(--danger);background:#fbeceb;z-index:1;}
 .photo-tile img{width:100%;height:100%;object-fit:cover;display:block;transition:.35s;}
 .photo-tile:hover img{transform:scale(1.05);}
 .photo-tile .p-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%, rgba(19,42,32,.82));display:flex;flex-direction:column;justify-content:flex-end;padding:10px;opacity:0;transition:.2s;}
@@ -1230,11 +1231,15 @@ async function apiGet(action, params={}){
   url.searchParams.set('action', action);
   Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
   const res = await fetch(url.toString());
-  return res.json();
+  if(!res.ok){ throw new Error('Apps Script merespons status '+res.status+'. URL deployment kemungkinan sudah tidak aktif — periksa kembali di menu Pengaturan.'); }
+  try{ return await res.json(); }
+  catch(e){ throw new Error('Respons Apps Script bukan format yang valid. URL deployment kemungkinan sudah berubah/tidak aktif — periksa kembali di menu Pengaturan.'); }
 }
 async function apiPost(action, payload={}){
   const res = await fetch(settings.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...payload}) });
-  return res.json();
+  if(!res.ok){ throw new Error('Apps Script merespons status '+res.status+'. URL deployment kemungkinan sudah tidak aktif — periksa kembali di menu Pengaturan.'); }
+  try{ return await res.json(); }
+  catch(e){ throw new Error('Respons Apps Script bukan format yang valid. URL deployment kemungkinan sudah berubah/tidak aktif — periksa kembali di menu Pengaturan.'); }
 }
 function refreshDriveStatusUI(connected){
   $('#driveStatus').classList.toggle('connected', !!connected);
@@ -1653,12 +1658,16 @@ async function openFolderFile(file, parentFolderId, parentTitle){
   $('#readerBackBtn').style.display = 'inline-flex';
   const body = $('#readerBody');
   body.innerHTML = `<div class="no-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><div>Memuat…</div></div>`;
-  const r = await apiGet('file', {id: file.id});
-  if(!r.ok){ body.innerHTML = noPreviewHtml('Gagal memuat file: '+r.error); return; }
-  const dataUrl = `data:${r.file.mimeType};base64,${r.file.base64}`;
-  if((r.file.mimeType||'').includes('pdf')) body.innerHTML = `<iframe src="${dataUrl}"></iframe>`;
-  else if((r.file.mimeType||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
-  else body.innerHTML = noPreviewHtml('Pratinjau untuk jenis file ini belum didukung di browser.', dataUrl, r.file.name);
+  try{
+    const r = await apiGet('file', {id: file.id});
+    if(!r.ok){ body.innerHTML = noPreviewHtml('Gagal memuat file: '+r.error); return; }
+    const dataUrl = `data:${r.file.mimeType};base64,${r.file.base64}`;
+    if((r.file.mimeType||'').includes('pdf')) body.innerHTML = `<iframe src="${dataUrl}"></iframe>`;
+    else if((r.file.mimeType||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
+    else body.innerHTML = noPreviewHtml('Pratinjau untuk jenis file ini belum didukung di browser.', dataUrl, r.file.name);
+  }catch(err){
+    body.innerHTML = noPreviewHtml(err.message || 'Terjadi kesalahan saat memuat file.');
+  }
 }
 $('#readerBackBtn').addEventListener('click', ()=>{
   $('#readerBackBtn').style.display = 'none';
@@ -1877,8 +1886,12 @@ async function renderPhotos(){
         <div class="p-actions"><button class="icon-btn danger" data-act="del" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button></div>
       </div>`;
     const imgEl = el.querySelector('img');
-    if(p.mode==='remote'){ apiGet('file', {id:p.id}).then(r=>{ if(r.ok) imgEl.src = `data:${r.file.mimeType};base64,${r.file.base64}`; }); }
-    else if(p.mode==='local'){ idbGet(p.id).then(src=> imgEl.src = src); }
+    if(p.mode==='remote'){
+      apiGet('file', {id:p.id})
+        .then(r=>{ if(r.ok) imgEl.src = `data:${r.file.mimeType};base64,${r.file.base64}`; else el.classList.add('photo-error'); })
+        .catch(()=> el.classList.add('photo-error'));
+    }
+    else if(p.mode==='local'){ idbGet(p.id).then(src=> imgEl.src = src).catch(()=> el.classList.add('photo-error')); }
     else { imgEl.src = p.driveId ? driveImageUrl(p.driveId) : p.url; }
     el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openLightbox(p.id); });
     el.querySelector('[data-act="del"]').addEventListener('click', (e)=>{
@@ -1963,10 +1976,14 @@ async function renderLightboxImage(){
   const p = lbList[lbIndex]; if(!p) return;
   $('#lbTitle').textContent = p.title||'';
   $('#lbCounter').textContent = `${lbIndex+1} / ${lbList.length}`;
-  let src;
-  if(p.mode==='remote'){ const r = await apiGet('file',{id:p.id}); src = r.ok ? `data:${r.file.mimeType};base64,${r.file.base64}` : ''; }
-  else if(p.mode==='local') src = await idbGet(p.id);
-  else src = p.driveId ? driveImageUrl(p.driveId) : p.url;
+  let src = '';
+  try{
+    if(p.mode==='remote'){ const r = await apiGet('file',{id:p.id}); src = r.ok ? `data:${r.file.mimeType};base64,${r.file.base64}` : ''; if(!r.ok) toast('Gagal memuat foto: '+r.error, true); }
+    else if(p.mode==='local') src = await idbGet(p.id);
+    else src = p.driveId ? driveImageUrl(p.driveId) : p.url;
+  }catch(err){
+    toast(err.message || 'Gagal memuat foto', true);
+  }
   $('#lbImage').src = src;
   $('#lbDownload').href = src;
 }
