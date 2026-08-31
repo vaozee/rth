@@ -38,7 +38,14 @@ button{font-family:inherit;cursor:pointer;}
 .sidebar{width:var(--sidebar-w);flex:none;background:linear-gradient(185deg, var(--forest), var(--forest-deep));color:var(--paper);
   display:flex;flex-direction:column;padding:18px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;
   transition:width .22s ease;}
-.sidebar.collapsed{width:var(--sidebar-w-collapsed);padding:18px 12px;}
+@media (min-width:881px){
+  .sidebar.collapsed{
+    width:var(--sidebar-w-collapsed);padding:18px 10px;
+    position:fixed;left:14px;top:14px;bottom:14px;height:auto;
+    border-radius:16px;box-shadow:0 24px 60px -20px rgba(10,20,15,.5);z-index:60;
+  }
+  body.sidebar-floating .main{margin-left:calc(var(--sidebar-w-collapsed) + 28px);}
+}
 .sidebar-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:14px;}
 .brand{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;}
 .brand-mark{width:34px;height:34px;flex:none;}
@@ -77,7 +84,7 @@ button{font-family:inherit;cursor:pointer;}
 .status-dot.on{background:#7fbf8e;box-shadow:0 0 6px #7fbf8e;}
 
 /* ---- Main / top header ---- */
-.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;transition:margin-left .22s ease;}
 .topheader{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:14px;
   padding:12px 30px;background:rgba(246,241,230,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
 .breadcrumb{font-size:13.5px;color:var(--ink-muted);font-weight:600;letter-spacing:.02em;}
@@ -702,7 +709,8 @@ button{font-family:inherit;cursor:pointer;}
   </div>
   <div class="lightbox-stage">
     <button class="lb-nav lb-prev" id="lbPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
-    <img id="lbImage" src="" alt="">
+    <img id="lbImage" src="" alt="" style="display:none;">
+    <iframe id="lbFrame" src="" style="display:none;width:100%;height:100%;border:0;"></iframe>
     <button class="lb-nav lb-next" id="lbNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
   </div>
 </div>
@@ -1113,10 +1121,12 @@ const sidebarEl = $('#sidebar');
 function applySidebarState(){
   const collapsed = localStorage.getItem('rth_sidebar_collapsed') === '1';
   sidebarEl.classList.toggle('collapsed', collapsed);
+  document.body.classList.toggle('sidebar-floating', collapsed);
 }
 $('#sidebarToggleBtn').addEventListener('click', ()=>{
   const collapsed = !sidebarEl.classList.contains('collapsed');
   sidebarEl.classList.toggle('collapsed', collapsed);
+  document.body.classList.toggle('sidebar-floating', collapsed);
   localStorage.setItem('rth_sidebar_collapsed', collapsed ? '1':'0');
 });
 applySidebarState();
@@ -1995,33 +2005,37 @@ async function openLightbox(photoId){
   lightbox.classList.add('open');
   showLbHeader();
 }
-async function renderLightboxImage(){
+function renderLightboxImage(){
   const p = lbList[lbIndex]; if(!p) return;
   $('#lbTitle').textContent = p.title||'';
   $('#lbCounter').textContent = `${lbIndex+1} / ${lbList.length}`;
-  let src = '';
-  let useFallbackChain = false;
-  try{
-    if(p.mode==='remote'){ const r = await apiGet('file',{id:p.id}); src = r.ok ? `data:${r.file.mimeType};base64,${r.file.base64}` : ''; if(!r.ok) toast('Gagal memuat foto: '+r.error, true); }
-    else if(p.mode==='local') src = await idbGet(p.id);
-    else if(p.driveId && hasScript()){
-      const r = await apiGet('file', {id:p.driveId});
-      if(r.ok) src = `data:${r.file.mimeType};base64,${r.file.base64}`;
-      else useFallbackChain = true;
+  const imgEl = $('#lbImage'), frameEl = $('#lbFrame');
+  imgEl.onerror = null;
+  if(p.mode==='link' && p.driveId){
+    // Sama seperti PDF: tampilkan langsung lewat penampil bawaan Google Drive
+    // di dalam iframe — jauh lebih andal daripada endpoint gambar publik yang
+    // sering diblokir untuk akses dari luar situs Google.
+    imgEl.style.display = 'none'; imgEl.src = '';
+    frameEl.style.display = '';
+    frameEl.src = `https://drive.google.com/file/d/${p.driveId}/preview`;
+    $('#lbDownload').href = `https://drive.google.com/uc?export=download&id=${p.driveId}`;
+    return;
+  }
+  frameEl.style.display = 'none'; frameEl.src = '';
+  imgEl.style.display = '';
+  imgEl.src = '';
+  (async ()=>{
+    let src = '';
+    try{
+      if(p.mode==='remote'){ const r = await apiGet('file',{id:p.id}); src = r.ok ? `data:${r.file.mimeType};base64,${r.file.base64}` : ''; if(!r.ok) toast('Gagal memuat foto: '+r.error, true); }
+      else if(p.mode==='local') src = await idbGet(p.id);
+      else src = p.url;
+    }catch(err){
+      toast(err.message || 'Gagal memuat foto', true);
     }
-    else if(p.driveId) useFallbackChain = true;
-    else src = p.url;
-  }catch(err){
-    if(p.driveId) useFallbackChain = true;
-    else toast(err.message || 'Gagal memuat foto', true);
-  }
-  if(useFallbackChain){
-    setImgWithFallback($('#lbImage'), [driveImageUrl(p.driveId), driveImageUrlAlt(p.driveId)], ()=> toast('Foto gagal dimuat dari Drive', true));
-  } else {
-    $('#lbImage').onerror = null;
-    $('#lbImage').src = src;
-  }
-  $('#lbDownload').href = src;
+    imgEl.src = src;
+    $('#lbDownload').href = src;
+  })();
 }
 function showLbHeader(){ $('#lbHeader').classList.add('show'); clearTimeout(showLbHeader._t); showLbHeader._t = setTimeout(()=> $('#lbHeader').classList.remove('show'), 2800); }
 $('#lbHoverZone').addEventListener('mousemove', showLbHeader);
