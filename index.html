@@ -1651,22 +1651,29 @@ async function renderFolderList(folderId, title){
     body.innerHTML = `<div class="folder-browser"><div class="folder-empty">Terjadi kesalahan saat memuat folder.</div></div>`;
   }
 }
-async function openFolderFile(file, parentFolderId, parentTitle){
+function openFolderFile(file, parentFolderId, parentTitle){
   $('#readerIcon').innerHTML = ICONS[iconForMime(file.mimeType)]||ICONS.gfile;
   $('#readerTitle').textContent = file.name;
   $('#readerSub').textContent = 'Folder Google Drive · '+parentTitle;
   $('#readerBackBtn').style.display = 'inline-flex';
   const body = $('#readerBody');
-  body.innerHTML = `<div class="no-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><div>Memuat…</div></div>`;
-  try{
-    const r = await apiGet('file', {id: file.id});
-    if(!r.ok){ body.innerHTML = noPreviewHtml('Gagal memuat file: '+r.error); return; }
-    const dataUrl = `data:${r.file.mimeType};base64,${r.file.base64}`;
-    if((r.file.mimeType||'').includes('pdf')) body.innerHTML = `<iframe src="${dataUrl}"></iframe>`;
-    else if((r.file.mimeType||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
-    else body.innerHTML = noPreviewHtml('Pratinjau untuk jenis file ini belum didukung di browser.', dataUrl, r.file.name);
-  }catch(err){
-    body.innerHTML = noPreviewHtml(err.message || 'Terjadi kesalahan saat memuat file.');
+  const mime = file.mimeType || '';
+  // Pratinjau langsung lewat penampil bawaan Google Drive (tanpa transfer file lewat
+  // Apps Script) — supaya tidak ada batas ukuran file dan tidak macet loading untuk
+  // file besar seperti PDF Buletin. Tetap tertanam di halaman ini (iframe), tidak
+  // membuka tab baru. Catatan: berlaku untuk file yang bisa diakses publik/oleh
+  // akun yang menjalankan Apps Script; untuk file privat, Drive akan menampilkan
+  // halaman izin aksesnya sendiri di dalam area ini.
+  if(mime.startsWith('image/')){
+    body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${file.id}&sz=w2000" alt="${escapeHtml(file.name)}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
+  } else if(mime==='application/vnd.google-apps.document'){
+    body.innerHTML = `<iframe src="https://docs.google.com/document/d/${file.id}/preview"></iframe>`;
+  } else if(mime==='application/vnd.google-apps.spreadsheet'){
+    body.innerHTML = `<iframe src="https://docs.google.com/spreadsheets/d/${file.id}/preview"></iframe>`;
+  } else if(mime==='application/vnd.google-apps.presentation'){
+    body.innerHTML = `<iframe src="https://docs.google.com/presentation/d/${file.id}/preview"></iframe>`;
+  } else {
+    body.innerHTML = `<iframe src="https://drive.google.com/file/d/${file.id}/preview"></iframe>`;
   }
 }
 $('#readerBackBtn').addEventListener('click', ()=>{
