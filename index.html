@@ -404,23 +404,7 @@ button{font-family:inherit;cursor:pointer;}
         <div class="grid" id="kontenGrid"></div>
       </section>
 
-      <!-- ===== BULETIN (langsung dari folder Google Drive) ===== -->
-      <section class="view" id="view-buletin">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Publikasi Berkala</div>
-            <h1 class="page-title">Buletin MSAL Group</h1>
-            <p class="page-desc">Ditarik langsung dari folder Google Drive resmi — edisi terbaru otomatis tampil begitu ditambahkan ke folder.</p>
-          </div>
-          <a class="btn" id="openBuletinFolder" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
-            Buka di Google Drive
-          </a>
-        </div>
-        <div class="buletin-frame-wrap">
-          <iframe id="buletinFrame" src="" loading="lazy" title="Folder Buletin Google Drive"></iframe>
-        </div>
-      </section>
+
 
       <!-- ===== GALLERY ===== -->
       <section class="view" id="view-gallery">
@@ -693,7 +677,7 @@ button{font-family:inherit;cursor:pointer;}
     <div class="lb-counter" id="lbCounter">1 / 1</div>
     <div style="font-size:12.5px;font-weight:600;" id="lbTitle">Judul Foto</div>
     <div style="display:flex;gap:8px;">
-      <a class="btn btn-sm" id="lbDownload" download target="_blank" rel="noopener">Unduh</a>
+      <a class="btn btn-sm" id="lbDownload" download rel="noopener">Unduh</a>
       <button class="btn btn-sm" id="lbClose">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
         Tutup
@@ -1111,12 +1095,16 @@ $('#formPassword').addEventListener('submit', async (e)=>{
   if(hash === SETTINGS_PW_HASH){
     sessionStorage.setItem('rth_settings_unlocked','1');
     modalPassword.classList.remove('open');
-    toast('Pengaturan terbuka');
-    activateNav($('.nav-item[data-view="settings"]'));
+    toast('Verifikasi berhasil');
+    const action = pendingAuthAction;
+    pendingAuthAction = null;
+    if(action) action();
   } else {
     toast('Kata sandi salah', true);
   }
 });
+$('#modalPassword [data-close]').addEventListener('click', ()=>{ pendingAuthAction = null; });
+modalPassword.addEventListener('click', e=>{ if(e.target===modalPassword) pendingAuthAction = null; });
 $('#btnLockSettings').addEventListener('click', ()=>{
   sessionStorage.removeItem('rth_settings_unlocked');
   toast('Pengaturan dikunci ulang');
@@ -1124,11 +1112,22 @@ $('#btnLockSettings').addEventListener('click', ()=>{
 });
 
 /* ==========================================================
+   GERBANG PASSWORD (dipakai juga untuk simpan/edit/hapus konten)
+   ========================================================== */
+let pendingAuthAction = null;
+function requireAuth(action){
+  if(isSettingsUnlocked()){ action(); return; }
+  pendingAuthAction = action;
+  openPasswordModal();
+}
+
+/* ==========================================================
    NAVIGASI
    ========================================================== */
 function activateNav(btn){
   if(!btn) return;
-  if(btn.dataset.view==='settings' && !isSettingsUnlocked()){ openPasswordModal(); return; }
+  if(btn.dataset.view==='settings' && !isSettingsUnlocked()){ requireAuth(()=> activateNav(btn)); return; }
+  if(btn.dataset.view==='buletin'){ openBuletinReader(); return; }
   $$('.nav-item').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   $$('.view').forEach(v=>v.classList.remove('active'));
@@ -1142,9 +1141,22 @@ function activateNav(btn){
   if(view==='beranda') refreshBeranda();
   if(view==='konten'){ renderKonten(); refreshRemoteDocs(); }
   if(view==='gallery') refreshRemotePhotos();
-  if(view==='buletin') {}
 }
 $$('.nav-item').forEach(btn=> btn.addEventListener('click', ()=> activateNav(btn)) );
+
+/* ---------- Buletin dibuka lewat reader overlay: tetap dalam HTML,
+   header minimalis mengambang, dan bisa fullscreen ---------- */
+function openBuletinReader(){
+  const id = settings.buletinFolderId || DEFAULT_BULETIN_FOLDER_ID;
+  currentDoc = null; currentDocIsRemote = false; currentDocKind = 'buletin';
+  $('#readerIcon').innerHTML = ICONS.gfile;
+  $('#readerTitle').textContent = 'Buletin MSAL Group';
+  $('#readerSub').textContent = 'Folder Google Drive · Langsung';
+  $('#readerEditBtn').style.display = 'none';
+  $('#readerBody').innerHTML = `<iframe src="https://drive.google.com/embeddedfolderview?id=${id}#grid"></iframe>`;
+  readerOverlay.classList.add('open');
+  showReaderHeader();
+}
 
 $$('.cat-tab').forEach(t=> t.addEventListener('click', ()=>{
   currentCategory = t.dataset.cat;
@@ -1216,7 +1228,6 @@ $('#btnSaveBuletinFolder').addEventListener('click', ()=>{
   const id = extractDriveId(url) || DEFAULT_BULETIN_FOLDER_ID;
   settings.buletinFolderId = id;
   saveSettings(settings);
-  initBuletin();
   toast('Folder Buletin disimpan');
 });
 
@@ -1263,35 +1274,41 @@ function docCardHtml(doc, isRemote, kind){
 }
 function attachCardHandlers(el, doc, isRemote, kind){
   el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openReader(doc, isRemote); });
-  el.querySelector('[data-act="edit"]').addEventListener('click', async (e)=>{
+  el.querySelector('[data-act="edit"]').addEventListener('click', (e)=>{
     e.stopPropagation();
     if(isRemote){
       if(kind==='gdoc'){
-        const r = await apiGet('docText', {id: doc.id});
-        if(r.ok) openDocModal({id:doc.id, mode:'note', category:'dokumentasi', title:doc.title, content:r.text, isRemote:true});
-        else toast('Gagal memuat isi dokumen: '+r.error, true);
+        requireAuth(async ()=>{
+          const r = await apiGet('docText', {id: doc.id});
+          if(r.ok) openDocModal({id:doc.id, mode:'note', category:'dokumentasi', title:doc.title, content:r.text, isRemote:true});
+          else toast('Gagal memuat isi dokumen: '+r.error, true);
+        });
       } else {
-        const nn = prompt('Ganti nama dokumen:', doc.title);
-        if(nn && nn.trim()){
-          const r = await apiPost('rename', {id:doc.id, name:nn.trim()});
-          if(r.ok){ toast('Nama diperbarui'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
-        }
+        requireAuth(async ()=>{
+          const nn = prompt('Ganti nama dokumen:', doc.title);
+          if(nn && nn.trim()){
+            const r = await apiPost('rename', {id:doc.id, name:nn.trim()});
+            if(r.ok){ toast('Nama diperbarui'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
+          }
+        });
       }
-    } else { openDocModal(doc); }
+    } else { requireAuth(()=> openDocModal(doc)); }
   });
-  el.querySelector('[data-act="delete"]').addEventListener('click', async (e)=>{
+  el.querySelector('[data-act="delete"]').addEventListener('click', (e)=>{
     e.stopPropagation();
-    if(!confirm('Hapus konten ini?')) return;
-    if(isRemote){
-      const r = await apiPost('delete', {id: doc.id});
-      if(r.ok){ toast('Dihapus dari Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
-    } else {
-      if(doc.mode==='local') await idbDelete(doc.id);
-      localDocs = localDocs.filter(d=>d.id!==doc.id);
-      saveArr(LS_DOCS, localDocs);
-      renderKonten(); renderBeranda();
-      toast('Konten dihapus');
-    }
+    requireAuth(async ()=>{
+      if(!confirm('Hapus konten ini?')) return;
+      if(isRemote){
+        const r = await apiPost('delete', {id: doc.id});
+        if(r.ok){ toast('Dihapus dari Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
+      } else {
+        if(doc.mode==='local') await idbDelete(doc.id);
+        localDocs = localDocs.filter(d=>d.id!==doc.id);
+        saveArr(LS_DOCS, localDocs);
+        renderKonten(); renderBeranda();
+        toast('Konten dihapus');
+      }
+    });
   });
 }
 function renderKonten(){
@@ -1386,8 +1403,11 @@ function upsertLocalDoc(rec){
   saveArr(LS_DOCS, localDocs);
 }
 
-$('#formDoc').addEventListener('submit', async e=>{
+$('#formDoc').addEventListener('submit', e=>{
   e.preventDefault();
+  requireAuth(handleDocSubmit);
+});
+async function handleDocSubmit(){
   const mode = $('#docMode').value;
   const editId = $('#docEditId').value;
   const isRemoteEdit = $('#docEditRemote').value==='1';
@@ -1456,7 +1476,7 @@ $('#formDoc').addEventListener('submit', async e=>{
     modalDoc.classList.remove('open');
     renderKonten(); renderBeranda(); renderTicker();
   }
-});
+}
 
 /* ==========================================================
    IndexedDB (blob lokal)
@@ -1508,7 +1528,7 @@ async function openReader(doc, isRemote){
       if(r.ok) body.innerHTML = `<div class="reader-note-area"><div class="note-render">${renderNote(r.text)}</div></div>`;
       else body.innerHTML = noPreviewHtml('Gagal memuat isi dokumen: '+r.error);
     } else if(kind==='gsheet' || kind==='gslide'){
-      body.innerHTML = noPreviewHtml('Pratinjau langsung belum tersedia untuk tipe file ini. Buka di Google Drive untuk melihat isinya.', null, null, doc.webViewLink);
+      body.innerHTML = `<iframe src="${driveEmbedUrl(kind, doc.id)}"></iframe>`;
     } else {
       const r = await apiGet('file', {id: doc.id});
       if(!r.ok){ body.innerHTML = noPreviewHtml('Gagal memuat file: '+r.error); }
@@ -1537,12 +1557,11 @@ async function openReader(doc, isRemote){
   readerOverlay.classList.add('open');
   showReaderHeader();
 }
-function noPreviewHtml(msg, dataUrl, fileName, extLink){
+function noPreviewHtml(msg, dataUrl, fileName){
   return `<div class="no-preview">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
     <div>${escapeHtml(msg)}</div>
     ${dataUrl?`<a class="btn btn-gold" href="${dataUrl}" download="${escapeHtml(fileName||'file')}">Unduh File</a>`:''}
-    ${extLink?`<a class="btn btn-gold" href="${extLink}" target="_blank" rel="noopener">Buka di Google Drive</a>`:''}
   </div>`;
 }
 $('#readerCloseBtn').addEventListener('click', closeReader);
@@ -1686,10 +1705,7 @@ function setupAutoRefresh(){
 /* ==========================================================
    BULETIN
    ========================================================== */
-function initBuletin(){
-  const id = settings.buletinFolderId || DEFAULT_BULETIN_FOLDER_ID;
-  $('#buletinFrame').src = `https://drive.google.com/embeddedfolderview?id=${id}#grid`;
-  $('#openBuletinFolder').href = `https://drive.google.com/drive/folders/${id}`;
+function initBuletinSettingsField(){
   $('#buletinFolderInput').value = settings.buletinFolderId ? `https://drive.google.com/drive/folders/${settings.buletinFolderId}` : '';
 }
 
@@ -1730,11 +1746,13 @@ async function renderPhotos(){
     else if(p.mode==='local'){ idbGet(p.id).then(src=> imgEl.src = src); }
     else { imgEl.src = p.driveId ? driveImageUrl(p.driveId) : p.url; }
     el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openLightbox(p.id); });
-    el.querySelector('[data-act="del"]').addEventListener('click', async (e)=>{
+    el.querySelector('[data-act="del"]').addEventListener('click', (e)=>{
       e.stopPropagation();
-      if(!confirm('Hapus foto ini?')) return;
-      if(p.mode==='remote'){ const r = await apiPost('delete', {id:p.id}); if(r.ok){ toast('Foto dihapus dari Drive'); refreshRemotePhotos(); } else toast('Gagal: '+r.error, true); }
-      else { if(p.mode==='local') await idbDelete(p.id); localPhotos = localPhotos.filter(x=>x.id!==p.id); saveArr(LS_PHOTOS, localPhotos); renderPhotos(); toast('Foto dihapus'); }
+      requireAuth(async ()=>{
+        if(!confirm('Hapus foto ini?')) return;
+        if(p.mode==='remote'){ const r = await apiPost('delete', {id:p.id}); if(r.ok){ toast('Foto dihapus dari Drive'); refreshRemotePhotos(); } else toast('Gagal: '+r.error, true); }
+        else { if(p.mode==='local') await idbDelete(p.id); localPhotos = localPhotos.filter(x=>x.id!==p.id); saveArr(LS_PHOTOS, localPhotos); renderPhotos(); toast('Foto dihapus'); }
+      });
     });
     grid.appendChild(el);
   }
@@ -1759,8 +1777,11 @@ $('#photoFileInput').addEventListener('change', e=>{
   pendingPhotoFile = f; $('#photoFileName').textContent = f.name;
   if(!$('#photoTitle').value) $('#photoTitle').value = f.name.replace(/\.[^.]+$/,'');
 });
-$('#formPhoto').addEventListener('submit', async e=>{
+$('#formPhoto').addEventListener('submit', e=>{
   e.preventDefault();
+  requireAuth(handlePhotoSubmit);
+});
+async function handlePhotoSubmit(){
   const mode = $('#formPhoto').dataset.mode || 'link';
   const title = $('#photoTitle').value.trim() || 'Foto tanpa judul';
   const submitBtn = $('#formPhoto button[type=submit]');
@@ -1791,7 +1812,7 @@ $('#formPhoto').addEventListener('submit', async e=>{
       }
     }
   } finally { submitBtn.disabled = false; pendingPhotoFile = null; modalPhoto.classList.remove('open'); renderPhotos(); }
-});
+}
 
 /* ---------- lightbox ---------- */
 const lightbox = $('#lightbox');
@@ -1860,7 +1881,7 @@ $('#btnResetAll').addEventListener('click', async ()=>{
   if(!settings.buletinFolderId){ settings.buletinFolderId = DEFAULT_BULETIN_FOLDER_ID; saveSettings(settings); }
   $('#scriptUrlInput').value = settings.scriptUrl;
   initSiteName();
-  initBuletin();
+  initBuletinSettingsField();
   renderKonten();
   renderPhotos();
   renderBeranda();
