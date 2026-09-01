@@ -22,7 +22,17 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
 body{background:var(--ivory);color:var(--ink);font-family:var(--font-body);min-height:100%;-webkit-font-smoothing:antialiased;}
-body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;background-image:radial-gradient(rgba(31,61,47,.05) 1px, transparent 1px);background-size:3px 3px;}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(rgba(31,61,47,.06) 1px, transparent 1px),
+    repeating-linear-gradient(90deg, rgba(19,42,32,.03) 0px, rgba(19,42,32,.03) 1px, transparent 1px, transparent 46px),
+    repeating-linear-gradient(0deg, rgba(19,42,32,.022) 0px, rgba(19,42,32,.022) 1px, transparent 1px, transparent 46px);
+  background-size:3px 3px, 46px 46px, 46px 46px;}
+body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:.6;mix-blend-mode:multiply;
+  background:radial-gradient(ellipse at center, transparent 45%, rgba(19,42,32,.07) 145%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.08  0 0 0 0 0.16  0 0 0 0 0.12  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
 ::selection{background:rgba(179,133,78,.28);}
 a{color:inherit;text-decoration:none;}
 button{font-family:inherit;cursor:pointer;}
@@ -259,6 +269,15 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .reader-body iframe{width:100%;height:100%;border:0;display:block;background:#fff;}
 .reader-hover-zone{position:absolute;top:0;left:0;right:0;height:70px;z-index:4;}
 .reader-note-area{max-width:740px;margin:0 auto;height:100%;overflow-y:auto;padding:120px 26px 100px;background:var(--paper);}
+.reader-note-area.docx-mode{max-width:900px;background:transparent;padding:120px 22px 100px;}
+.docx-page{background:#fffdf9;padding:58px 66px;box-shadow:0 22px 55px -20px rgba(19,42,32,.4);border-radius:2px;color:#242019;
+  font-family:Georgia,'Times New Roman',serif;line-height:1.75;font-size:15.5px;}
+.docx-page h1,.docx-page h2,.docx-page h3{font-family:var(--font-display);margin:1.1em 0 .5em;color:#132a20;}
+.docx-page p{margin:0 0 1em;}
+.docx-page ul,.docx-page ol{margin:0 0 1em 22px;}
+.docx-page table{border-collapse:collapse;width:100%;margin:1em 0;font-size:13.5px;}
+.docx-page td,.docx-page th{border:1px solid #d8d2c4;padding:6px 10px;}
+.docx-page img{max-width:100%;height:auto;}
 .folder-browser{max-width:920px;margin:0 auto;height:100%;overflow-y:auto;padding:110px 24px 80px;background:var(--paper);}
 .folder-path{font-size:11.5px;color:var(--ink-dim);margin-bottom:16px;}
 .folder-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
@@ -319,16 +338,23 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .lock-icon-wrap svg{width:24px;height:24px;}
 
 @media (max-width:880px){
-  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%!important;height:auto;flex-direction:row;padding:8px 10px;z-index:100;}
+  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%!important;height:auto;flex-direction:row;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:100;box-shadow:0 -8px 26px -14px rgba(0,0,0,.45);}
   .sidebar-top,.company-block,.nav-group-label,.sidebar-foot,.sidebar-toggle{display:none;}
-  .nav{flex-direction:row;width:100%;justify-content:space-around;overflow-x:auto;}
-  .nav-item{flex-direction:column;gap:4px;font-size:9px;padding:8px 6px;border-left:none;border-top:2px solid transparent;}
-  .nav-item.active{border-top-color:var(--gold-soft);}
+  .nav{flex-direction:row;width:100%;gap:0;overflow-x:visible;}
+  .nav-item{flex:1 1 0;min-width:0;flex-direction:column;justify-content:center;gap:3px;font-size:8.6px;padding:6px 2px 5px;
+    border-left:none;border-top:none;border-radius:9px;text-align:center;}
+  .nav-item.active{border-top-color:transparent;box-shadow:none;}
+  .nav-item.active::before{content:'';display:block;width:26px;height:2.5px;border-radius:2px;background:var(--gold-soft);margin:0 auto 4px;}
+  .nav-item .label{max-width:100%;font-weight:600;letter-spacing:0;}
   .nav-item .tag{display:none;}
-  .nav-item svg{width:17px;height:17px;}
-  .content-wrap{padding:20px 16px 90px;}
+  .nav-item svg{width:18px;height:18px;}
+  .content-wrap{padding:20px 16px 96px;}
   .topheader{left:14px!important;top:10px;padding:8px 10px 8px 16px;max-width:calc(100% - 28px);}
   .settings-grid{grid-template-columns:1fr;}
+}
+@media (max-width:400px){
+  .nav-item{font-size:8px;padding:6px 1px 5px;}
+  .nav-item svg{width:17px;height:17px;}
 }
 </style>
 </head>
@@ -1123,6 +1149,21 @@ function setImgWithFallback(imgEl, urls, onFail){
   imgEl.src = urls[0];
 }
 
+/* Render file HTML apa adanya (tampilan asli/hidup), bukan sebagai teks —
+   pakai srcdoc supaya tidak perlu escape manual dan tetap ter-sandbox aman
+   dari halaman utama (script boleh jalan, tapi tidak bisa akses DOM induk). */
+function renderHtmlIframe(bodyEl, htmlText){
+  bodyEl.innerHTML = '';
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('sandbox', 'allow-scripts allow-popups allow-forms');
+  iframe.style.cssText = 'width:100%;height:100%;border:0;background:#fff;display:block;';
+  iframe.srcdoc = htmlText;
+  bodyEl.appendChild(iframe);
+}
+function isHtmlFile(mime, name){
+  return (mime||'').includes('html') || /\.(html?|xhtml)$/i.test(name||'');
+}
+
 function renderNote(text){
   const esc = escapeHtml(text||'');
   const lines = esc.split('\n');
@@ -1137,6 +1178,29 @@ function renderNote(text){
   }
   if(inList) html+='</ul>';
   return html;
+}
+
+/* ---------- Konversi .docx menjadi HTML ASLI (bukan teks polos) lewat
+   mammoth.js, dimuat sekali saja saat dibutuhkan (lazy-load dari CDN). ---------- */
+let mammothLoadPromise = null;
+function loadMammoth(){
+  if(window.mammoth) return Promise.resolve(window.mammoth);
+  if(mammothLoadPromise) return mammothLoadPromise;
+  mammothLoadPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    s.onload = ()=> window.mammoth ? resolve(window.mammoth) : reject(new Error('mammoth gagal dimuat'));
+    s.onerror = ()=> reject(new Error('mammoth gagal dimuat'));
+    document.head.appendChild(s);
+  });
+  return mammothLoadPromise;
+}
+function dataUrlToArrayBuffer(dataUrl){
+  const base64 = dataUrl.split(',')[1] || '';
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
 }
 
 const ICONS = {
@@ -1786,6 +1850,16 @@ async function openReader(doc, isRemote){
       body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview"></iframe>`;
     } else if((doc.mimeType||'').startsWith('image/')){
       body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${doc.id}&sz=w2000" alt="${escapeHtml(doc.title||doc.name||'')}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
+    } else if(isHtmlFile(doc.mimeType, doc.title||doc.name)){
+      // File HTML ditampilkan APA ADANYA (halaman hidup), bukan lewat pratinjau
+      // kode/teks Drive — ambil isi asli filenya lalu render dalam iframe srcdoc.
+      try{
+        const r = await apiGet('file', {id: doc.id});
+        if(r.ok){
+          const htmlText = decodeURIComponent(escape(atob(r.file.base64)));
+          renderHtmlIframe(body, htmlText);
+        } else body.innerHTML = noPreviewHtml('Gagal memuat file HTML: '+r.error);
+      }catch(e){ body.innerHTML = noPreviewHtml('Gagal memuat file HTML ini.'); }
     } else {
       body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview"></iframe>`;
     }
@@ -1794,6 +1868,25 @@ async function openReader(doc, isRemote){
     if(!dataUrl){ body.innerHTML = noPreviewHtml('File tidak ditemukan di penyimpanan lokal.'); }
     else if((doc.mime||'').includes('pdf')) body.innerHTML = `<iframe src="${dataUrl}"></iframe>`;
     else if((doc.mime||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
+    else if(isHtmlFile(doc.mime, doc.fileName)){
+      try{
+        const htmlText = decodeURIComponent(escape(atob(dataUrl.split(',')[1])));
+        renderHtmlIframe(body, htmlText);
+      }catch(e){ body.innerHTML = noPreviewHtml('Gagal menampilkan file HTML ini.', dataUrl, doc.fileName); }
+    }
+    else if((doc.mime||'').includes('officedocument.wordprocessingml') || /\.docx$/i.test(doc.fileName||'')){
+      // File Word (.docx) yang belum disinkron ke Drive: dikonversi jadi HTML
+      // asli (bukan teks polos) lewat mammoth.js, ditampilkan sebagai halaman
+      // dokumen yang bisa discroll — setara dengan pengalaman iframe PDF.
+      body.innerHTML = `<div class="no-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><div>Menyiapkan pratinjau dokumen…</div></div>`;
+      try{
+        const mammoth = await loadMammoth();
+        const result = await mammoth.convertToHtml({ arrayBuffer: dataUrlToArrayBuffer(dataUrl) });
+        body.innerHTML = `<div class="reader-note-area docx-mode"><div class="docx-page">${result.value}</div></div>`;
+      }catch(e){
+        body.innerHTML = noPreviewHtml('Gagal menampilkan pratinjau dokumen Word ini di peramban.', dataUrl, doc.fileName);
+      }
+    }
     else if((doc.mime||'').startsWith('text/') || /\.(md|txt)$/i.test(doc.fileName||'')){
       const text = decodeURIComponent(escape(atob(dataUrl.split(',')[1])));
       body.innerHTML = `<div class="reader-note-area"><div class="note-render">${renderNote(text)}</div></div>`;
@@ -1857,7 +1950,7 @@ async function renderFolderList(folderId, title){
     body.innerHTML = `<div class="folder-browser"><div class="folder-empty">Terjadi kesalahan saat memuat folder.</div></div>`;
   }
 }
-function openFolderFile(file, parentFolderId, parentTitle){
+async function openFolderFile(file, parentFolderId, parentTitle){
   $('#readerIcon').innerHTML = ICONS[iconForMime(file.mimeType)]||ICONS.gfile;
   $('#readerTitle').textContent = file.name;
   $('#readerSub').textContent = 'Folder Google Drive · '+parentTitle;
@@ -1878,6 +1971,13 @@ function openFolderFile(file, parentFolderId, parentTitle){
     body.innerHTML = `<iframe src="https://docs.google.com/spreadsheets/d/${file.id}/preview"></iframe>`;
   } else if(mime==='application/vnd.google-apps.presentation'){
     body.innerHTML = `<iframe src="https://docs.google.com/presentation/d/${file.id}/preview"></iframe>`;
+  } else if(isHtmlFile(mime, file.name)){
+    body.innerHTML = `<div class="no-preview"><div>Memuat…</div></div>`;
+    try{
+      const r = await apiGet('file', {id: file.id});
+      if(r.ok) renderHtmlIframe(body, decodeURIComponent(escape(atob(r.file.base64))));
+      else body.innerHTML = noPreviewHtml('Gagal memuat file HTML: '+r.error);
+    }catch(e){ body.innerHTML = noPreviewHtml('Gagal memuat file HTML ini.'); }
   } else {
     body.innerHTML = `<iframe src="https://drive.google.com/file/d/${file.id}/preview"></iframe>`;
   }
