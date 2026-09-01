@@ -151,11 +151,19 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:16px;}
-.card{padding:17px;display:flex;flex-direction:column;gap:10px;transition:.18s;cursor:pointer;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);}
+.card{padding:0;overflow:hidden;display:flex;flex-direction:column;transition:.18s;cursor:pointer;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);}
 .card:hover{transform:translateY(-2px);box-shadow:0 16px 34px -18px rgba(31,61,47,.4);border-color:var(--gold-soft);}
+.card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:9px;flex:1;}
+.card-cover{position:relative;width:100%;aspect-ratio:16/10;background:linear-gradient(135deg,var(--forest-soft),var(--paper-alt));overflow:hidden;flex:none;}
+.card-cover .cover-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--forest);opacity:.5;}
+.card-cover .cover-fallback svg{width:32px;height:32px;}
+.card-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.card-cover-cat{position:absolute;top:9px;left:9px;z-index:2;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 9px;border-radius:999px;background:rgba(19,42,32,.75);color:#f6f1e6;backdrop-filter:blur(3px);}
+.card-cover-featured{aspect-ratio:auto;height:260px;}
 .card-icon{width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--forest-soft);border:1px solid var(--line);color:var(--forest);flex:none;}
 .card-icon svg{width:18px;height:18px;}
-.card-top{display:flex;align-items:center;gap:10px;justify-content:space-between;}
+.card-top{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
 .card-title{font-family:var(--font-display);font-size:16.5px;font-weight:600;line-height:1.4;}
 .card-meta{font-size:12px;color:var(--ink-dim);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .badge{border:1px solid var(--line-strong);border-radius:5px;padding:2px 7px;color:var(--ink-muted);}
@@ -169,6 +177,16 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .icon-btn svg{width:13px;height:13px;}
 .icon-btn:hover{color:var(--gold);border-color:var(--gold);}
 .icon-btn.danger:hover{color:var(--danger);border-color:var(--danger);}
+
+/* ---- Mode kompak (dipakai saat tab "Semua Kategori") — hanya judul ---- */
+.grid.compact{display:flex;flex-direction:column;gap:0;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+.compact-row{display:flex;align-items:center;gap:11px;padding:11px 16px;border-bottom:1px solid var(--line);cursor:pointer;transition:.15s;background:var(--paper);}
+.compact-row:last-child{border-bottom:none;}
+.compact-row:hover{background:var(--paper-alt);}
+.compact-row .compact-icon{width:24px;height:24px;border-radius:5px;background:var(--forest-soft);color:var(--forest);display:flex;align-items:center;justify-content:center;flex:none;}
+.compact-row .compact-icon svg{width:12px;height:12px;}
+.compact-row .compact-title{font-size:13.5px;font-weight:600;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.compact-row .compact-cat{font-size:9.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--forest);background:var(--forest-soft);border-radius:999px;padding:2px 9px;flex:none;}
 
 .empty-state{border:1px dashed var(--line-strong);border-radius:var(--radius);padding:54px 20px;text-align:center;color:var(--ink-muted);grid-column:1/-1;background:var(--paper);}
 .empty-state svg{width:32px;height:32px;color:var(--ink-dim);margin-bottom:12px;}
@@ -1417,23 +1435,60 @@ function kindFromMime(mime){
 function allDocs(){ return [...remoteDocs, ...localDocs]; }
 function docCategory(doc){ return doc.category || 'dokumentasi'; }
 
+/* ---------- Cover/thumbnail ala portal berita: gambar sampul dari Drive
+   (thumbnail Drive berlaku untuk PDF/gambar/dokumen), atau untuk file gambar
+   yang tersimpan lokal di peramban; selain itu jatuh ke ikon penanda. ---------- */
+function driveThumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w500`; }
+function coverHtml(doc, isRemote, kind, featured){
+  let imgSrc = '';
+  if(isRemote) imgSrc = driveThumbUrl(doc.id);
+  else if(doc.mode==='drive' && doc.driveId) imgSrc = driveThumbUrl(doc.driveId);
+  const isLocalImg = !isRemote && doc.mode==='local' && (doc.mime||'').startsWith('image/');
+  const cls = featured ? 'card-cover card-cover-featured' : 'card-cover';
+  return `<div class="${cls}" ${isLocalImg?`data-local-cover="${doc.id}"`:''}>
+    <div class="cover-fallback">${ICONS[kind]||ICONS.gfile}</div>
+    ${imgSrc?`<img src="${imgSrc}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}
+    <span class="card-cover-cat">${escapeHtml(CATEGORY_LABELS[docCategory(doc)]||'')}</span>
+  </div>`;
+}
+function hydrateLocalCovers(scopeEl){
+  (scopeEl||document).querySelectorAll('[data-local-cover]').forEach(el=>{
+    if(el.dataset.hydrated) return;
+    el.dataset.hydrated = '1';
+    const id = el.dataset.localCover;
+    idbGet(id).then(dataUrl=>{
+      if(!dataUrl) return;
+      const img = document.createElement('img');
+      img.src = dataUrl; img.alt = ''; img.loading = 'lazy';
+      el.appendChild(img);
+    }).catch(()=>{});
+  });
+}
+
 function docCardHtml(doc, isRemote, kind){
   const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
   const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
   return `
-    <div class="card-top">
-      <div class="card-icon">${ICONS[kind]||ICONS.gfile}</div>
-      <div class="card-actions">
-        <button class="icon-btn" data-act="edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
-        <button class="icon-btn danger" data-act="delete" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button>
+    ${coverHtml(doc, isRemote, kind)}
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-actions">
+          <button class="icon-btn" data-act="edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+          <button class="icon-btn danger" data-act="delete" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button>
+        </div>
       </div>
-    </div>
-    <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
-    <div class="card-desc">${escapeHtml(doc.tags || (doc.mode==='note' ? (doc.content||'').replace(/[#*-]/g,'').slice(0,90) : 'Klik untuk membaca dalam mode layar penuh.'))}</div>
-    <div class="card-meta">
-      <span class="badge b-cat">${CATEGORY_LABELS[docCategory(doc)]||'Dokumentasi'}</span>
-      <span class="badge ${badgeClass}">${badgeText}</span>
+      <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+      <div class="card-desc">${escapeHtml(doc.tags || (doc.mode==='note' ? (doc.content||'').replace(/[#*-]/g,'').slice(0,90) : 'Klik untuk membaca dalam mode layar penuh.'))}</div>
+      <div class="card-meta">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+      </div>
     </div>`;
+}
+function docCompactHtml(doc, kind){
+  return `
+    <div class="compact-icon">${ICONS[kind]||ICONS.gfile}</div>
+    <div class="compact-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+    <span class="compact-cat">${escapeHtml(CATEGORY_LABELS[docCategory(doc)]||'')}</span>`;
 }
 function attachCardHandlers(el, doc, isRemote, kind){
   el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openReader(doc, isRemote); });
@@ -1474,6 +1529,9 @@ function attachCardHandlers(el, doc, isRemote, kind){
     });
   });
 }
+function attachCompactHandlers(el, doc, isRemote){
+  el.addEventListener('click', ()=> openReader(doc, isRemote));
+}
 function renderKonten(){
   $$('.cat-tab').forEach(t=> t.classList.toggle('active', t.dataset.cat===currentCategory));
   const label = currentCategory==='semua' ? 'Semua Kategori' : (CATEGORY_LABELS[currentCategory]||'Konten');
@@ -1484,6 +1542,8 @@ function renderKonten(){
   $('#navDocCount').textContent = allDocs().length;
   $('#statDocs').textContent = allDocs().length;
   const grid = $('#kontenGrid');
+  const isCompact = currentCategory === 'semua';
+  grid.className = isCompact ? 'grid compact' : 'grid';
   grid.innerHTML = '';
   if(list.length===0){
     grid.innerHTML = `<div class="empty-state">
@@ -1497,11 +1557,18 @@ function renderKonten(){
     const isRemote = doc.mode==='remote';
     const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
     const el = document.createElement('div');
-    el.className = 'card';
-    el.innerHTML = docCardHtml(doc, isRemote, kind);
-    attachCardHandlers(el, doc, isRemote, kind);
+    if(isCompact){
+      el.className = 'compact-row';
+      el.innerHTML = docCompactHtml(doc, kind);
+      attachCompactHandlers(el, doc, isRemote);
+    } else {
+      el.className = 'card';
+      el.innerHTML = docCardHtml(doc, isRemote, kind);
+      attachCardHandlers(el, doc, isRemote, kind);
+    }
     grid.appendChild(el);
   });
+  if(!isCompact) hydrateLocalCovers(grid);
 }
 $('#btnAddDoc').addEventListener('click', ()=> requireAuth(()=> openDocModal(null)));
 
@@ -1957,6 +2024,7 @@ function renderBeranda(){
   featEl.style.cssText = 'padding:0;overflow:hidden;cursor:pointer;margin-bottom:4px;';
   featEl.innerHTML = `
     <div class="panel-gold-rule"></div>
+    ${coverHtml(first, isRemoteFirst, isRemoteFirst ? kindFromMime(first.mimeType) : (first.mode==='local' ? 'localfile' : (first.mode==='note' ? 'note' : first.kind)), true)}
     <div style="padding:26px 28px;">
       <div class="card-meta" style="margin-bottom:12px;">
         <span class="badge b-cat">${CATEGORY_LABELS[docCategory(first)]||'Dokumentasi'}</span>
@@ -1968,6 +2036,7 @@ function renderBeranda(){
     </div>`;
   featEl.addEventListener('click', ()=> openReader(first, isRemoteFirst));
   featuredWrap.appendChild(featEl);
+  hydrateLocalCovers(featEl);
 
   rest.forEach(doc=>{
     const isRemote = doc.mode==='remote';
@@ -1976,16 +2045,18 @@ function renderBeranda(){
     const el = document.createElement('div');
     el.className = 'card';
     el.innerHTML = `
-      <div class="card-top"><div class="card-icon">${ICONS[kind]||ICONS.gfile}</div></div>
-      <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
-      <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote))}</div>
-      <div class="card-meta">
-        <span class="badge b-cat">${CATEGORY_LABELS[docCategory(doc)]||'Dokumentasi'}</span>
-        <span>${dateStr ? new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
+      ${coverHtml(doc, isRemote, kind)}
+      <div class="card-body">
+        <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+        <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote))}</div>
+        <div class="card-meta">
+          <span>${dateStr ? new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
+        </div>
       </div>`;
     el.addEventListener('click', ()=> openReader(doc, isRemote));
     grid.appendChild(el);
   });
+  hydrateLocalCovers(grid);
 }
 function setupAutoRefresh(){
   clearInterval(autoRefreshTimer);
