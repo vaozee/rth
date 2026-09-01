@@ -218,6 +218,14 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .p-overlay .p-actions{display:flex;gap:6px;margin-top:6px;}
 .p-overlay .icon-btn{background:rgba(19,42,32,.65);border-color:rgba(255,255,255,.2);color:#fff;}
 
+.video-tile{background:#132a20;aspect-ratio:16/10;}
+.video-tile:not(:has(img)){display:flex;align-items:center;justify-content:center;}
+.video-play-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;
+  background:rgba(19,42,32,.68);border:1.5px solid rgba(255,255,255,.55);color:#fff;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;transition:.2s;}
+.video-play-badge svg{width:18px;height:18px;margin-left:2px;}
+.video-tile:hover .video-play-badge{background:var(--gold);border-color:var(--gold);transform:translate(-50%,-50%) scale(1.08);}
+
 /* ---- Buletin ---- */
 .buletin-frame-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--paper);}
 .buletin-frame-wrap iframe{width:100%;height:74vh;border:0;display:block;}
@@ -426,6 +434,11 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         <span class="label">Galeri Foto</span>
         <span class="tag" id="navPhotoCount">0</span>
       </button>
+      <button class="nav-item" data-view="video" title="Video">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5.5" width="14" height="13" rx="2"/><path d="M16.5 10l5-3v10l-5-3"/></svg>
+        <span class="label">Video</span>
+        <span class="tag" id="navVideoCount">0</span>
+      </button>
       <button class="nav-item locked" data-view="settings" title="Pengaturan (terkunci)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/></svg>
         <span class="label">Pengaturan</span>
@@ -531,6 +544,28 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         <div class="photo-grid" id="photoGrid"></div>
       </section>
 
+      <!-- ===== VIDEO ===== -->
+      <section class="view" id="view-video">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Dokumentasi Visual</div>
+            <h1 class="page-title">Video</h1>
+            <p class="page-desc">Unggah video dari perangkat atau tempel tautan share Google Drive. Video Drive diputar langsung lewat penampil bawaan Drive; video yang disimpan di peramban ini bisa diputar tanpa koneksi internet.</p>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btnAddVideo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Video
+          </button>
+          <button class="btn" id="btnRefreshVideos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            Muat Ulang dari Drive
+          </button>
+        </div>
+        <div class="photo-grid" id="videoGrid"></div>
+      </section>
+
       <!-- ===== SETTINGS ===== -->
       <section class="view" id="view-settings">
         <div class="topbar">
@@ -624,6 +659,7 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
       <button class="active" data-tab="link">Tautan Drive</button>
       <button data-tab="upload">Unggah File</button>
       <button data-tab="note">Tulis Artikel</button>
+      <button data-tab="weblink">Link Web</button>
     </div>
 
     <form id="formDoc">
@@ -687,6 +723,18 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         </div>
       </div>
 
+      <div class="doc-tab-panel" data-panel="weblink" style="display:none;">
+        <div class="field">
+          <label>Judul</label>
+          <input type="text" id="docTitleWeblink" placeholder="mis. Portal Berita Perkebunan Nasional">
+        </div>
+        <div class="field">
+          <label>URL Halaman / Portal Web</label>
+          <input type="url" id="docWeblinkUrl" placeholder="https://contoh.com/artikel">
+          <div class="field-hint">Halaman akan disisipkan (embed) apa adanya di dalam pembaca layar penuh. Sebagian situs membatasi penyisipan (X-Frame-Options) — kalau begitu, pakai tombol "Buka di Tab Baru" di pembaca.</div>
+        </div>
+      </div>
+
       <div class="field">
         <label>Tag / Catatan Singkat (opsional)</label>
         <input type="text" id="docTags" placeholder="mis. blok perumahan, arsip 2026">
@@ -746,6 +794,53 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
   </div>
 </div>
 
+<!-- ================= MODAL: ADD VIDEO ================= -->
+<div class="modal-backdrop" id="modalVideo">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Tambah Video</div>
+      <button class="modal-close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="tab-switch" id="videoTabs">
+      <button class="active" data-tab="link">Dari Tautan Drive</button>
+      <button data-tab="upload">Unggah Video</button>
+    </div>
+    <form id="formVideo">
+      <div class="doc-tab-panel" data-panel="link">
+        <div class="field">
+          <label>Link Share Google Drive</label>
+          <input type="url" id="videoUrl" placeholder="https://drive.google.com/file/d/....">
+          <div class="field-hint">Video harus dibagikan publik ("siapa saja yang memiliki tautan") supaya bisa diputar di sini.</div>
+        </div>
+      </div>
+      <div class="doc-tab-panel" data-panel="upload" style="display:none;">
+        <div class="field">
+          <label>Pilih Video</label>
+          <div class="upload-drop" id="videoDropZone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5.5" width="14" height="13" rx="2"/><path d="M16.5 10l5-3v10l-5-3"/></svg>
+            <div>Klik untuk pilih video, atau seret ke sini</div>
+            <div id="videoFileName" style="margin-top:6px;font-size:11px;color:var(--gold);"></div>
+          </div>
+          <input type="file" id="videoFileInput" accept="video/*" style="display:none;">
+        </div>
+        <div class="field field-check">
+          <input type="checkbox" id="videoSaveToDrive" checked>
+          <label for="videoSaveToDrive" style="margin:0;">Simpan ke Google Drive (via Apps Script)</label>
+        </div>
+        <div class="field-hint" style="margin-top:-4px;">Video yang tidak disimpan ke Drive akan tersimpan di penyimpanan peramban ini dan tetap bisa diputar offline — cocok untuk file yang tidak terlalu besar.</div>
+      </div>
+      <div class="field">
+        <label>Judul</label>
+        <input type="text" id="videoTitle" placeholder="Nama video">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Video</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ================= FULLSCREEN READER ================= -->
 <div class="reader-overlay" id="readerOverlay">
   <div class="reader-hover-zone" id="readerHoverZone"></div>
@@ -766,6 +861,10 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
         Edit
       </button>
+      <a class="btn btn-sm btn-ghost" id="readerExternalBtn" href="#" target="_blank" rel="noopener" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+        Buka di Tab Baru
+      </a>
       <button class="btn btn-sm btn-ghost" id="readerFullscreenBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
@@ -839,6 +938,7 @@ async function sha256Hex(text){
 /* ---------- local storage ---------- */
 const LS_DOCS = 'rth_docs_local_v2';
 const LS_PHOTOS = 'rth_photos_local_v1';
+const LS_VIDEOS = 'rth_videos_local_v1';
 const LS_SETTINGS = 'rth_settings_v2';
 function loadArr(key){ try{ return JSON.parse(localStorage.getItem(key)) || []; }catch(e){ return []; } }
 function saveArr(key,arr){ localStorage.setItem(key, JSON.stringify(arr)); }
@@ -847,9 +947,11 @@ function saveSettings(s){ localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); 
 
 let localDocs = loadArr(LS_DOCS);
 let localPhotos = loadArr(LS_PHOTOS);
+let localVideos = loadArr(LS_VIDEOS);
 let settings = loadSettings();
 let remoteDocs = [];
 let remotePhotos = [];
+let remoteVideos = [];
 let lastUpdatedAt = null;
 let autoRefreshTimer = null;
 let currentCategory = 'semua';
@@ -1187,6 +1289,13 @@ function base64ToUtf8(base64){
   for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
   return new TextDecoder('utf-8').decode(bytes);
 }
+/* Data-URI -> Blob URL: dipakai untuk video offline supaya pemutaran lebih
+   ringan (tidak menaruh seluruh video sebagai string raksasa di atribut src). */
+async function dataUrlToBlobUrl(dataUrl){
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
 
 function renderNote(text){
   const esc = escapeHtml(text||'');
@@ -1236,9 +1345,11 @@ const ICONS = {
   image:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>`,
   pdf:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 15h1.5a1.5 1.5 0 0 0 0-3H9v5"/></svg>`,
   localfile:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>`,
-  note:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>`
+  note:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>`,
+  video: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5.5" width="14" height="13" rx="2"/><path d="M16.5 10l5-3v10l-5-3"/></svg>`,
+  weblink:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>`
 };
-const KIND_LABEL = {gdoc:'Google Docs', gsheet:'Google Sheets', gslide:'Google Slides', gfile:'File Drive', gfolder:'Folder Drive', localfile:'File (peramban)', note:'Artikel'};
+const KIND_LABEL = {gdoc:'Google Docs', gsheet:'Google Sheets', gslide:'Google Slides', gfile:'File Drive', gfolder:'Folder Drive', localfile:'File (peramban)', note:'Artikel', video:'Video', weblink:'Tautan Web'};
 
 function iconForMime(mime){
   if(!mime) return 'gfile';
@@ -1403,6 +1514,7 @@ function activateNav(btn){
   if(view==='beranda') refreshBeranda();
   if(view==='konten'){ renderKonten(); refreshRemoteDocs(); }
   if(view==='gallery') refreshRemotePhotos();
+  if(view==='video') refreshRemoteVideos();
 }
 $$('.nav-item').forEach(btn=> btn.addEventListener('click', ()=> activateNav(btn)) );
 
@@ -1518,6 +1630,7 @@ function kindFromMime(mime){
   if(mime==='application/vnd.google-apps.document') return 'gdoc';
   if(mime==='application/vnd.google-apps.spreadsheet') return 'gsheet';
   if(mime==='application/vnd.google-apps.presentation') return 'gslide';
+  if((mime||'').startsWith('video/')) return 'video';
   return 'gfile';
 }
 function allDocs(){ return [...remoteDocs, ...localDocs]; }
@@ -1555,7 +1668,7 @@ function hydrateLocalCovers(scopeEl){
 
 function docCardHtml(doc, isRemote, kind){
   const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
-  const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : 'TAUTAN'));
+  const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : (doc.mode==='weblink' ? 'WEB' : 'TAUTAN')));
   return `
     ${coverHtml(doc, isRemote, kind)}
     <div class="card-body">
@@ -1672,12 +1785,13 @@ function openDocModal(existing){
   let tab = 'link';
   if(existing){
     $('#docModalTitle').textContent = 'Edit Konten';
-    tab = existing.mode==='local' ? 'upload' : (existing.mode==='note' ? 'note' : 'link');
+    tab = existing.mode==='local' ? 'upload' : (existing.mode==='note' ? 'note' : (existing.mode==='weblink' ? 'weblink' : 'link'));
     $('#docTags').value = existing.tags || '';
     $('#docCategory').value = existing.category || 'artikel';
     if(tab==='link'){ $('#docTitleLink').value = existing.title; $('#docDriveUrl').value = existing.originalUrl||''; }
     if(tab==='upload'){ $('#docTitleUpload').value = existing.title; $('#docFileName').textContent = existing.fileName||''; }
     if(tab==='note'){ $('#docTitleNote').value = existing.title; $('#docNoteContent').value = existing.content||''; $('#docNoteSaveToDrive').checked = !!existing.isRemote; $('#docNoteSaveToDrive').disabled = !!existing.isRemote; }
+    if(tab==='weblink'){ $('#docTitleWeblink').value = existing.title; $('#docWeblinkUrl').value = existing.url||''; }
     $$('#docTabs button').forEach(b=> b.disabled = (b.dataset.tab!==tab));
   } else {
     $('#docModalTitle').textContent = 'Tambah Konten';
@@ -1788,6 +1902,14 @@ async function handleDocSubmit(){
         toast('Konten disimpan di peramban ini');
       }
     }
+    else if(mode==='weblink'){
+      const title = $('#docTitleWeblink').value.trim();
+      const url = $('#docWeblinkUrl').value.trim();
+      if(!title || !url){ toast('Judul dan URL wajib diisi', true); return; }
+      if(!/^https?:\/\//i.test(url)){ toast('URL harus diawali http:// atau https://', true); return; }
+      upsertLocalDoc({id: editId||uid(), mode:'weblink', kind:'weblink', category, title, url, tags, createdAt: Date.now()});
+      toast(editId ? 'Konten diperbarui' : 'Tautan web ditambahkan');
+    }
   } finally {
     submitBtn.disabled = false;
     pendingDocFile = null;
@@ -1846,7 +1968,7 @@ async function openReader(doc, isRemote){
     return;
   }
   currentDoc = doc; currentDocIsRemote = isRemote;
-  const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
+  const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? ((doc.mime||'').startsWith('video/') ? 'video' : 'localfile') : (doc.mode==='note' ? 'note' : doc.kind));
   currentDocKind = kind;
   if(kind==='gfolder'){ openFolderBrowser(doc.id, doc.title||doc.name); return; }
   requestReaderFullscreen();
@@ -1856,6 +1978,9 @@ async function openReader(doc, isRemote){
   $('#readerTitle').textContent = doc.title||doc.name;
   $('#readerSub').textContent = `${KIND_LABEL[kind]||''} · ${CATEGORY_LABELS[docCategory(doc)]||''}`;
   $('#readerEditBtn').style.display = (kind==='gdoc' || doc.mode==='note') ? 'inline-flex' : 'none';
+  const externalBtn = $('#readerExternalBtn');
+  if(doc.mode==='weblink'){ externalBtn.style.display = 'inline-flex'; externalBtn.href = doc.url; }
+  else externalBtn.style.display = 'none';
 
   const body = $('#readerBody');
   body.innerHTML = `<div class="no-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><div>Memuat…</div></div>`;
@@ -1867,11 +1992,13 @@ async function openReader(doc, isRemote){
       else body.innerHTML = noPreviewHtml('Gagal memuat isi dokumen: '+r.error);
     } else if(kind==='gsheet' || kind==='gslide'){
       body.innerHTML = `<iframe src="${driveEmbedUrl(kind, doc.id)}"></iframe>`;
-    } else if((doc.mimeType||'').includes('pdf')){
+    } else if((doc.mimeType||'').includes('pdf') || kind==='video'){
       // Tampilan sama seperti Buletin: pratinjau langsung lewat penampil bawaan
       // Google Drive di dalam iframe (bersih, tanpa unduh base64, tanpa batas
-      // ukuran file). Header tetap mengambang di atasnya (lihat showReaderHeader).
-      body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview"></iframe>`;
+      // ukuran file). Penampil Drive otomatis menampilkan pemutar video kalau
+      // mime-nya video — jadi teknik yang sama juga dipakai untuk memutar
+      // video online. Header tetap mengambang di atasnya.
+      body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview" allow="autoplay"></iframe>`;
     } else if((doc.mimeType||'').startsWith('image/')){
       body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${doc.id}&sz=w2000" alt="${escapeHtml(doc.title||doc.name||'')}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
     } else if(isHtmlFile(doc.mimeType, doc.title||doc.name)){
@@ -1891,6 +2018,16 @@ async function openReader(doc, isRemote){
     if(!dataUrl){ body.innerHTML = noPreviewHtml('File tidak ditemukan di penyimpanan lokal.'); }
     else if((doc.mime||'').includes('pdf')) body.innerHTML = `<iframe src="${dataUrl}"></iframe>`;
     else if((doc.mime||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
+    else if((doc.mime||'').startsWith('video/')){
+      // Video offline: dikonversi ke Blob URL (bukan data-URI raksasa di
+      // atribut src) supaya pemutaran lebih ringan & lancar untuk file besar.
+      try{
+        const blobUrl = await dataUrlToBlobUrl(dataUrl);
+        body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#000;"><video src="${blobUrl}" controls playsinline style="max-width:100%;max-height:100%;"></video></div>`;
+      }catch(e){
+        body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#000;"><video src="${dataUrl}" controls playsinline style="max-width:100%;max-height:100%;"></video></div>`;
+      }
+    }
     else if(isHtmlFile(doc.mime, doc.fileName)){
       try{
         renderHtmlIframe(body, base64ToUtf8(dataUrl.split(',')[1]));
@@ -1915,8 +2052,13 @@ async function openReader(doc, isRemote){
     } else body.innerHTML = noPreviewHtml('Pratinjau untuk jenis file ini belum didukung di browser.', dataUrl, doc.fileName);
   } else if(doc.mode==='note'){
     body.innerHTML = `<div class="reader-note-area"><div class="note-render">${renderNote(doc.content)}</div></div>`;
+  } else if(doc.mode==='weblink'){
+    // Sisipkan halaman/portal eksternal apa adanya. Sebagian situs melarang
+    // penyisipan lewat header X-Frame-Options/CSP — kalau kosong/gagal, tombol
+    // "Buka di Tab Baru" di header pembaca tetap tersedia sebagai jalan pintas.
+    body.innerHTML = `<iframe src="${doc.url}" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
   } else if(doc.mode==='drive'){
-    body.innerHTML = `<iframe src="${driveEmbedUrl(doc.kind, doc.driveId)}"></iframe>`;
+    body.innerHTML = `<iframe src="${driveEmbedUrl(doc.kind, doc.driveId)}" allow="autoplay"></iframe>`;
   }
 
   readerOverlay.classList.add('open');
@@ -2309,6 +2451,119 @@ async function handlePhotoSubmit(){
       }
     }
   } finally { submitBtn.disabled = false; pendingPhotoFile = null; modalPhoto.classList.remove('open'); renderPhotos(); }
+}
+
+/* ==========================================================
+   VIDEO — mirip Galeri Foto, tapi disimpan di folder Drive "Video"
+   terpisah, dan diputar lewat pembaca layar penuh (bukan lightbox foto)
+   supaya dapat kontrol pemutar video + fullscreen otomatis yang sama
+   dengan iframe PDF.
+   ========================================================== */
+async function refreshRemoteVideos(){
+  if(!hasScript()){ remoteVideos=[]; renderVideos(); return; }
+  try{ const r = await apiGet('list', {folder:'video'}); if(r.ok) remoteVideos = r.files.map(f=>({...f, mode:'remote', title:f.name})); }catch(e){}
+  renderVideos();
+}
+$('#btnRefreshVideos').addEventListener('click', ()=>{ refreshRemoteVideos(); toast('Memuat ulang video…'); });
+
+function renderVideos(){
+  const grid = $('#videoGrid');
+  grid.innerHTML = '';
+  const all = [...remoteVideos, ...localVideos];
+  $('#navVideoCount').textContent = all.length;
+  if(all.length===0){
+    grid.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="5.5" width="14" height="13" rx="2"/><path d="M16.5 10l5-3v10l-5-3"/></svg>
+      <h4>Belum ada video</h4>
+      <p>Unggah video dari perangkat atau tempel tautan share Google Drive.</p>
+    </div>`;
+    return;
+  }
+  for(const v of all){
+    const isRemote = v.mode==='remote';
+    const el = document.createElement('div');
+    el.className = 'photo-tile video-tile';
+    const posterSrc = isRemote ? driveImageUrl(v.id) : (v.mode==='link' && v.driveId ? driveImageUrl(v.driveId) : '');
+    el.innerHTML = `${posterSrc?`<img alt="${escapeHtml(v.title||'')}" loading="lazy" src="${posterSrc}" onerror="this.remove()">`:''}
+      <div class="video-play-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+      <div class="p-overlay">
+        <div class="p-title">${escapeHtml(v.title||'')}</div>
+        <div class="p-actions"><button class="icon-btn danger" data-act="del" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button></div>
+      </div>`;
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('[data-act]')) return;
+      if(isRemote) openReader(v, true);
+      else if(v.mode==='local') openReader(v, false);
+      else if(v.mode==='link' && v.driveId) openReader({id:v.id, title:v.title, mode:'drive', kind:'video', driveId:v.driveId}, false);
+    });
+    el.querySelector('[data-act="del"]').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      requireAuth(async ()=>{
+        if(!confirm('Hapus video ini?')) return;
+        if(isRemote){ const r = await apiPost('delete', {id:v.id}); if(r.ok){ toast('Video dihapus dari Drive'); refreshRemoteVideos(); } else toast('Gagal: '+r.error, true); }
+        else { if(v.mode==='local') await idbDelete(v.id); localVideos = localVideos.filter(x=>x.id!==v.id); saveArr(LS_VIDEOS, localVideos); renderVideos(); toast('Video dihapus'); }
+      });
+    });
+    grid.appendChild(el);
+  }
+}
+
+const modalVideo = $('#modalVideo');
+let pendingVideoFile = null;
+$('#btnAddVideo').addEventListener('click', ()=> requireAuth(()=>{
+  $('#formVideo').reset(); pendingVideoFile=null; $('#videoFileName').textContent='';
+  $('#videoSaveToDrive').checked = hasScript();
+  setVideoTab('link');
+  modalVideo.classList.add('open');
+}));
+function setVideoTab(tab){
+  $$('#videoTabs button').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  $$('.doc-tab-panel', $('#formVideo')).forEach(p=> p.style.display = (p.dataset.panel===tab ? '' : 'none'));
+  $('#formVideo').dataset.mode = tab;
+}
+$('#videoTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; setVideoTab(b.dataset.tab); });
+$('#videoDropZone').addEventListener('click', ()=> $('#videoFileInput').click());
+$('#videoFileInput').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  pendingVideoFile = f; $('#videoFileName').textContent = f.name;
+  if(!$('#videoTitle').value) $('#videoTitle').value = f.name.replace(/\.[^.]+$/,'');
+});
+$('#formVideo').addEventListener('submit', e=>{
+  e.preventDefault();
+  requireAuth(handleVideoSubmit);
+});
+async function handleVideoSubmit(){
+  const mode = $('#formVideo').dataset.mode || 'link';
+  const title = $('#videoTitle').value.trim() || 'Video tanpa judul';
+  const submitBtn = $('#formVideo button[type=submit]');
+  submitBtn.disabled = true;
+  try{
+    if(mode==='link'){
+      const url = $('#videoUrl').value.trim();
+      if(!url){ toast('Isi tautan video', true); return; }
+      const driveId = extractDriveId(url);
+      if(!driveId){ toast('Tautan Google Drive tidak dikenali.', true); return; }
+      localVideos.push({id: uid(), mode:'link', title, driveId, createdAt: Date.now()});
+      saveArr(LS_VIDEOS, localVideos);
+      toast('Video ditambahkan');
+    } else {
+      if(!pendingVideoFile){ toast('Pilih file video', true); return; }
+      const saveDrive = $('#videoSaveToDrive').checked && hasScript();
+      const dataUrl = await fileToDataURL(pendingVideoFile);
+      if(saveDrive){
+        toast('Mengunggah video ke Drive…');
+        const base64 = dataUrl.split(',')[1];
+        const r = await apiPost('upload', {folder:'video', name:title+guessExt(pendingVideoFile.name), mimeType:pendingVideoFile.type||'video/mp4', base64});
+        if(r.ok){ toast('Video tersimpan di Drive'); refreshRemoteVideos(); } else toast('Gagal unggah: '+r.error, true);
+      } else {
+        const id = uid();
+        await idbPut(id, dataUrl);
+        localVideos.push({id, mode:'local', title, fileName: pendingVideoFile.name, mime: pendingVideoFile.type||'video/mp4', createdAt: Date.now()});
+        saveArr(LS_VIDEOS, localVideos);
+        toast('Video disimpan di peramban ini (bisa diputar offline)');
+      }
+    }
+  } finally { submitBtn.disabled = false; pendingVideoFile = null; modalVideo.classList.remove('open'); renderVideos(); }
 }
 
 /* ---------- lightbox ---------- */
