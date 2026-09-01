@@ -1163,6 +1163,15 @@ function renderHtmlIframe(bodyEl, htmlText){
 function isHtmlFile(mime, name){
   return (mime||'').includes('html') || /\.(html?|xhtml)$/i.test(name||'');
 }
+/* Base64 -> teks UTF-8 yang cepat & aman (tidak pernah melempar galat untuk
+   karakter multi-byte, beda dengan trik lama decodeURIComponent(escape(atob()))
+   yang kadang gagal dan memunculkan error/stack trace). */
+function base64ToUtf8(base64){
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
 
 function renderNote(text){
   const esc = escapeHtml(text||'');
@@ -1852,13 +1861,12 @@ async function openReader(doc, isRemote){
       body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${doc.id}&sz=w2000" alt="${escapeHtml(doc.title||doc.name||'')}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
     } else if(isHtmlFile(doc.mimeType, doc.title||doc.name)){
       // File HTML ditampilkan APA ADANYA (halaman hidup), bukan lewat pratinjau
-      // kode/teks Drive — ambil isi asli filenya lalu render dalam iframe srcdoc.
+      // kode/teks Drive — ambil isi asli filenya (langsung sebagai teks, tanpa
+      // base64, supaya lebih cepat dibuka) lalu render dalam iframe srcdoc.
       try{
-        const r = await apiGet('file', {id: doc.id});
-        if(r.ok){
-          const htmlText = decodeURIComponent(escape(atob(r.file.base64)));
-          renderHtmlIframe(body, htmlText);
-        } else body.innerHTML = noPreviewHtml('Gagal memuat file HTML: '+r.error);
+        const r = await apiGet('fileText', {id: doc.id});
+        if(r.ok) renderHtmlIframe(body, r.text);
+        else body.innerHTML = noPreviewHtml('Gagal memuat file HTML: '+r.error);
       }catch(e){ body.innerHTML = noPreviewHtml('Gagal memuat file HTML ini.'); }
     } else {
       body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview"></iframe>`;
@@ -1870,8 +1878,7 @@ async function openReader(doc, isRemote){
     else if((doc.mime||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
     else if(isHtmlFile(doc.mime, doc.fileName)){
       try{
-        const htmlText = decodeURIComponent(escape(atob(dataUrl.split(',')[1])));
-        renderHtmlIframe(body, htmlText);
+        renderHtmlIframe(body, base64ToUtf8(dataUrl.split(',')[1]));
       }catch(e){ body.innerHTML = noPreviewHtml('Gagal menampilkan file HTML ini.', dataUrl, doc.fileName); }
     }
     else if((doc.mime||'').includes('officedocument.wordprocessingml') || /\.docx$/i.test(doc.fileName||'')){
@@ -1888,7 +1895,7 @@ async function openReader(doc, isRemote){
       }
     }
     else if((doc.mime||'').startsWith('text/') || /\.(md|txt)$/i.test(doc.fileName||'')){
-      const text = decodeURIComponent(escape(atob(dataUrl.split(',')[1])));
+      const text = base64ToUtf8(dataUrl.split(',')[1]);
       body.innerHTML = `<div class="reader-note-area"><div class="note-render">${renderNote(text)}</div></div>`;
     } else body.innerHTML = noPreviewHtml('Pratinjau untuk jenis file ini belum didukung di browser.', dataUrl, doc.fileName);
   } else if(doc.mode==='note'){
@@ -1974,8 +1981,8 @@ async function openFolderFile(file, parentFolderId, parentTitle){
   } else if(isHtmlFile(mime, file.name)){
     body.innerHTML = `<div class="no-preview"><div>Memuat…</div></div>`;
     try{
-      const r = await apiGet('file', {id: file.id});
-      if(r.ok) renderHtmlIframe(body, decodeURIComponent(escape(atob(r.file.base64))));
+      const r = await apiGet('fileText', {id: file.id});
+      if(r.ok) renderHtmlIframe(body, r.text);
       else body.innerHTML = noPreviewHtml('Gagal memuat file HTML: '+r.error);
     }catch(e){ body.innerHTML = noPreviewHtml('Gagal memuat file HTML ini.'); }
   } else {
