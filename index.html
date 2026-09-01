@@ -6,6 +6,10 @@
 <title>Portal RTH — Rumah Tinggal Hijau | PT. Persada Sejahtera Agro Makmur</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://drive.google.com">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1149,6 +1153,17 @@ function setImgWithFallback(imgEl, urls, onFail){
   imgEl.src = urls[0];
 }
 
+/* Cache isi file teks/HTML yang sudah diambil dari Drive (per id) supaya
+   kalau file yang sama dibuka lagi, tampil INSTAN tanpa menunggu Apps
+   Script lagi. Bertahan selama tab ini masih terbuka. */
+const remoteTextCache = new Map();
+async function fetchFileTextCached(id){
+  if(remoteTextCache.has(id)) return remoteTextCache.get(id);
+  const r = await apiGet('fileText', {id});
+  if(r.ok) remoteTextCache.set(id, r);
+  return r;
+}
+
 /* Render file HTML apa adanya (tampilan asli/hidup), bukan sebagai teks —
    pakai srcdoc supaya tidak perlu escape manual dan tetap ter-sandbox aman
    dari halaman utama (script boleh jalan, tapi tidak bisa akses DOM induk). */
@@ -1864,7 +1879,7 @@ async function openReader(doc, isRemote){
       // kode/teks Drive — ambil isi asli filenya (langsung sebagai teks, tanpa
       // base64, supaya lebih cepat dibuka) lalu render dalam iframe srcdoc.
       try{
-        const r = await apiGet('fileText', {id: doc.id});
+        const r = await fetchFileTextCached(doc.id);
         if(r.ok) renderHtmlIframe(body, r.text);
         else body.innerHTML = noPreviewHtml('Gagal memuat file HTML: '+r.error);
       }catch(e){ body.innerHTML = noPreviewHtml('Gagal memuat file HTML ini.'); }
@@ -1981,7 +1996,7 @@ async function openFolderFile(file, parentFolderId, parentTitle){
   } else if(isHtmlFile(mime, file.name)){
     body.innerHTML = `<div class="no-preview"><div>Memuat…</div></div>`;
     try{
-      const r = await apiGet('fileText', {id: file.id});
+      const r = await fetchFileTextCached(file.id);
       if(r.ok) renderHtmlIframe(body, r.text);
       else body.innerHTML = noPreviewHtml('Gagal memuat file HTML: '+r.error);
     }catch(e){ body.innerHTML = noPreviewHtml('Gagal memuat file HTML ini.'); }
