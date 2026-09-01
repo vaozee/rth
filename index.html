@@ -87,14 +87,21 @@ button{font-family:inherit;cursor:pointer;}
 
 /* ---- Main / top header ---- */
 .main{flex:1;min-width:0;display:flex;flex-direction:column;transition:margin-left .22s ease;}
-.topheader{position:sticky;top:14px;z-index:50;display:inline-flex;align-items:center;gap:14px;
-  margin:14px 30px 0;padding:9px 20px;border-radius:999px;
+.topheader{position:fixed;top:14px;left:calc(var(--sidebar-w) + 30px);z-index:90;display:inline-flex;align-items:center;gap:14px;
+  padding:9px 12px 9px 20px;border-radius:999px;
   background:rgba(255,253,248,.68);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid rgba(227,217,196,.75);box-shadow:0 16px 36px -18px rgba(31,61,47,.4);
-  max-width:calc(100% - 60px);}
+  max-width:calc(100% - 60px);cursor:grab;user-select:none;
+  transform:translateY(-140%);opacity:0;transition:transform .28s ease,opacity .28s ease;}
+.topheader.show{transform:translateY(0);opacity:1;}
+.topheader.dragging{cursor:grabbing;transition:none;}
+body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 30px);}
 .breadcrumb{font-size:13.5px;color:var(--ink-muted);font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .breadcrumb b{color:var(--forest);}
-.topheader-right{display:flex;align-items:center;gap:14px;font-size:11px;color:var(--ink-dim);padding-left:14px;border-left:1px solid var(--line);flex:none;}
+.topheader-right{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--ink-dim);padding-left:14px;border-left:1px solid var(--line);flex:none;}
+.topheader-btn{width:24px;height:24px;flex:none;border-radius:50%;border:1px solid var(--line-strong);background:var(--paper);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;transition:.15s;}
+.topheader-btn:hover{border-color:var(--gold);color:var(--gold);}
+.topheader-btn svg{width:12px;height:12px;}
 
 .headline-ticker-wrap{background:var(--forest-deep);overflow:hidden;position:relative;}
 .headline-ticker-wrap::after{content:"";position:absolute;top:0;right:0;bottom:0;width:36px;background:linear-gradient(90deg, transparent, var(--forest-deep));pointer-events:none;}
@@ -302,7 +309,7 @@ button{font-family:inherit;cursor:pointer;}
   .nav-item .tag{display:none;}
   .nav-item svg{width:17px;height:17px;}
   .content-wrap{padding:20px 16px 90px;}
-  .topheader{margin:10px 14px 0;padding:8px 16px;max-width:calc(100% - 28px);}
+  .topheader{left:14px!important;top:10px;padding:8px 10px 8px 16px;max-width:calc(100% - 28px);}
   .settings-grid{grid-template-columns:1fr;}
 }
 </style>
@@ -384,9 +391,14 @@ button{font-family:inherit;cursor:pointer;}
   </aside>
 
   <main class="main">
-    <div class="topheader">
+    <div class="topheader" id="topheader">
       <div class="breadcrumb"><b>Portal RTH</b> <span id="breadcrumbText">/ Beranda</span></div>
-      <div class="topheader-right"><span id="clockText"></span></div>
+      <div class="topheader-right">
+        <span id="clockText"></span>
+        <button class="topheader-btn" id="topheaderFullscreenBtn" title="Layar penuh" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="headline-ticker-wrap" id="tickerWrap">
@@ -1157,6 +1169,68 @@ $('#sidebarToggleBtn').addEventListener('click', ()=>{
 applySidebarState();
 
 /* ==========================================================
+   HEADER AWAL — mengambang, kompak, otomatis tersembunyi,
+   bisa digeser (drag), dan bisa dijadikan layar penuh.
+   Pola sama seperti header pada pratinjau iframe (reader-header).
+   ========================================================== */
+const topheaderEl = $('#topheader');
+let topheaderHideTimer = null;
+let topheaderDragged = false;
+function showTopheader(){
+  topheaderEl.classList.add('show');
+  clearTimeout(topheaderHideTimer);
+  topheaderHideTimer = setTimeout(()=> topheaderEl.classList.remove('show'), 2800);
+}
+document.addEventListener('mousemove', e=>{ if(e.clientY<70) showTopheader(); });
+document.addEventListener('touchstart', e=>{ if(e.touches[0] && e.touches[0].clientY<70) showTopheader(); }, {passive:true});
+topheaderEl.addEventListener('mousemove', showTopheader);
+showTopheader();
+
+/* Geser (drag) header awal bebas ke posisi manapun di layar */
+(function(){
+  let dragging = false, startX=0, startY=0, startLeft=0, startTop=0;
+  function pointerDown(e){
+    if(e.target.closest('.topheader-btn')) return;
+    dragging = true; topheaderDragged = true;
+    topheaderEl.classList.add('dragging');
+    const rect = topheaderEl.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    startX = p.clientX; startY = p.clientY; startLeft = rect.left; startTop = rect.top;
+    document.addEventListener('mousemove', pointerMove);
+    document.addEventListener('mouseup', pointerUp);
+    document.addEventListener('touchmove', pointerMove, {passive:false});
+    document.addEventListener('touchend', pointerUp);
+  }
+  function pointerMove(e){
+    if(!dragging) return;
+    e.preventDefault?.();
+    const p = e.touches ? e.touches[0] : e;
+    const dx = p.clientX - startX, dy = p.clientY - startY;
+    let left = startLeft + dx, top = startTop + dy;
+    left = Math.max(6, Math.min(window.innerWidth - topheaderEl.offsetWidth - 6, left));
+    top = Math.max(6, Math.min(window.innerHeight - topheaderEl.offsetHeight - 6, top));
+    topheaderEl.style.left = left+'px';
+    topheaderEl.style.top = top+'px';
+  }
+  function pointerUp(){
+    dragging = false;
+    topheaderEl.classList.remove('dragging');
+    document.removeEventListener('mousemove', pointerMove);
+    document.removeEventListener('mouseup', pointerUp);
+    document.removeEventListener('touchmove', pointerMove);
+    document.removeEventListener('touchend', pointerUp);
+  }
+  topheaderEl.addEventListener('mousedown', pointerDown);
+  topheaderEl.addEventListener('touchstart', pointerDown, {passive:true});
+})();
+
+$('#topheaderFullscreenBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+});
+
+/* ==========================================================
    CLOCK
    ========================================================== */
 function tickClock(){
@@ -1599,6 +1673,18 @@ $('#readerHoverZone').addEventListener('mousemove', showReaderHeader);
 readerHeader.addEventListener('mousemove', showReaderHeader);
 readerOverlay.addEventListener('mousemove', e=>{ if(e.clientY<90) showReaderHeader(); });
 
+/* Semua halaman iframe (Buletin, PDF, dokumen, folder Drive) langsung dibuka
+ * dalam mode full screen browser secara otomatis, supaya konsisten dan bebas
+ * gangguan chrome browser. Dipanggil sesinkron di awal fungsi pembuka reader
+ * (sebelum ada 'await') agar masih dianggap browser sebagai aksi pengguna. */
+function requestReaderFullscreen(){
+  try{
+    if(document.fullscreenElement) return;
+    const p = readerOverlay.requestFullscreen?.();
+    if(p && p.catch) p.catch(()=>{});
+  }catch(e){}
+}
+
 async function openReader(doc, isRemote){
   if(!isRemote && doc.mode==='drive' && doc.kind==='gfolder'){
     openFolderBrowser(doc.driveId, doc.title);
@@ -1608,6 +1694,7 @@ async function openReader(doc, isRemote){
   const kind = isRemote ? kindFromMime(doc.mimeType) : (doc.mode==='local' ? 'localfile' : (doc.mode==='note' ? 'note' : doc.kind));
   currentDocKind = kind;
   if(kind==='gfolder'){ openFolderBrowser(doc.id, doc.title||doc.name); return; }
+  requestReaderFullscreen();
   $('#readerBackBtn').style.display = 'none';
   folderBrowserState = null;
   $('#readerIcon').innerHTML = ICONS[kind]||ICONS.gfile;
@@ -1660,6 +1747,7 @@ let folderBrowserState = null;
 async function openFolderBrowser(folderId, title){
   folderBrowserState = {folderId, title};
   currentDoc = null; currentDocIsRemote = false; currentDocKind = 'gfolder';
+  requestReaderFullscreen();
   $('#readerIcon').innerHTML = ICONS.gfolder;
   $('#readerTitle').textContent = title;
   $('#readerSub').textContent = 'Folder Google Drive · Langsung';
