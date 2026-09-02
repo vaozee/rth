@@ -229,6 +229,8 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 /* ---- Buletin ---- */
 .buletin-frame-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--paper);}
 .buletin-frame-wrap iframe{width:100%;height:74vh;border:0;display:block;}
+.buletin-card .card-desc{min-height:44px;}
+.buletin-card .card-actions{margin-top:auto;}
 
 /* ---- Modal ---- */
 .modal-backdrop{position:fixed;inset:0;background:rgba(19,29,22,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
@@ -522,7 +524,21 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         <div class="grid" id="kontenGrid"></div>
       </section>
 
-
+      <!-- ===== BULETIN ===== -->
+      <section class="view" id="view-buletin">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">Buletin &amp; Publikasi</div>
+            <h1 class="page-title">Buletin</h1>
+            <p class="page-desc">Daftar edisi buletin dari folder Google Drive. Pilih edisi untuk membaca PDF dalam mode layar penuh.</p>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" id="btnAddBuletin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Tambah Edisi</button>
+          <button class="btn" id="btnRefreshBuletin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Muat Ulang dari Drive</button>
+        </div>
+        <div class="grid" id="buletinGrid"></div>
+      </section>
 
       <!-- ===== GALLERY ===== -->
       <section class="view" id="view-gallery">
@@ -770,7 +786,7 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
       <div class="modal-title">Edit Tampilan Kartu</div>
       <button class="modal-close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <p class="desc" style="font-size:12px;color:var(--ink-muted);margin:-8px 0 16px;">Berlaku untuk file yang berasal langsung dari Google Drive (PDF, gambar, dokumen). Judul akan mengganti nama file aslinya di Drive.</p>
+    <p class="desc" style="font-size:12px;color:var(--ink-muted);margin:-8px 0 16px;">Berlaku untuk file yang berasal langsung dari Google Drive. Judul di sini adalah judul tampilan kartu; nama file asli di Drive tetap aman.</p>
     <form id="formMeta">
       <input type="hidden" id="metaId">
       <div class="field">
@@ -784,7 +800,7 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
       <div class="field">
         <label>Thumbnail Kartu (opsional)</label>
         <input type="url" id="metaThumbUrl" placeholder="URL gambar, atau tautan Google Drive gambar">
-        <div class="field-hint">Kosongkan untuk memakai sampul otomatis dari Drive. Atau unggah gambar di bawah ini.</div>
+        <div class="field-hint">Kosongkan untuk memakai sampul otomatis dari Drive. Untuk hasil yang terlihat oleh semua orang, gunakan URL gambar atau tautan gambar Google Drive.</div>
         <div class="upload-drop" id="metaThumbDrop" style="margin-top:10px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>
           <div>Klik untuk pilih gambar sampul</div>
@@ -1616,7 +1632,11 @@ function requireAuth(action){
 function activateNav(btn){
   if(!btn) return;
   if(btn.dataset.view==='settings' && !isSettingsUnlocked()){ requireAuth(()=> activateNav(btn)); return; }
-  if(btn.dataset.view==='buletin'){ openBuletinReader(); return; }
+  if(btn.dataset.view==='buletin'){
+    $$('.nav-item').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+    $$('.view').forEach(v=>v.classList.remove('active')); $('#view-buletin').classList.add('active');
+    $('#breadcrumbText').textContent='/ Buletin'; renderBuletin(); refreshBuletin(); return;
+  }
   $$('.nav-item').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   $$('.view').forEach(v=>v.classList.remove('active'));
@@ -1636,14 +1656,32 @@ $$('.nav-item').forEach(btn=> btn.addEventListener('click', ()=> activateNav(btn
 
 /* ---------- Buletin dibuka lewat reader overlay: tetap dalam HTML,
    header minimalis mengambang, dan bisa fullscreen ---------- */
-function openBuletinReader(){
-  if(!hasScript()){
-    toast('Sambungkan Apps Script di Pengaturan agar Buletin bisa ditampilkan di sini', true);
-    return;
-  }
-  const id = settings.buletinFolderId || DEFAULT_BULETIN_FOLDER_ID;
-  openFolderBrowser(id, 'Buletin MSAL Group');
+function openBuletinReader(){ const btn=$('.nav-item[data-view="buletin"]'); if(btn) activateNav(btn); }
+async function refreshBuletin(){
+  const grid=$('#buletinGrid'); if(!grid) return;
+  if(!hasScript()){ buletinFiles=[]; renderBuletin(); return; }
+  grid.innerHTML='<div class="empty-state"><div style="font-size:13px;">Memuat edisi buletin…</div></div>';
+  try{
+    const r=await apiGet('listAny',{folderId:settings.buletinFolderId||DEFAULT_BULETIN_FOLDER_ID});
+    if(r.ok) buletinFiles=(r.files||[]).filter(f=>f.kind!=='folder'&&((f.mimeType||'').includes('pdf')||/\.pdf$/i.test(f.name||''))).map(f=>({...f,mode:'remote',category:'buletin'}));
+    else { buletinFiles=[]; toast('Gagal memuat Buletin: '+(r.error||'Tidak diketahui'),true); }
+  }catch(e){ buletinFiles=[]; toast('Tidak bisa memuat Buletin dari Drive.',true); }
+  renderBuletin();
 }
+function renderBuletin(){
+  const grid=$('#buletinGrid'); if(!grid) return; grid.innerHTML='';
+  if(!buletinFiles.length){ grid.innerHTML='<div class="empty-state"><h4>Belum ada edisi buletin</h4><p>Tambahkan PDF baru atau muat ulang dari folder Google Drive.</p></div>'; return; }
+  buletinFiles.forEach(file=>{
+    const doc={...file,category:'buletin',mode:'remote',title:metaTitle(file)}; const el=document.createElement('div'); el.className='card buletin-card';
+    el.innerHTML=`${coverHtml(doc,true,'pdf')}<div class="card-body"><div class="card-title">${escapeHtml(metaTitle(doc))}</div><div class="card-desc">${escapeHtml(metaDescription(doc,'pdf'))}</div><div class="card-meta"><span class="badge b-drive">PDF · DRIVE</span><span>${file.modified?new Date(file.modified).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):''}</span></div><div class="card-actions"><button class="btn btn-gold btn-sm" data-act="read">Baca PDF</button><button class="icon-btn" data-act="edit" title="Edit tampilan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1-1 1z"/></svg></button></div></div>`;
+    el.addEventListener('click',e=>{if(e.target.closest('[data-act]'))return;openReader(doc,true);});
+    el.querySelector('[data-act="read"]').addEventListener('click',e=>{e.stopPropagation();openReader(doc,true);});
+    el.querySelector('[data-act="edit"]').addEventListener('click',e=>{e.stopPropagation();requireAuth(()=>openMetaModal(doc,true,'pdf',refreshBuletin));});
+    grid.appendChild(el);
+  }); hydrateLocalCovers(grid);
+}
+$('#btnAddBuletin').addEventListener('click',()=>requireAuth(()=>{$('#formBuletin').reset();pendingBuletinFile=null;$('#buletinFileName').textContent='';setBuletinTab('upload');$('#modalBuletin').classList.add('open');}));
+$('#btnRefreshBuletin').addEventListener('click',()=>{refreshBuletin();toast('Memuat ulang Buletin…');});
 
 $$('.cat-tab').forEach(t=> t.addEventListener('click', ()=>{
   currentCategory = t.dataset.cat;
@@ -1754,7 +1792,7 @@ async function refreshWeblinks(){
       sheetWeblinks = (r.items||[]).map(w=> ({
         id: w.id, mode:'weblink', kind:'weblink',
         category: w.category || 'dokumentasi', title: w.title, url: w.url,
-        tags: w.tags || '', createdAt: w.createdAt || Date.now()
+        tags: w.tags || '', server:true, createdAt: w.createdAt || Date.now()
       }));
     }
   }catch(e){}
@@ -1762,24 +1800,12 @@ async function refreshWeblinks(){
 /* ---------- Metadata tampilan kartu (keterangan & thumbnail kustom),
  * dimuat dari sheet "Metadata" supaya berlaku untuk semua orang. ---------- */
 async function refreshMetadata(){
-  if(!hasScript()) return;
-  try{
-    const r = await apiGet('listMetadata');
-    if(r.ok){ docMeta = {...docMeta, ...(r.items||{})}; saveObj(LS_META, docMeta); }
-  }catch(e){}
+  if(!hasScript()) return; try{ const r=await apiGet('listMetadata'); if(r.ok){docMeta={...docMeta,...(r.items||{})};saveObj(LS_META,docMeta);} }catch(e){}
 }
-/* Simpan keterangan & thumbnail satu item konten. Kalau Apps Script
- * tersambung, disimpan ke sheet "Metadata" (berlaku utk semua orang);
- * kalau tidak, disimpan sebagai cadangan lokal di peramban ini saja. */
-async function saveMeta(id, description, thumbnail){
-  docMeta[id] = { description, thumbnail };
-  saveObj(LS_META, docMeta);
-  if(hasScript()){
-    try{
-      const r = await apiPost('saveMetadata', {id, description, thumbnail});
-      if(!r.ok) toast('Gagal menyimpan ke server: '+r.error, true);
-    }catch(e){ toast('Gagal menyimpan metadata ke server', true); }
-  }
+async function saveMeta(id,title,description,thumbnail){
+  docMeta[id]={title:(title||'').trim(),description:(description||'').trim(),thumbnail:(thumbnail||'').trim()}; saveObj(LS_META,docMeta);
+  if(hasScript()){try{const r=await apiPost('saveMetadata',{id,title:docMeta[id].title,description:docMeta[id].description,thumbnail:docMeta[id].thumbnail}); if(!r.ok)toast('Gagal menyimpan ke server: '+r.error,true); return r;}catch(e){toast('Gagal menyimpan metadata ke server',true);return {ok:false};}}
+  return {ok:true};
 }
 function kindFromMime(mime){
   if(mime==='application/vnd.google-apps.document') return 'gdoc';
@@ -1808,13 +1834,8 @@ const FALLBACK_DESC = {
   note:'Artikel tulisan tim RTH — klik untuk membaca selengkapnya.'
 };
 function truncateText(s, n){ s = s||''; return s.length>n ? s.slice(0,n-1)+'…' : s; }
-function metaDescription(doc, kind){
-  const meta = docMeta[doc.id];
-  if(meta && meta.description) return truncateText(meta.description, 220);
-  if(doc.mode==='note' && doc.content) return truncateText((doc.content||'').replace(/[#*-]/g,''), 140);
-  if(doc.tags) return truncateText(doc.tags, 220);
-  return FALLBACK_DESC[kind] || 'Klik untuk membaca dalam mode layar penuh.';
-}
+function metaTitle(doc){ const meta=docMeta[doc.id]; return (meta&&meta.title)||doc.title||doc.name||'Tanpa judul'; }
+function metaDescription(doc,kind){ const meta=docMeta[doc.id]; if(meta&&meta.description)return truncateText(meta.description,220); if(doc.mode==='note'&&doc.content)return truncateText((doc.content||'').replace(/[#*-]/g,''),140); if(doc.tags)return truncateText(doc.tags,220); return FALLBACK_DESC[kind]||'Pilih Baca untuk membuka konten.'; }
 function allDocs(){
   const weblinks = hasScript() ? sheetWeblinks : localDocs.filter(d=>d.mode==='weblink');
   const others = localDocs.filter(d=>d.mode!=='weblink');
@@ -1861,6 +1882,13 @@ function hydrateLocalCovers(scopeEl){
   });
 }
 
+function openMetaModal(doc,isRemote,kind,refreshRemote){
+  const meta=docMeta[doc.id]||{}; $('#metaId').value=doc.id; $('#metaTitle').value=meta.title||doc.title||doc.name||''; $('#metaDesc').value=meta.description||''; $('#metaThumbUrl').value=(meta.thumbnail&&!meta.thumbnail.startsWith('local:'))?meta.thumbnail:''; $('#metaThumbFileName').textContent=''; $('#modalMeta').classList.add('open');
+  $('#formMeta').onsubmit=async e=>{e.preventDefault(); let thumb=$('#metaThumbUrl').value.trim(); const f=$('#metaThumbFile').files[0]; if(f)thumb=await fileToDataURL(f); const r=await saveMeta($('#metaId').value,$('#metaTitle').value,$('#metaDesc').value,thumb); if(r&&r.ok){if(doc)doc.title=$('#metaTitle').value||doc.title;$('#modalMeta').classList.remove('open');toast('Tampilan kartu disimpan');if(refreshRemote)await refreshRemote();renderKonten();renderBeranda();renderTicker();renderBuletin();}};
+}
+$('#metaThumbDrop').addEventListener('click',()=>$('#metaThumbFile').click());
+$('#metaThumbFile').addEventListener('change',e=>{const f=e.target.files[0];if(f)$('#metaThumbFileName').textContent=f.name;});
+
 function docCardHtml(doc, isRemote, kind){
   const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
   const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : (doc.mode==='weblink' ? (hasScript() ? 'WEB · SERVER' : 'WEB · LOKAL') : 'TAUTAN')));
@@ -1873,7 +1901,7 @@ function docCardHtml(doc, isRemote, kind){
           <button class="icon-btn danger" data-act="delete" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6"/></svg></button>
         </div>
       </div>
-      <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+      <div class="card-title">${escapeHtml(metaTitle(doc))}</div>
       <div class="card-desc">${escapeHtml(metaDescription(doc, kind))}</div>
       <div class="card-meta">
         <span class="badge ${badgeClass}">${badgeText}</span>
@@ -1883,7 +1911,7 @@ function docCardHtml(doc, isRemote, kind){
 function docCompactHtml(doc, kind){
   return `
     <div class="compact-icon">${ICONS[kind]||ICONS.gfile}</div>
-    <div class="compact-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+    <div class="compact-title">${escapeHtml(metaTitle(doc))}</div>
     <span class="compact-cat">${escapeHtml(CATEGORY_LABELS[docCategory(doc)]||'')}</span>`;
 }
 function attachCardHandlers(el, doc, isRemote, kind, opts){
@@ -1892,20 +1920,7 @@ function attachCardHandlers(el, doc, isRemote, kind, opts){
   el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openReader(doc, isRemote); });
   el.querySelector('[data-act="edit"]').addEventListener('click', (e)=>{
     e.stopPropagation();
-    if(isRemote){
-      if(kind==='gdoc'){
-        requireAuth(async ()=>{
-          const r = await apiGet('docText', {id: doc.id});
-          if(r.ok) openDocModal({id:doc.id, mode:'note', category:docCategory(doc), title:doc.title, content:r.text, isRemote:true});
-          else toast('Gagal memuat isi dokumen: '+r.error, true);
-        });
-      } else {
-        // File Drive selain Google Docs (PDF, gambar, dll): buka modal
-        // "Edit Tampilan Kartu" — judul, keterangan, dan thumbnail kustom,
-        // supaya kartunya bisa bervariasi (bukan hanya nama file).
-        requireAuth(()=> openMetaModal(doc, true, kind, refreshRemote));
-      }
-    } else {
+    if(isRemote){ requireAuth(()=>openMetaModal(doc,true,kind,refreshRemote)); } else {
       requireAuth(()=> openDocModal(doc));
     }
   });
@@ -1916,7 +1931,7 @@ function attachCardHandlers(el, doc, isRemote, kind, opts){
       if(isRemote){
         const r = await apiPost('delete', {id: doc.id});
         if(r.ok){ toast('Dihapus dari Drive'); refreshRemote(); } else toast('Gagal: '+r.error, true);
-      } else if(doc.mode==='weblink' && hasScript()){
+      } else if(doc.mode==='weblink' && hasScript() && doc.server){
         const r = await apiPost('deleteWeblink', {id: doc.id});
         if(r.ok){ toast('Tautan dihapus dari server'); await refreshWeblinks(); renderKonten(); renderBeranda(); }
         else toast('Gagal: '+r.error, true);
@@ -2107,8 +2122,11 @@ async function handleDocSubmit(){
       const url = $('#docWeblinkUrl').value.trim();
       if(!title || !url){ toast('Judul dan URL wajib diisi', true); return; }
       if(!/^https?:\/\//i.test(url)){ toast('URL harus diawali http:// atau https://', true); return; }
-      upsertLocalDoc({id: editId||uid(), mode:'weblink', kind:'weblink', category, title, url, tags, createdAt: Date.now()});
-      toast(editId ? 'Konten diperbarui' : 'Tautan web ditambahkan');
+      if(hasScript()){
+        const r=await apiPost('saveWeblink',{id:editId||uid(),title,url,category,tags});
+        if(!r.ok){toast('Gagal menyimpan tautan web ke Excel: '+(r.error||'endpoint saveWeblink belum tersedia'),true);return;}
+        await refreshWeblinks(); toast(editId?'Tautan web diperbarui di Excel':'Tautan web tersimpan di Excel');
+      }else{ upsertLocalDoc({id:editId||uid(),mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()}); toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban'); }
     }
   } finally {
     submitBtn.disabled = false;
@@ -2117,6 +2135,17 @@ async function handleDocSubmit(){
     renderKonten(); renderBeranda(); renderTicker();
   }
 }
+
+/* ==========================================================
+   BULETIN — tambah PDF
+   ========================================================== */
+let pendingBuletinFile=null;
+function setBuletinTab(tab){$$('#buletinTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$$('.doc-tab-panel',$('#formBuletin')).forEach(p=>p.style.display=p.dataset.panel===tab?'':'none');$('#formBuletin').dataset.mode=tab;}
+$('#buletinTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setBuletinTab(b.dataset.tab);});
+$('#buletinDropZone').addEventListener('click',()=>$('#buletinFileInput').click());
+$('#buletinFileInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;pendingBuletinFile=f;$('#buletinFileName').textContent=f.name;if(!$('#buletinTitleUpload').value)$('#buletinTitleUpload').value=f.name.replace(/\.pdf$/i,'');});
+$('#formBuletin').addEventListener('submit',e=>{e.preventDefault();requireAuth(handleBuletinSubmit);});
+async function handleBuletinSubmit(){const mode=$('#formBuletin').dataset.mode||'upload',btn=$('#formBuletin button[type=submit]');btn.disabled=true;try{if(!hasScript()){toast('Sambungkan Apps Script agar Buletin tersimpan di Drive.',true);return;}if(mode==='upload'){if(!pendingBuletinFile){toast('Pilih file PDF terlebih dahulu',true);return;}const title=$('#buletinTitleUpload').value.trim()||pendingBuletinFile.name.replace(/\.pdf$/i,'');const dataUrl=await fileToDataURL(pendingBuletinFile);const r=await apiPost('upload',{folder:'buletin',folderId:settings.buletinFolderId||DEFAULT_BULETIN_FOLDER_ID,name:title+guessExt(pendingBuletinFile.name),mimeType:'application/pdf',base64:dataUrl.split(',')[1]});if(r.ok){toast('Edisi Buletin tersimpan di Drive');await refreshBuletin();}else toast('Gagal unggah Buletin: '+(r.error||''),true);}else{const id=extractDriveId($('#buletinDriveUrl').value.trim());if(!id){toast('Tautan Google Drive PDF tidak dikenali.',true);return;}const r=await apiPost('saveBulletinLink',{id:uid(),driveId:id,folderId:settings.buletinFolderId||DEFAULT_BULETIN_FOLDER_ID});if(r.ok){toast('Tautan PDF Buletin tersimpan');await refreshBuletin();}else toast('Gagal menyimpan tautan PDF: '+(r.error||'endpoint saveBulletinLink belum tersedia'),true);}}finally{btn.disabled=false;pendingBuletinFile=null;$('#modalBuletin').classList.remove('open');}}
 
 /* ==========================================================
    IndexedDB (blob lokal)
@@ -2176,9 +2205,9 @@ async function openReader(doc, isRemote){
   $('#readerBackBtn').style.display = 'none';
   folderBrowserState = null;
   $('#readerIcon').innerHTML = ICONS[kind]||ICONS.gfile;
-  $('#readerTitle').textContent = doc.title||doc.name;
+  $('#readerTitle').textContent = metaTitle(doc);
   $('#readerSub').textContent = `${KIND_LABEL[kind]||''} · ${CATEGORY_LABELS[docCategory(doc)]||''}`;
-  $('#readerEditBtn').style.display = (kind==='gdoc' || doc.mode==='note') ? 'inline-flex' : 'none';
+  $('#readerEditBtn').style.display = (isRemote || doc.mode==='note' || doc.mode==='weblink') ? 'inline-flex' : 'none';
   const externalBtn = $('#readerExternalBtn');
   if(doc.mode==='weblink'){ externalBtn.style.display = 'inline-flex'; externalBtn.href = doc.url; }
   else externalBtn.style.display = 'none';
@@ -2201,7 +2230,7 @@ async function openReader(doc, isRemote){
       // video online. Header tetap mengambang di atasnya.
       body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview" allow="autoplay"></iframe>`;
     } else if((doc.mimeType||'').startsWith('image/')){
-      body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${doc.id}&sz=w2000" alt="${escapeHtml(doc.title||doc.name||'')}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
+      body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${doc.id}&sz=w2000" alt="${escapeHtml(metaTitle(doc))}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
     } else if(isHtmlFile(doc.mimeType, doc.title||doc.name)){
       // File HTML ditampilkan APA ADANYA (halaman hidup), bukan lewat pratinjau
       // kode/teks Drive — ambil isi asli filenya (langsung sebagai teks, tanpa
@@ -2378,13 +2407,9 @@ $('#readerFullscreenBtn').addEventListener('click', ()=>{
 $('#readerEditBtn').addEventListener('click', async ()=>{
   if(!currentDoc) return;
   if(currentDocIsRemote && currentDocKind==='gdoc'){
-    const r = await apiGet('docText', {id: currentDoc.id});
-    closeReader();
-    openDocModal({id: currentDoc.id, mode:'note', category:docCategory(currentDoc), title: currentDoc.title, content: r.ok?r.text:'', isRemote:true});
-  } else {
-    closeReader();
-    openDocModal(currentDoc);
-  }
+    const r=await apiGet('docText',{id:currentDoc.id}); closeReader(); openDocModal({id:currentDoc.id,mode:'note',category:docCategory(currentDoc),title:metaTitle(currentDoc),content:r.ok?r.text:'',isRemote:true});
+  } else if(currentDocIsRemote){ closeReader(); openMetaModal(currentDoc,true,currentDocKind,refreshRemoteDocs); }
+  else { closeReader(); openDocModal(currentDoc); }
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && readerOverlay.classList.contains('open')) closeReader(); });
 
@@ -2400,7 +2425,7 @@ function renderTicker(){
     const isRemote = doc.mode==='remote';
     const chip = document.createElement('button');
     chip.className = 'headline-chip';
-    chip.innerHTML = `<span class="dot"></span>${escapeHtml(doc.title||doc.name||'')}`;
+    chip.innerHTML = `<span class="dot"></span>${escapeHtml(metaTitle(doc))}`;
     chip.addEventListener('click', ()=> openReader(doc, isRemote));
     return chip;
   };
@@ -2493,7 +2518,7 @@ function renderBeranda(){
         <span class="badge b-cat">${CATEGORY_LABELS[docCategory(first)]||'Dokumentasi'}</span>
         <span>${dateFirst ? new Date(dateFirst).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
       </div>
-      <h2 style="font-family:var(--font-display);font-size:29px;font-weight:600;line-height:1.32;margin-bottom:12px;">${escapeHtml(first.title||first.name||'Tanpa judul')}</h2>
+      <h2 style="font-family:var(--font-display);font-size:29px;font-weight:600;line-height:1.32;margin-bottom:12px;">${escapeHtml(metaTitle(first))}</h2>
       <p style="color:var(--ink-muted);font-size:15.5px;line-height:1.75;max-width:700px;">${escapeHtml(docExcerpt(first, isRemoteFirst, kindFirst))}</p>
       <button class="btn btn-gold" style="margin-top:16px;">Baca Selengkapnya</button>
     </div>`;
@@ -2510,7 +2535,7 @@ function renderBeranda(){
     el.innerHTML = `
       ${coverHtml(doc, isRemote, kind)}
       <div class="card-body">
-        <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
+        <div class="card-title">${escapeHtml(metaTitle(doc))}</div>
         <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote, kind))}</div>
         <div class="card-meta">
           <span>${dateStr ? new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
@@ -2859,6 +2884,7 @@ $('#btnResetAll').addEventListener('click', ()=> requireAuth(async ()=>{
   renderPhotos();
   renderBeranda();
   renderTicker();
+  renderBuletin();
   if(hasScript()){
     try{ const r = await apiGet('ping'); refreshDriveStatusUI(r.ok); if(r.ok) await refreshBeranda(); }
     catch(e){ refreshDriveStatusUI(false); }
