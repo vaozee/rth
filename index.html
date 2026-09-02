@@ -618,6 +618,16 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
           </div>
 
           <div class="panel settings-panel">
+            <h3>Sheet Database Link Web &amp; Metadata</h3>
+            <p class="desc">Google Sheets tempat Link Web (dan keterangan/thumbnail kartu) disimpan server-side, supaya terlihat sama oleh semua orang yang membuka portal ini.</p>
+            <div class="field">
+              <label>URL Google Sheets</label>
+              <input type="text" id="databaseSheetInput" placeholder="https://docs.google.com/spreadsheets/d/xxxx/edit">
+            </div>
+            <button class="btn btn-primary" id="btnSaveDatabaseSheet">Simpan Sheet Database</button>
+          </div>
+
+          <div class="panel settings-panel">
             <h3>Nama Portal</h3>
             <div class="field">
               <label>Nama Portal</label>
@@ -1017,6 +1027,10 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
    ========================================================== */
 const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKmF2MeicmWJSUhmo6sAK4MoZujJqu4HOuJ9Mf3v3qnP0qme-NPifxidSAz-YAxDZsbA/exec";
 const DEFAULT_BULETIN_FOLDER_ID = "1yGrM4nGKsJmhUecaLQcONME0WYRla-4i";
+/* Google Sheets tempat Web Link & Metadata kartu disimpan (server-side, sama
+ * untuk semua orang yang membuka portal). Bisa diganti dari menu Pengaturan
+ * kalau ingin memakai Spreadsheet lain — lihat settings.databaseSheetId. */
+const DEFAULT_DATABASE_SHEET_ID = "10L2OfQ_2txzQW1_8efPYEpSGpLY_NxfxbVK7jmNB3nw";
 const SETTINGS_PW_HASH = "4289d6cd73d0f4f882c58908e492d7c536c069b1de5651e8225203a8b7f65a2b";
 const CATEGORY_LABELS = { artikel:'Artikel', berita:'Berita Terkini', dokumentasi:'Dokumentasi', buletin:'Buletin' };
 const CATEGORY_DESC = {
@@ -1720,14 +1734,20 @@ function hasScript(){ return !!(settings.scriptUrl); }
 async function apiGet(action, params={}){
   const url = new URL(settings.scriptUrl);
   url.searchParams.set('action', action);
-  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+  // databaseId (Spreadsheet Web Link & Metadata) otomatis disisipkan di setiap
+  // request supaya bisa diganti dari menu Pengaturan tanpa mengubah tiap
+  // pemanggilan apiGet satu-satu. Aksi yang tidak memakainya di backend akan
+  // mengabaikan parameter ini begitu saja.
+  const merged = {databaseId: settings.databaseSheetId || DEFAULT_DATABASE_SHEET_ID, ...params};
+  Object.entries(merged).forEach(([k,v])=>url.searchParams.set(k,v));
   const res = await fetch(url.toString());
   if(!res.ok){ throw new Error('Apps Script merespons status '+res.status+'. URL deployment kemungkinan sudah tidak aktif — periksa kembali di menu Pengaturan.'); }
   try{ return await res.json(); }
   catch(e){ throw new Error('Respons Apps Script bukan format yang valid. URL deployment kemungkinan sudah berubah/tidak aktif — periksa kembali di menu Pengaturan.'); }
 }
 async function apiPost(action, payload={}){
-  const res = await fetch(settings.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...payload}) });
+  const merged = {databaseId: settings.databaseSheetId || DEFAULT_DATABASE_SHEET_ID, ...payload};
+  const res = await fetch(settings.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...merged}) });
   if(!res.ok){ throw new Error('Apps Script merespons status '+res.status+'. URL deployment kemungkinan sudah tidak aktif — periksa kembali di menu Pengaturan.'); }
   try{ return await res.json(); }
   catch(e){ throw new Error('Respons Apps Script bukan format yang valid. URL deployment kemungkinan sudah berubah/tidak aktif — periksa kembali di menu Pengaturan.'); }
@@ -1758,6 +1778,16 @@ $('#btnSaveBuletinFolder').addEventListener('click', ()=>{
   settings.buletinFolderId = id;
   saveSettings(settings);
   toast('Folder Buletin disimpan');
+});
+$('#btnSaveDatabaseSheet').addEventListener('click', ()=>{
+  const url = $('#databaseSheetInput').value.trim();
+  const id = extractDriveId(url) || DEFAULT_DATABASE_SHEET_ID;
+  settings.databaseSheetId = id;
+  saveSettings(settings);
+  toast('Sheet Database Link Web disimpan');
+  // Muat ulang dari Sheet yang baru dipilih supaya langsung terlihat.
+  refreshWeblinks().then(()=>{ renderKonten(); renderBeranda(); renderTicker(); });
+  refreshMetadata();
 });
 
 /* ==========================================================
@@ -2609,6 +2639,9 @@ function setupAutoRefresh(){
 function initBuletinSettingsField(){
   $('#buletinFolderInput').value = settings.buletinFolderId ? `https://drive.google.com/drive/folders/${settings.buletinFolderId}` : '';
 }
+function initDatabaseSheetSettingsField(){
+  $('#databaseSheetInput').value = settings.databaseSheetId ? `https://docs.google.com/spreadsheets/d/${settings.databaseSheetId}/edit` : '';
+}
 
 /* ==========================================================
    FOTO
@@ -2929,9 +2962,11 @@ $('#btnResetAll').addEventListener('click', ()=> requireAuth(async ()=>{
   seedInitialArticles();
   if(!settings.scriptUrl){ settings.scriptUrl = DEFAULT_SCRIPT_URL; saveSettings(settings); }
   if(!settings.buletinFolderId){ settings.buletinFolderId = DEFAULT_BULETIN_FOLDER_ID; saveSettings(settings); }
+  if(!settings.databaseSheetId){ settings.databaseSheetId = DEFAULT_DATABASE_SHEET_ID; saveSettings(settings); }
   $('#scriptUrlInput').value = settings.scriptUrl;
   initSiteName();
   initBuletinSettingsField();
+  initDatabaseSheetSettingsField();
   renderKonten();
   renderPhotos();
   renderBeranda();
