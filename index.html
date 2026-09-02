@@ -2164,9 +2164,18 @@ async function handleDocSubmit(){
       if(!title || !url){ toast('Judul dan URL wajib diisi', true); return; }
       if(!/^https?:\/\//i.test(url)){ toast('URL harus diawali http:// atau https://', true); return; }
       if(hasScript()){
-        const r=await apiPost('saveWeblink',{id:editId||uid(),title,url,category,tags});
-        if(!r.ok){toast('Gagal menyimpan tautan web ke Excel: '+(r.error||'endpoint saveWeblink belum tersedia'),true);return;}
-        await refreshWeblinks(); toast(editId?'Tautan web diperbarui di Excel':'Tautan web tersimpan di Excel');
+        try{
+          const r=await apiPost('saveWeblink',{id:editId||uid(),title,url,category,tags});
+          if(!r || !r.ok){
+            toast('Gagal menyimpan tautan web ke Google Sheets: '+((r&&r.error)||'endpoint saveWeblink belum tersedia'),true);
+            return;
+          }
+          await refreshWeblinks();
+          toast(editId?'Tautan web diperbarui di Google Sheets':'Tautan web tersimpan di Google Sheets');
+        }catch(err){
+          toast('Gagal menyimpan tautan web ke Google Sheets: '+(err.message||err),true);
+          return;
+        }
       }else{ upsertLocalDoc({id:editId||uid(),mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()}); toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban'); }
     }
   } finally {
