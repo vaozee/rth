@@ -259,16 +259,17 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .reader-overlay{position:fixed;inset:0;background:#0f1a14;z-index:300;display:none;flex-direction:column;}
 .reader-overlay.open{display:flex;}
 .reader-header{
-  position:absolute;top:16px;left:50%;z-index:5;
+  position:absolute;top:16px;left:0;right:0;margin:0 auto;z-index:5;width:fit-content;
   display:flex;align-items:center;gap:14px;
   padding:7px 10px 7px 16px;border-radius:999px;
   background:rgba(15,26,20,.9);backdrop-filter:blur(12px);
   border:1px solid rgba(255,255,255,.12);
   box-shadow:0 18px 45px -16px rgba(0,0,0,.55);
-  max-width:min(860px,92vw);
-  transform:translate(-50%,-140%);opacity:0;transition:.28s ease;
+  max-width:92vw;cursor:grab;user-select:none;
+  transform:translateY(-140%);opacity:0;transition:transform .28s ease,opacity .28s ease;
 }
-.reader-header.show{transform:translate(-50%,0);opacity:1;}
+.reader-header.show{transform:translateY(0);opacity:1;}
+.reader-header.dragging{cursor:grabbing;transition:none;}
 .reader-header-l{display:flex;align-items:center;gap:10px;min-width:0;}
 .reader-header-l .card-icon{width:28px;height:28px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#dcb98a;flex:none;}
 .reader-title-block{min-width:0;}
@@ -312,16 +313,17 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .lightbox{position:fixed;inset:0;background:#0b0f0c;z-index:300;display:none;align-items:center;justify-content:center;flex-direction:column;}
 .lightbox.open{display:flex;}
 .lightbox-header{
-  position:absolute;top:16px;left:50%;z-index:5;
+  position:absolute;top:16px;left:0;right:0;margin:0 auto;z-index:5;width:fit-content;
   display:flex;align-items:center;gap:16px;
   padding:7px 10px 7px 18px;border-radius:999px;
   background:rgba(0,0,0,.72);backdrop-filter:blur(12px);
   border:1px solid rgba(255,255,255,.14);
   box-shadow:0 18px 45px -16px rgba(0,0,0,.6);
-  max-width:min(700px,92vw);
-  transform:translate(-50%,-140%);opacity:0;transition:.28s ease;color:#fff;
+  max-width:92vw;cursor:grab;user-select:none;
+  transform:translateY(-140%);opacity:0;transition:transform .28s ease,opacity .28s ease;color:#fff;
 }
-.lightbox-header.show{transform:translate(-50%,0);opacity:1;}
+.lightbox-header.show{transform:translateY(0);opacity:1;}
+.lightbox-header.dragging{cursor:grabbing;transition:none;}
 .lightbox-stage{flex:1;width:100%;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
 .lightbox-stage img{max-width:92vw;max-height:88vh;object-fit:contain;border-radius:3px;box-shadow:0 30px 90px -20px rgba(0,0,0,.7);}
 .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(19,42,32,.5);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;}
@@ -736,13 +738,105 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
       </div>
 
       <div class="field">
-        <label>Tag / Catatan Singkat (opsional)</label>
-        <input type="text" id="docTags" placeholder="mis. blok perumahan, arsip 2026">
+        <label>Keterangan Kartu (opsional)</label>
+        <input type="text" id="docTags" placeholder="mis. Ringkasan singkat isi dokumen — tampil di kartu">
+        <div class="field-hint">Muncul di kartu sebagai pengganti tulisan baku "Klik untuk membaca…", supaya tiap kartu terlihat berbeda.</div>
+      </div>
+
+      <div class="field">
+        <label>Thumbnail Kartu (opsional)</label>
+        <input type="url" id="docThumbUrl" placeholder="URL gambar, atau tautan Google Drive gambar">
+        <div class="field-hint">Kosongkan untuk memakai sampul otomatis. Atau unggah gambar di bawah ini.</div>
+        <div class="upload-drop" id="docThumbDrop" style="margin-top:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>
+          <div>Klik untuk pilih gambar sampul</div>
+          <div id="docThumbFileName" style="margin-top:6px;font-size:11px;color:var(--gold);"></div>
+        </div>
+        <input type="file" id="docThumbFile" accept="image/*" style="display:none;">
       </div>
 
       <div class="modal-actions">
         <button type="button" class="btn" data-close>Batal</button>
         <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= MODAL: EDIT TAMPILAN KARTU (file Drive langsung) ================= -->
+<div class="modal-backdrop" id="modalMeta">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Edit Tampilan Kartu</div>
+      <button class="modal-close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <p class="desc" style="font-size:12px;color:var(--ink-muted);margin:-8px 0 16px;">Berlaku untuk file yang berasal langsung dari Google Drive (PDF, gambar, dokumen). Judul akan mengganti nama file aslinya di Drive.</p>
+    <form id="formMeta">
+      <input type="hidden" id="metaId">
+      <div class="field">
+        <label>Judul</label>
+        <input type="text" id="metaTitle" placeholder="Judul tampilan">
+      </div>
+      <div class="field">
+        <label>Keterangan Kartu (opsional)</label>
+        <textarea id="metaDesc" style="min-height:80px;" placeholder="Ringkasan singkat isi berkas — tampil di kartu"></textarea>
+      </div>
+      <div class="field">
+        <label>Thumbnail Kartu (opsional)</label>
+        <input type="url" id="metaThumbUrl" placeholder="URL gambar, atau tautan Google Drive gambar">
+        <div class="field-hint">Kosongkan untuk memakai sampul otomatis dari Drive. Atau unggah gambar di bawah ini.</div>
+        <div class="upload-drop" id="metaThumbDrop" style="margin-top:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>
+          <div>Klik untuk pilih gambar sampul</div>
+          <div id="metaThumbFileName" style="margin-top:6px;font-size:11px;color:var(--gold);"></div>
+        </div>
+        <input type="file" id="metaThumbFile" accept="image/*" style="display:none;">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Tampilan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= MODAL: TAMBAH EDISI BULETIN ================= -->
+<div class="modal-backdrop" id="modalBuletin">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Tambah Edisi Buletin</div>
+      <button class="modal-close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="tab-switch" id="buletinTabs">
+      <button class="active" data-tab="upload">Unggah PDF</button>
+      <button data-tab="link">Tautan File Drive</button>
+    </div>
+    <form id="formBuletin">
+      <div class="doc-tab-panel" data-panel="upload">
+        <div class="field">
+          <label>File PDF Edisi Buletin</label>
+          <div class="upload-drop" id="buletinDropZone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+            <div>Klik untuk pilih file PDF, atau seret ke sini</div>
+            <div id="buletinFileName" style="margin-top:6px;font-size:11px;color:var(--gold);"></div>
+          </div>
+          <input type="file" id="buletinFileInput" accept="application/pdf" style="display:none;">
+        </div>
+        <div class="field">
+          <label>Judul Edisi</label>
+          <input type="text" id="buletinTitleUpload" placeholder="mis. Buletin MSAL Group Edisi 15">
+        </div>
+      </div>
+      <div class="doc-tab-panel" data-panel="link" style="display:none;">
+        <div class="field">
+          <label>Link Share Google Drive (file, bukan folder)</label>
+          <input type="url" id="buletinDriveUrl" placeholder="https://drive.google.com/file/d/....">
+          <div class="field-hint">File yang sudah ada di Drive akan ditautkan ke folder Buletin ini, tanpa menyalin ulang isinya.</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Edisi</button>
       </div>
     </form>
   </div>
@@ -908,7 +1002,7 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxKmF2MeicmWJSUhmo6sAK4MoZujJqu4HOuJ9Mf3v3qnP0qme-NPifxidSAz-YAxDZsbA/exec";
 const DEFAULT_BULETIN_FOLDER_ID = "1yGrM4nGKsJmhUecaLQcONME0WYRla-4i";
 const SETTINGS_PW_HASH = "4289d6cd73d0f4f882c58908e492d7c536c069b1de5651e8225203a8b7f65a2b";
-const CATEGORY_LABELS = { artikel:'Artikel', berita:'Berita Terkini', dokumentasi:'Dokumentasi' };
+const CATEGORY_LABELS = { artikel:'Artikel', berita:'Berita Terkini', dokumentasi:'Dokumentasi', buletin:'Buletin' };
 const CATEGORY_DESC = {
   artikel:'Tulisan mendalam seputar tujuan, definisi, dan program Rumah Tinggal Hijau.',
   berita:'Kabar dan liputan kegiatan terbaru di lingkungan RTH PT PSAM.',
@@ -940,8 +1034,11 @@ const LS_DOCS = 'rth_docs_local_v2';
 const LS_PHOTOS = 'rth_photos_local_v1';
 const LS_VIDEOS = 'rth_videos_local_v1';
 const LS_SETTINGS = 'rth_settings_v2';
+const LS_META = 'rth_meta_local_v1';
 function loadArr(key){ try{ return JSON.parse(localStorage.getItem(key)) || []; }catch(e){ return []; } }
 function saveArr(key,arr){ localStorage.setItem(key, JSON.stringify(arr)); }
+function loadObj(key){ try{ return JSON.parse(localStorage.getItem(key)) || {}; }catch(e){ return {}; } }
+function saveObj(key,obj){ localStorage.setItem(key, JSON.stringify(obj)); }
 function loadSettings(){ try{ return JSON.parse(localStorage.getItem(LS_SETTINGS)) || {}; }catch(e){ return {}; } }
 function saveSettings(s){ localStorage.setItem(LS_SETTINGS, JSON.stringify(s)); }
 
@@ -952,6 +1049,17 @@ let settings = loadSettings();
 let remoteDocs = [];
 let remotePhotos = [];
 let remoteVideos = [];
+/* Keterangan & thumbnail kustom per-id konten (PDF/gambar/artikel/tautan
+ * web dll), supaya kartu tidak seragam. Saat Apps Script tersambung, ini
+ * disinkronkan ke sheet "Metadata" (lihat refreshMetadata/saveMeta) supaya
+ * berlaku untuk semua orang; kalau tidak, jatuh ke cache peramban ini saja. */
+let docMeta = loadObj(LS_META);
+/* Daftar Link Web dari sheet "WebLinks" (dipakai saat Apps Script
+ * tersambung, supaya tautan web terlihat oleh semua orang — lihat
+ * refreshWeblinks/allDocs). */
+let sheetWeblinks = [];
+/* Daftar file edisi Buletin, dimuat langsung dari folder Drive Buletin. */
+let buletinFiles = [];
 let lastUpdatedAt = null;
 let autoRefreshTimer = null;
 let currentCategory = 'semua';
@@ -1403,16 +1511,23 @@ document.addEventListener('touchstart', e=>{ if(e.touches[0] && e.touches[0].cli
 topheaderEl.addEventListener('mousemove', showTopheader);
 showTopheader();
 
-/* Geser (drag) header awal bebas ke posisi manapun di layar */
-(function(){
+/* Geser (drag) header bebas ke posisi manapun di layar — dipakai bersama
+ * oleh header awal (topheader), header pembaca layar penuh (reader-header),
+ * dan header lightbox foto (lightbox-header), supaya semua header yang
+ * mengambang di atas iframe/pratinjau bisa dipindah-pindah oleh pengguna. */
+function makeDraggableHeader(el, excludeSelector){
   let dragging = false, startX=0, startY=0, startLeft=0, startTop=0;
   function pointerDown(e){
-    if(e.target.closest('.topheader-btn')) return;
-    dragging = true; topheaderDragged = true;
-    topheaderEl.classList.add('dragging');
-    const rect = topheaderEl.getBoundingClientRect();
+    if(excludeSelector && e.target.closest(excludeSelector)) return;
+    dragging = true;
+    el.classList.add('dragging');
+    const rect = el.getBoundingClientRect();
     const p = e.touches ? e.touches[0] : e;
     startX = p.clientX; startY = p.clientY; startLeft = rect.left; startTop = rect.top;
+    el.style.left = rect.left+'px';
+    el.style.top = rect.top+'px';
+    el.style.right = 'auto';
+    el.style.margin = '0';
     document.addEventListener('mousemove', pointerMove);
     document.addEventListener('mouseup', pointerUp);
     document.addEventListener('touchmove', pointerMove, {passive:false});
@@ -1424,22 +1539,23 @@ showTopheader();
     const p = e.touches ? e.touches[0] : e;
     const dx = p.clientX - startX, dy = p.clientY - startY;
     let left = startLeft + dx, top = startTop + dy;
-    left = Math.max(6, Math.min(window.innerWidth - topheaderEl.offsetWidth - 6, left));
-    top = Math.max(6, Math.min(window.innerHeight - topheaderEl.offsetHeight - 6, top));
-    topheaderEl.style.left = left+'px';
-    topheaderEl.style.top = top+'px';
+    left = Math.max(6, Math.min(window.innerWidth - el.offsetWidth - 6, left));
+    top = Math.max(6, Math.min(window.innerHeight - el.offsetHeight - 6, top));
+    el.style.left = left+'px';
+    el.style.top = top+'px';
   }
   function pointerUp(){
     dragging = false;
-    topheaderEl.classList.remove('dragging');
+    el.classList.remove('dragging');
     document.removeEventListener('mousemove', pointerMove);
     document.removeEventListener('mouseup', pointerUp);
     document.removeEventListener('touchmove', pointerMove);
     document.removeEventListener('touchend', pointerUp);
   }
-  topheaderEl.addEventListener('mousedown', pointerDown);
-  topheaderEl.addEventListener('touchstart', pointerDown, {passive:true});
-})();
+  el.addEventListener('mousedown', pointerDown);
+  el.addEventListener('touchstart', pointerDown, {passive:true});
+}
+makeDraggableHeader(topheaderEl, '.topheader-btn');
 
 $('#topheaderFullscreenBtn').addEventListener('click', (e)=>{
   e.stopPropagation();
@@ -1610,7 +1726,7 @@ $('#btnSaveBuletinFolder').addEventListener('click', ()=>{
    KONTEN (Artikel / Berita Terkini / Dokumentasi)
    ========================================================== */
 async function refreshRemoteDocs(){
-  if(!hasScript()) { remoteDocs=[]; renderKonten(); if($('#view-beranda').classList.contains('active')) renderBeranda(); return; }
+  if(!hasScript()) { remoteDocs=[]; sheetWeblinks=[]; renderKonten(); if($('#view-beranda').classList.contains('active')) renderBeranda(); return; }
   try{
     const r = await apiGet('listCategories', {});
     if(r.ok){
@@ -1621,19 +1737,89 @@ async function refreshRemoteDocs(){
       refreshDriveStatusUI(true);
     }
     else { toast('Gagal memuat dari Drive: '+r.error, true); }
+    await Promise.all([refreshWeblinks(), refreshMetadata()]);
   }catch(e){}
   renderKonten();
   renderTicker();
   if($('#view-beranda').classList.contains('active')) renderBeranda();
+}
+/* ---------- Link Web: dimuat dari sheet "WebLinks" supaya bisa ditambah
+ * manual & terlihat oleh semua orang yang membuka portal, bukan hanya
+ * tersimpan di cache satu peramban. ---------- */
+async function refreshWeblinks(){
+  if(!hasScript()){ sheetWeblinks = []; return; }
+  try{
+    const r = await apiGet('listWeblinks');
+    if(r.ok){
+      sheetWeblinks = (r.items||[]).map(w=> ({
+        id: w.id, mode:'weblink', kind:'weblink',
+        category: w.category || 'dokumentasi', title: w.title, url: w.url,
+        tags: w.tags || '', createdAt: w.createdAt || Date.now()
+      }));
+    }
+  }catch(e){}
+}
+/* ---------- Metadata tampilan kartu (keterangan & thumbnail kustom),
+ * dimuat dari sheet "Metadata" supaya berlaku untuk semua orang. ---------- */
+async function refreshMetadata(){
+  if(!hasScript()) return;
+  try{
+    const r = await apiGet('listMetadata');
+    if(r.ok){ docMeta = {...docMeta, ...(r.items||{})}; saveObj(LS_META, docMeta); }
+  }catch(e){}
+}
+/* Simpan keterangan & thumbnail satu item konten. Kalau Apps Script
+ * tersambung, disimpan ke sheet "Metadata" (berlaku utk semua orang);
+ * kalau tidak, disimpan sebagai cadangan lokal di peramban ini saja. */
+async function saveMeta(id, description, thumbnail){
+  docMeta[id] = { description, thumbnail };
+  saveObj(LS_META, docMeta);
+  if(hasScript()){
+    try{
+      const r = await apiPost('saveMetadata', {id, description, thumbnail});
+      if(!r.ok) toast('Gagal menyimpan ke server: '+r.error, true);
+    }catch(e){ toast('Gagal menyimpan metadata ke server', true); }
+  }
 }
 function kindFromMime(mime){
   if(mime==='application/vnd.google-apps.document') return 'gdoc';
   if(mime==='application/vnd.google-apps.spreadsheet') return 'gsheet';
   if(mime==='application/vnd.google-apps.presentation') return 'gslide';
   if((mime||'').startsWith('video/')) return 'video';
+  if(mime==='application/pdf') return 'pdf';
+  if((mime||'').startsWith('image/')) return 'image';
   return 'gfile';
 }
-function allDocs(){ return [...remoteDocs, ...localDocs]; }
+/* ---------- Deskripsi & thumbnail kartu yang bervariasi -----------------
+ * Sebelumnya semua kartu file dari Drive hanya menampilkan tulisan generik
+ * "Klik untuk membaca dalam mode layar penuh." — sekarang tiap jenis konten
+ * punya kalimat pembuka sendiri, dan keterangan/thumbnail bisa ditimpa lewat
+ * tombol Edit (disimpan di docMeta, lihat saveMeta/refreshMetadata). */
+const FALLBACK_DESC = {
+  gdoc:'Dokumen resmi Google Docs — klik untuk membaca isi lengkapnya.',
+  gsheet:'Lembar kerja data — klik untuk membuka tampilan Google Sheets.',
+  gslide:'Materi presentasi — klik untuk melihat slide secara penuh.',
+  gfile:'Berkas arsip Drive — klik untuk membuka pratinjau lengkap.',
+  pdf:'Dokumen PDF — klik untuk membaca dalam mode layar penuh.',
+  image:'Gambar dari arsip — klik untuk melihat dalam ukuran penuh.',
+  localfile:'Berkas tersimpan di peramban ini — klik untuk membuka pratinjaunya.',
+  video:'Rekaman video — klik untuk memutar dalam mode layar penuh.',
+  weblink:'Tautan ke halaman web eksternal — klik untuk membukanya di sini.',
+  note:'Artikel tulisan tim RTH — klik untuk membaca selengkapnya.'
+};
+function truncateText(s, n){ s = s||''; return s.length>n ? s.slice(0,n-1)+'…' : s; }
+function metaDescription(doc, kind){
+  const meta = docMeta[doc.id];
+  if(meta && meta.description) return truncateText(meta.description, 220);
+  if(doc.mode==='note' && doc.content) return truncateText((doc.content||'').replace(/[#*-]/g,''), 140);
+  if(doc.tags) return truncateText(doc.tags, 220);
+  return FALLBACK_DESC[kind] || 'Klik untuk membaca dalam mode layar penuh.';
+}
+function allDocs(){
+  const weblinks = hasScript() ? sheetWeblinks : localDocs.filter(d=>d.mode==='weblink');
+  const others = localDocs.filter(d=>d.mode!=='weblink');
+  return [...remoteDocs, ...others, ...weblinks];
+}
 function docCategory(doc){ return doc.category || 'dokumentasi'; }
 
 /* ---------- Cover/thumbnail ala portal berita: gambar sampul dari Drive
@@ -1642,11 +1828,20 @@ function docCategory(doc){ return doc.category || 'dokumentasi'; }
 function driveThumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w500`; }
 function coverHtml(doc, isRemote, kind, featured){
   let imgSrc = '';
-  if(isRemote) imgSrc = driveThumbUrl(doc.id);
-  else if(doc.mode==='drive' && doc.driveId) imgSrc = driveThumbUrl(doc.driveId);
+  let localCoverKey = '';
+  const meta = docMeta[doc.id];
+  if(meta && meta.thumbnail){
+    if(meta.thumbnail.startsWith('local:')) localCoverKey = meta.thumbnail.slice(6);
+    else imgSrc = meta.thumbnail;
+  } else if(isRemote){
+    imgSrc = driveThumbUrl(doc.id);
+  } else if(doc.mode==='drive' && doc.driveId){
+    imgSrc = driveThumbUrl(doc.driveId);
+  }
   const isLocalImg = !isRemote && doc.mode==='local' && (doc.mime||'').startsWith('image/');
+  if(isLocalImg && !imgSrc && !localCoverKey) localCoverKey = doc.id;
   const cls = featured ? 'card-cover card-cover-featured' : 'card-cover';
-  return `<div class="${cls}" ${isLocalImg?`data-local-cover="${doc.id}"`:''}>
+  return `<div class="${cls}" ${localCoverKey?`data-local-cover="${localCoverKey}"`:''}>
     <div class="cover-fallback">${ICONS[kind]||ICONS.gfile}</div>
     ${imgSrc?`<img src="${imgSrc}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}
     <span class="card-cover-cat">${escapeHtml(CATEGORY_LABELS[docCategory(doc)]||'')}</span>
@@ -1668,7 +1863,7 @@ function hydrateLocalCovers(scopeEl){
 
 function docCardHtml(doc, isRemote, kind){
   const badgeClass = isRemote ? 'b-drive' : (doc.mode==='local' ? 'b-local' : (doc.mode==='note' ? 'b-note' : 'b-drive'));
-  const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : (doc.mode==='weblink' ? 'WEB' : 'TAUTAN')));
+  const badgeText = isRemote ? 'DRIVE' : (doc.mode==='local' ? 'PERAMBAN' : (doc.mode==='note' ? 'ARTIKEL' : (doc.mode==='weblink' ? (hasScript() ? 'WEB · SERVER' : 'WEB · LOKAL') : 'TAUTAN')));
   return `
     ${coverHtml(doc, isRemote, kind)}
     <div class="card-body">
@@ -1679,7 +1874,7 @@ function docCardHtml(doc, isRemote, kind){
         </div>
       </div>
       <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
-      <div class="card-desc">${escapeHtml(doc.tags || (doc.mode==='note' ? (doc.content||'').replace(/[#*-]/g,'').slice(0,90) : 'Klik untuk membaca dalam mode layar penuh.'))}</div>
+      <div class="card-desc">${escapeHtml(metaDescription(doc, kind))}</div>
       <div class="card-meta">
         <span class="badge ${badgeClass}">${badgeText}</span>
       </div>
@@ -1691,7 +1886,9 @@ function docCompactHtml(doc, kind){
     <div class="compact-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
     <span class="compact-cat">${escapeHtml(CATEGORY_LABELS[docCategory(doc)]||'')}</span>`;
 }
-function attachCardHandlers(el, doc, isRemote, kind){
+function attachCardHandlers(el, doc, isRemote, kind, opts){
+  opts = opts || {};
+  const refreshRemote = opts.refreshRemote || refreshRemoteDocs;
   el.addEventListener('click',(e)=>{ if(e.target.closest('[data-act]')) return; openReader(doc, isRemote); });
   el.querySelector('[data-act="edit"]').addEventListener('click', (e)=>{
     e.stopPropagation();
@@ -1703,15 +1900,14 @@ function attachCardHandlers(el, doc, isRemote, kind){
           else toast('Gagal memuat isi dokumen: '+r.error, true);
         });
       } else {
-        requireAuth(async ()=>{
-          const nn = prompt('Ganti nama dokumen:', doc.title);
-          if(nn && nn.trim()){
-            const r = await apiPost('rename', {id:doc.id, name:nn.trim()});
-            if(r.ok){ toast('Nama diperbarui'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
-          }
-        });
+        // File Drive selain Google Docs (PDF, gambar, dll): buka modal
+        // "Edit Tampilan Kartu" — judul, keterangan, dan thumbnail kustom,
+        // supaya kartunya bisa bervariasi (bukan hanya nama file).
+        requireAuth(()=> openMetaModal(doc, true, kind, refreshRemote));
       }
-    } else { requireAuth(()=> openDocModal(doc)); }
+    } else {
+      requireAuth(()=> openDocModal(doc));
+    }
   });
   el.querySelector('[data-act="delete"]').addEventListener('click', (e)=>{
     e.stopPropagation();
@@ -1719,7 +1915,11 @@ function attachCardHandlers(el, doc, isRemote, kind){
       if(!confirm('Hapus konten ini?')) return;
       if(isRemote){
         const r = await apiPost('delete', {id: doc.id});
-        if(r.ok){ toast('Dihapus dari Drive'); refreshRemoteDocs(); } else toast('Gagal: '+r.error, true);
+        if(r.ok){ toast('Dihapus dari Drive'); refreshRemote(); } else toast('Gagal: '+r.error, true);
+      } else if(doc.mode==='weblink' && hasScript()){
+        const r = await apiPost('deleteWeblink', {id: doc.id});
+        if(r.ok){ toast('Tautan dihapus dari server'); await refreshWeblinks(); renderKonten(); renderBeranda(); }
+        else toast('Gagal: '+r.error, true);
       } else {
         if(doc.mode==='local') await idbDelete(doc.id);
         localDocs = localDocs.filter(d=>d.id!==doc.id);
@@ -1949,6 +2149,7 @@ function showReaderHeader(){
 $('#readerHoverZone').addEventListener('mousemove', showReaderHeader);
 readerHeader.addEventListener('mousemove', showReaderHeader);
 readerOverlay.addEventListener('mousemove', e=>{ if(e.clientY<90) showReaderHeader(); });
+makeDraggableHeader(readerHeader, '.btn');
 
 /* Semua halaman iframe (Buletin, PDF, dokumen, folder Drive) langsung dibuka
  * dalam mode full screen browser secara otomatis, supaya konsisten dan bebas
@@ -2260,11 +2461,8 @@ async function refreshBeranda(){
 }
 $('#btnRefreshBeranda').addEventListener('click', ()=>{ toast('Memperbarui berita…'); refreshBeranda(); });
 
-function docExcerpt(doc, isRemote){
-  if(isRemote) return 'Dokumen arsip Google Drive. Klik untuk membuka dalam mode baca layar penuh.';
-  if(doc.mode==='note') return (doc.content||'').replace(/[#*-]/g,'').slice(0,140) + ((doc.content||'').length>140?'…':'');
-  if(doc.mode==='drive') return 'Tautan dokumen Google Drive. Klik untuk membaca.';
-  return 'Dokumen tersimpan di peramban ini. Klik untuk membaca.';
+function docExcerpt(doc, isRemote, kind){
+  return metaDescription(doc, kind);
 }
 function renderBeranda(){
   const all = allDocs().sort((a,b)=> new Date(b.modified||b.createdAt||0) - new Date(a.modified||a.createdAt||0));
@@ -2282,20 +2480,21 @@ function renderBeranda(){
   }
   const [first, ...rest] = all;
   const isRemoteFirst = first.mode==='remote';
+  const kindFirst = isRemoteFirst ? kindFromMime(first.mimeType) : (first.mode==='local' ? 'localfile' : (first.mode==='note' ? 'note' : first.kind));
   const dateFirst = first.modified || first.createdAt;
   const featEl = document.createElement('div');
   featEl.className = 'panel';
   featEl.style.cssText = 'padding:0;overflow:hidden;cursor:pointer;margin-bottom:4px;';
   featEl.innerHTML = `
     <div class="panel-gold-rule"></div>
-    ${coverHtml(first, isRemoteFirst, isRemoteFirst ? kindFromMime(first.mimeType) : (first.mode==='local' ? 'localfile' : (first.mode==='note' ? 'note' : first.kind)), true)}
+    ${coverHtml(first, isRemoteFirst, kindFirst, true)}
     <div style="padding:26px 28px;">
       <div class="card-meta" style="margin-bottom:12px;">
         <span class="badge b-cat">${CATEGORY_LABELS[docCategory(first)]||'Dokumentasi'}</span>
         <span>${dateFirst ? new Date(dateFirst).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : ''}</span>
       </div>
       <h2 style="font-family:var(--font-display);font-size:29px;font-weight:600;line-height:1.32;margin-bottom:12px;">${escapeHtml(first.title||first.name||'Tanpa judul')}</h2>
-      <p style="color:var(--ink-muted);font-size:15.5px;line-height:1.75;max-width:700px;">${escapeHtml(docExcerpt(first, isRemoteFirst))}</p>
+      <p style="color:var(--ink-muted);font-size:15.5px;line-height:1.75;max-width:700px;">${escapeHtml(docExcerpt(first, isRemoteFirst, kindFirst))}</p>
       <button class="btn btn-gold" style="margin-top:16px;">Baca Selengkapnya</button>
     </div>`;
   featEl.addEventListener('click', ()=> openReader(first, isRemoteFirst));
@@ -2312,7 +2511,7 @@ function renderBeranda(){
       ${coverHtml(doc, isRemote, kind)}
       <div class="card-body">
         <div class="card-title">${escapeHtml(doc.title||doc.name||'Tanpa judul')}</div>
-        <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote))}</div>
+        <div class="card-desc">${escapeHtml(docExcerpt(doc, isRemote, kind))}</div>
         <div class="card-meta">
           <span>${dateStr ? new Date(dateStr).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
         </div>
@@ -2612,6 +2811,7 @@ function showLbHeader(){ $('#lbHeader').classList.add('show'); clearTimeout(show
 $('#lbHoverZone').addEventListener('mousemove', showLbHeader);
 $('#lbHeader').addEventListener('mousemove', showLbHeader);
 lightbox.addEventListener('mousemove', e=>{ if(e.clientY<90) showLbHeader(); });
+makeDraggableHeader($('#lbHeader'), '.btn');
 $('#lbClose').addEventListener('click', ()=>{ lightbox.classList.remove('open'); if(document.fullscreenElement) document.exitFullscreen?.(); });
 $('#lbPrev').addEventListener('click', ()=>{ lbIndex=(lbIndex-1+lbList.length)%lbList.length; renderLightboxImage(); });
 $('#lbNext').addEventListener('click', ()=>{ lbIndex=(lbIndex+1)%lbList.length; renderLightboxImage(); });
