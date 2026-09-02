@@ -1757,15 +1757,14 @@ async function apiPost(action, payload={}){
   catch(e){ throw new Error('Respons Apps Script bukan format yang valid. URL deployment kemungkinan sudah berubah/tidak aktif — periksa kembali di menu Pengaturan.'); }
 }
 async function apiSaveWeblink(payload={}){
-  try{
-    return await apiPost('saveWeblink', payload);
-  }catch(postErr){
-    // Fallback khusus Web Link. GET dipakai karena Web App Apps Script lebih
-    // konsisten menerima GET dari halaman yang di-host lintas domain.
-    const r = await apiGet('saveWeblink', payload);
-    if(r && r.ok) return r;
-    throw postErr;
-  }
+  // Catatan: sebelumnya ada fallback otomatis lewat GET setelah POST gagal.
+  // Itu dibuang karena berisiko mengirim DUA request penulisan hampir
+  // bersamaan (POST + GET) tanpa penguncian di sisi server, yang bisa
+  // membuat baris di Google Sheets saling menimpa/hilang, dan membuat
+  // simpan terasa lambat karena menunggu dua kali percobaan. Sekarang
+  // cukup satu percobaan lewat POST; kalau gagal, munculkan error apa
+  // adanya supaya user bisa coba lagi secara sadar (bukan otomatis ganda).
+  return await apiPost('saveWeblink', payload);
 }
 function refreshDriveStatusUI(connected){
   $('#driveStatus').classList.toggle('connected', !!connected);
@@ -2582,6 +2581,12 @@ function updateLastUpdatedText(){ $('#lastUpdatedText').textContent = lastUpdate
 setInterval(updateLastUpdatedText, 30000);
 
 async function refreshBeranda(){
+  // refreshRemoteDocs() di bawah ini SUDAH termasuk memuat Web Link
+  // (refreshWeblinks) & Metadata (refreshMetadata) — lihat definisinya.
+  // Sebelumnya Web Link yang sudah tersimpan tidak pernah tampil BUKAN
+  // karena pemanggilannya hilang di sini, tapi karena backend gagal total
+  // memuat Sheet (lihat perbaikan izin/scope & LockService sebelumnya).
+  // Dengan backend sudah benar, alur ini seharusnya sudah cukup.
   await Promise.all([refreshRemoteDocs(), refreshRemotePhotos()]);
   lastUpdatedAt = new Date();
   updateLastUpdatedText();
