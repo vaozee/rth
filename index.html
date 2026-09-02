@@ -761,6 +761,17 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
           <input type="url" id="docWeblinkUrl" placeholder="https://contoh.com/artikel">
           <div class="field-hint">Halaman akan disisipkan (embed) apa adanya di dalam pembaca layar penuh. Sebagian situs membatasi penyisipan (X-Frame-Options) — kalau begitu, pakai tombol "Buka di Tab Baru" di pembaca.</div>
         </div>
+        <div class="field">
+          <label>Thumbnail Kartu (opsional)</label>
+          <input type="url" id="docWeblinkThumbUrl" placeholder="URL gambar, atau kosongkan untuk pakai tangkapan layar halaman utama situs secara otomatis">
+          <div class="upload-drop" id="docWeblinkThumbDrop" style="margin-top:10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+            <div>Klik untuk pilih gambar dari perangkat</div>
+            <div id="docWeblinkThumbFileName" style="margin-top:6px;font-size:11px;color:var(--gold);"></div>
+          </div>
+          <input type="file" id="docWeblinkThumbFile" accept="image/*" style="display:none;">
+          <div class="field-hint">Kalau dikosongkan, thumbnail otomatis diambil dari tangkapan layar halaman utama (homepage) situs tersebut.</div>
+        </div>
       </div>
 
       <div class="field">
@@ -1905,6 +1916,16 @@ function docCategory(doc){ return doc.category || 'dokumentasi'; }
    (thumbnail Drive berlaku untuk PDF/gambar/dokumen), atau untuk file gambar
    yang tersimpan lokal di peramban; selain itu jatuh ke ikon penanda. ---------- */
 function driveThumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w500`; }
+/* Thumbnail default untuk Tautan Web: tangkapan layar HALAMAN UTAMA (homepage)
+ * situs tersebut, bukan halaman spesifik yang ditautkan — dipakai otomatis
+ * kalau user belum mengunggah/menautkan gambar sendiri lewat Edit. Memakai
+ * layanan mshots (WordPress) yang gratis dan tidak butuh API key. */
+function weblinkHomepageThumb(url){
+  try{
+    const origin = new URL(url).origin;
+    return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(origin)}?w=600`;
+  }catch(e){ return ''; }
+}
 function coverHtml(doc, isRemote, kind, featured){
   let imgSrc = '';
   let localCoverKey = '';
@@ -1916,6 +1937,8 @@ function coverHtml(doc, isRemote, kind, featured){
     imgSrc = driveThumbUrl(doc.id);
   } else if(doc.mode==='drive' && doc.driveId){
     imgSrc = driveThumbUrl(doc.driveId);
+  } else if(kind==='weblink' && doc.url){
+    imgSrc = weblinkHomepageThumb(doc.url);
   }
   const isLocalImg = !isRemote && doc.mode==='local' && (doc.mime||'').startsWith('image/');
   if(isLocalImg && !imgSrc && !localCoverKey) localCoverKey = doc.id;
@@ -2052,6 +2075,7 @@ let pendingDocFile = null;
 function openDocModal(existing){
   $('#formDoc').reset();
   pendingDocFile = null;
+  $('#docWeblinkThumbFileName').textContent = '';
   $('#docEditId').value = existing?.id || '';
   $('#docEditRemote').value = existing?.isRemote ? '1' : '';
   $('#docFileName').textContent = '';
@@ -2064,7 +2088,7 @@ function openDocModal(existing){
     if(tab==='link'){ $('#docTitleLink').value = existing.title; $('#docDriveUrl').value = existing.originalUrl||''; }
     if(tab==='upload'){ $('#docTitleUpload').value = existing.title; $('#docFileName').textContent = existing.fileName||''; }
     if(tab==='note'){ $('#docTitleNote').value = existing.title; $('#docNoteContent').value = existing.content||''; $('#docNoteSaveToDrive').checked = !!existing.isRemote; $('#docNoteSaveToDrive').disabled = !!existing.isRemote; }
-    if(tab==='weblink'){ $('#docTitleWeblink').value = existing.title; $('#docWeblinkUrl').value = existing.url||''; }
+    if(tab==='weblink'){ $('#docTitleWeblink').value = existing.title; $('#docWeblinkUrl').value = existing.url||''; const m=docMeta[existing.id]; $('#docWeblinkThumbUrl').value = (m&&m.thumbnail&&!m.thumbnail.startsWith('local:'))?m.thumbnail:''; $('#docWeblinkThumbFileName').textContent=''; }
     $$('#docTabs button').forEach(b=> b.disabled = (b.dataset.tab!==tab));
   } else {
     $('#docModalTitle').textContent = 'Tambah Konten';
@@ -2083,6 +2107,8 @@ function setDocTab(tab){
   $$('.doc-tab-panel', $('#formDoc')).forEach(p=> p.style.display = (p.dataset.panel===tab ? '' : 'none'));
 }
 $('#docTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; setDocTab(b.dataset.tab); });
+$('#docWeblinkThumbDrop').addEventListener('click', ()=> $('#docWeblinkThumbFile').click());
+$('#docWeblinkThumbFile').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) $('#docWeblinkThumbFileName').textContent = f.name; });
 $('#docDropZone').addEventListener('click', ()=> $('#docFileInput').click());
 $('#docFileInput').addEventListener('change', e=>{
   const f = e.target.files[0]; if(!f) return;
@@ -2182,11 +2208,24 @@ async function handleDocSubmit(){
       const url = $('#docWeblinkUrl').value.trim();
       if(!title || !url){ toast('Judul dan URL wajib diisi', true); return; }
       if(!/^https?:\/\//i.test(url)){ toast('URL harus diawali http:// atau https://', true); return; }
+      // Thumbnail: file yang diunggah > URL yang diketik manual > (kalau kosong,
+      // coverHtml() otomatis memakai tangkapan layar halaman utama situs).
+      const thumbFile = $('#docWeblinkThumbFile').files[0];
+      let thumbnail = $('#docWeblinkThumbUrl').value.trim();
+      if(thumbFile) thumbnail = await fileToDataURL(thumbFile);
+      const linkId = editId||uid();
       if(hasScript()){
-        const r=await apiSaveWeblink({id:editId||uid(),title,url,category,tags});
+        const r=await apiSaveWeblink({id:linkId,title,url,category,tags});
         if(!r.ok){toast('Gagal menyimpan tautan web ke Excel: '+(r.error||'endpoint saveWeblink belum tersedia'),true);return;}
+        // Thumbnail/keterangan kartu disimpan terpisah lewat sheet Metadata,
+        // sama seperti konten lain (foto/PDF/artikel dari Drive), supaya
+        // konsisten dan terlihat oleh semua orang.
+        await saveMeta(linkId, title, docMeta[linkId]?.description||'', thumbnail);
         await refreshWeblinks(); savedSuccessfully=true; toast(editId?'Tautan web diperbarui di Excel':'Tautan web tersimpan di Excel');
-      }else{ upsertLocalDoc({id:editId||uid(),mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()}); savedSuccessfully=true; toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban'); }
+      }else{
+        if(thumbnail) { docMeta[linkId]={...(docMeta[linkId]||{}), title, thumbnail}; saveObj(LS_META, docMeta); }
+        upsertLocalDoc({id:linkId,mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()}); savedSuccessfully=true; toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban');
+      }
     }
   } finally {
     submitBtn.disabled = false;
