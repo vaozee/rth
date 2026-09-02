@@ -1747,24 +1747,22 @@ async function apiGet(action, params={}){
 }
 async function apiPost(action, payload={}){
   const merged = {databaseId: settings.databaseSheetId || DEFAULT_DATABASE_SHEET_ID, ...payload};
+  const res = await fetch(settings.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...merged}) });
+  if(!res.ok){ throw new Error('Apps Script merespons status '+res.status+'. URL deployment kemungkinan sudah tidak aktif — periksa kembali di menu Pengaturan.'); }
+  try{ return await res.json(); }
+  catch(e){ throw new Error('Respons Apps Script bukan format yang valid. URL deployment kemungkinan sudah berubah/tidak aktif — periksa kembali di menu Pengaturan.'); }
+}
+async function apiSaveWeblink(payload={}){
   try{
-    const res = await fetch(settings.scriptUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action, ...merged}) });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    return await res.json();
+    return await apiPost('saveWeblink', payload);
   }catch(postErr){
-    if(action !== 'saveWeblink') throw new Error('Gagal POST ke Apps Script: '+(postErr.message||postErr));
-    try{
-      const url = new URL(settings.scriptUrl);
-      Object.entries({action, ...merged}).forEach(([k,v])=>url.searchParams.set(k,String(v ?? '')));
-      const res = await fetch(url.toString(), {method:'GET', cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      return await res.json();
-    }catch(getErr){
-      throw new Error('POST dan GET Apps Script sama-sama gagal. POST: '+(postErr.message||postErr)+' | GET: '+(getErr.message||getErr));
-    }
+    // Fallback khusus Web Link. GET dipakai karena Web App Apps Script lebih
+    // konsisten menerima GET dari halaman yang di-host lintas domain.
+    const r = await apiGet('saveWeblink', payload);
+    if(r && r.ok) return r;
+    throw postErr;
   }
 }
-
 function refreshDriveStatusUI(connected){
   $('#driveStatus').classList.toggle('connected', !!connected);
   $('#driveStatusText').textContent = connected ? 'Tersambung ke Google Drive' : 'Belum tersambung';
@@ -1781,7 +1779,10 @@ $('#btnSaveTestScript').addEventListener('click', async ()=>{
   toast('Menguji koneksi…');
   try{
     const r = await apiGet('ping');
-    if(r.ok){ refreshDriveStatusUI(true); toast('Berhasil tersambung: '+(r.message||'')); refreshRemoteDocs(); refreshRemotePhotos(); }
+    if(r.ok){
+      if(r.databaseId){ settings.databaseSheetId = r.databaseId; saveSettings(settings); }
+      refreshDriveStatusUI(true); toast('Berhasil tersambung: '+(r.message||'')); refreshRemoteDocs(); refreshRemotePhotos();
+    }
     else { refreshDriveStatusUI(false); toast('Gagal: '+(r.error||'Tidak diketahui'), true); }
   }catch(e){ refreshDriveStatusUI(false); toast('Tidak bisa menghubungi Apps Script. Periksa URL & pengaturan deploy.', true); }
 });
@@ -2109,6 +2110,7 @@ $('#formDoc').addEventListener('submit', e=>{
   requireAuth(handleDocSubmit);
 });
 async function handleDocSubmit(){
+  let savedSuccessfully = true;
   const mode = $('#docMode').value;
   const editId = $('#docEditId').value;
   const isRemoteEdit = $('#docEditRemote').value==='1';
@@ -2172,39 +2174,24 @@ async function handleDocSubmit(){
       }
     }
     else if(mode==='weblink'){
+      savedSuccessfully = false;
       const title = $('#docTitleWeblink').value.trim();
       const url = $('#docWeblinkUrl').value.trim();
       if(!title || !url){ toast('Judul dan URL wajib diisi', true); return; }
       if(!/^https?:\/\//i.test(url)){ toast('URL harus diawali http:// atau https://', true); return; }
       if(hasScript()){
-        try{
-          const r = await apiPost('saveWeblink',{id:editId||uid(),title,url,category,tags});
-          if(!r || !r.ok){
-            toast('Gagal menyimpan Link Web ke Google Sheets: '+((r&&r.error)||'status OK tidak diterima.'),true);
-            return;
-          }
-          await refreshWeblinks();
-          toast(editId?'Link Web diperbarui di Google Sheets':'Link Web berhasil disimpan di Google Sheets');
-          pendingDocFile = null;
-          modalDoc.classList.remove('open');
-        }catch(err){
-          toast('Gagal menyimpan Link Web: '+(err.message||err),true);
-          return;
-        }
-      }else{
-        upsertLocalDoc({id:editId||uid(),mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()});
-        toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban');
-        pendingDocFile = null;
-        modalDoc.classList.remove('open');
-      }
+        const r=await apiSaveWeblink({id:editId||uid(),title,url,category,tags});
+        if(!r.ok){toast('Gagal menyimpan tautan web ke Excel: '+(r.error||'endpoint saveWeblink belum tersedia'),true);return;}
+        await refreshWeblinks(); savedSuccessfully=true; toast(editId?'Tautan web diperbarui di Excel':'Tautan web tersimpan di Excel');
+      }else{ upsertLocalDoc({id:editId||uid(),mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()}); savedSuccessfully=true; toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban'); }
     }
   } finally {
     submitBtn.disabled = false;
-    if(mode!=='weblink'){
-      pendingDocFile = null;
+    pendingDocFile = null;
+    if(savedSuccessfully){
       modalDoc.classList.remove('open');
+      renderKonten(); renderBeranda(); renderTicker();
     }
-    renderKonten(); renderBeranda(); renderTicker();
   }
 }
 
