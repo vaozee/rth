@@ -1788,19 +1788,30 @@ async function refreshWeblinks(){
   if(!hasScript()){ sheetWeblinks = []; return; }
   try{
     const r = await apiGet('listWeblinks');
+    // PERBAIKAN: backend (Code.gs) mengirim balik daftar link lewat key
+    // "links" (lihat doGet -> action listWeblinks -> { ok:true, links: ... }),
+    // sebelumnya di sini dibaca sebagai "r.items" yang selalu undefined —
+    // akibatnya link yang SUDAH tersimpan di Google Sheets tidak pernah
+    // muncul lagi setelah reload, seolah-olah gagal disimpan.
     if(r.ok){
-      sheetWeblinks = (r.items||[]).map(w=> ({
+      sheetWeblinks = (r.links||[]).map(w=> ({
         id: w.id, mode:'weblink', kind:'weblink',
         category: w.category || 'dokumentasi', title: w.title, url: w.url,
-        tags: w.tags || '', server:true, createdAt: w.createdAt || Date.now()
+        tags: w.tags || '', server:true, createdAt: w.created ? new Date(w.created).getTime() : Date.now()
       }));
+    } else {
+      toast('Gagal memuat daftar Link Web: '+(r.error||''), true);
     }
   }catch(e){}
 }
 /* ---------- Metadata tampilan kartu (keterangan & thumbnail kustom),
  * dimuat dari sheet "Metadata" supaya berlaku untuk semua orang. ---------- */
 async function refreshMetadata(){
-  if(!hasScript()) return; try{ const r=await apiGet('listMetadata'); if(r.ok){docMeta={...docMeta,...(r.items||{})};saveObj(LS_META,docMeta);} }catch(e){}
+  // PERBAIKAN: backend mengirim balik lewat key "metadata"
+  // ({ ok:true, metadata: {...} }), bukan "items" — sama seperti bug pada
+  // refreshWeblinks di atas, jadi keterangan/thumbnail kustom dari server
+  // tidak pernah termuat sebelumnya.
+  if(!hasScript()) return; try{ const r=await apiGet('listMetadata'); if(r.ok){docMeta={...docMeta,...(r.metadata||{})};saveObj(LS_META,docMeta);} }catch(e){}
 }
 async function saveMeta(id,title,description,thumbnail){
   docMeta[id]={title:(title||'').trim(),description:(description||'').trim(),thumbnail:(thumbnail||'').trim()}; saveObj(LS_META,docMeta);
@@ -2180,6 +2191,46 @@ readerHeader.addEventListener('mousemove', showReaderHeader);
 readerOverlay.addEventListener('mousemove', e=>{ if(e.clientY<90) showReaderHeader(); });
 makeDraggableHeader(readerHeader, '.btn');
 
+/* ----------------------------------------------------------------------
+ * PERBAIKAN MODE MINI (PICTURE-IN-PICTURE) VIDEO
+ * ----------------------------------------------------------------------
+ * Reader dibuka dalam mode fullscreen browser (requestReaderFullscreen()
+ * memanggil readerOverlay.requestFullscreen()). Begitu video dijadikan
+ * mini lewat tombol PiP di kontrol video, browser SECARA OTOMATIS keluar
+ * dari fullscreen — tapi sebelumnya class "open" pada readerOverlay tidak
+ * pernah dilepas, jadi overlay reader (yang isinya nyaris kosong karena
+ * video sudah "pindah" ke jendela mini) tetap menutupi seluruh layar.
+ * Hasilnya: bukan halaman utama Portal RTH yang kelihatan, tapi overlay
+ * reader yang kosong/blank.
+ *
+ * Perbaikan: begitu terdeteksi masuk PiP, sembunyikan overlay reader
+ * (bukan menghapus isinya, videonya tetap hidup & tetap main di jendela
+ * mini) supaya halaman utama langsung terlihat di baliknya. Begitu jendela
+ * mini ditutup / video dikembalikan, overlay reader ditampilkan lagi.
+ *
+ * CATATAN: ini berlaku penuh untuk video yang diputar lewat elemen
+ * <video> milik halaman ini sendiri (video yang diunggah/disimpan lokal).
+ * Untuk video yang ditampilkan lewat iframe Google Drive (video tautan/
+ * upload ke Drive), tombol PiP ada di dalam pemutar milik Google sendiri
+ * di dalam iframe cross-origin — browser tidak mengizinkan halaman ini
+ * "mendengar" event PiP dari dalam iframe tersebut (aturan keamanan
+ * cross-origin, bukan bug). Untuk kasus ini dipakai jalan pintas: begitu
+ * fullscreen keluar sendiri saat sedang menonton video (tanpa lewat tombol
+ * Tutup/Kembali), overlay reader ikut disembunyikan dengan asumsi PiP baru
+ * saja aktif — supaya tetap tidak ada halaman blank yang tersisa.
+ */
+document.addEventListener('enterpictureinpicture', ()=>{
+  readerOverlay.classList.remove('open');
+});
+document.addEventListener('leavepictureinpicture', ()=>{
+  if(currentDoc) readerOverlay.classList.add('open');
+});
+document.addEventListener('fullscreenchange', ()=>{
+  if(!document.fullscreenElement && readerOverlay.classList.contains('open') && currentDocKind==='video'){
+    readerOverlay.classList.remove('open');
+  }
+});
+
 /* Semua halaman iframe (Buletin, PDF, dokumen, folder Drive) langsung dibuka
  * dalam mode full screen browser secara otomatis, supaya konsisten dan bebas
  * gangguan chrome browser. Dipanggil sesinkron di awal fungsi pembuka reader
@@ -2228,7 +2279,7 @@ async function openReader(doc, isRemote){
       // ukuran file). Penampil Drive otomatis menampilkan pemutar video kalau
       // mime-nya video — jadi teknik yang sama juga dipakai untuk memutar
       // video online. Header tetap mengambang di atasnya.
-      body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview" allow="autoplay"></iframe>`;
+      body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview" allow="autoplay; picture-in-picture; fullscreen"></iframe>`;
     } else if((doc.mimeType||'').startsWith('image/')){
       body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${doc.id}&sz=w2000" alt="${escapeHtml(metaTitle(doc))}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
     } else if(isHtmlFile(doc.mimeType, doc.title||doc.name)){
@@ -2288,7 +2339,7 @@ async function openReader(doc, isRemote){
     // "Buka di Tab Baru" di header pembaca tetap tersedia sebagai jalan pintas.
     body.innerHTML = `<iframe src="${doc.url}" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
   } else if(doc.mode==='drive'){
-    body.innerHTML = `<iframe src="${driveEmbedUrl(doc.kind, doc.driveId)}" allow="autoplay"></iframe>`;
+    body.innerHTML = `<iframe src="${driveEmbedUrl(doc.kind, doc.driveId)}" allow="autoplay; picture-in-picture; fullscreen"></iframe>`;
   }
 
   readerOverlay.classList.add('open');
@@ -2396,6 +2447,7 @@ function noPreviewHtml(msg, dataUrl, fileName){
 $('#readerCloseBtn').addEventListener('click', closeReader);
 function closeReader(){
   readerOverlay.classList.remove('open');
+  if(document.pictureInPictureElement) document.exitPictureInPicture?.().catch(()=>{});
   $('#readerBody').innerHTML = '';
   if(document.fullscreenElement) document.exitFullscreen?.();
   currentDoc = null;
