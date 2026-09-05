@@ -10,29 +10,51 @@
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="preconnect" href="https://script.google.com">
 <link rel="preconnect" href="https://script.googleusercontent.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ivory:#f6f1e6; --paper:#fffdf8; --paper-alt:#fbf6ec;
-  --ink:#242820; --ink-muted:#6d7263; --ink-dim:#9a9a8a;
-  --forest:#1f3d2f; --forest-deep:#132a20; --forest-soft:#e7efe8;
-  --gold:#b3854e; --gold-soft:#dcb98a;
-  --line:#e3d9c4; --line-strong:#cdbe9e;
+  /* ===== Tema disamakan persis dengan referensi NOVA (tes_web0.html) ===== */
+  --ivory:#f5f3ee; --paper:#ffffff; --paper-alt:#eeece6;
+  --ink:#242522; --ink-muted:#686963; --ink-dim:#92938d;
+  --forest:#282925; --forest-deep:#181915; --forest-soft:#dfe5df;
+  --gold:#78877b; --gold-soft:#a7b3ab;
+  --line:rgba(35,35,30,.10); --line-strong:rgba(35,35,30,.20);
+  --surface-glass:rgba(255,255,255,.68); --border-glass:rgba(255,255,255,.78);
+  --button:#282925; --button-text:#ffffff;
+  --hero-glow:rgba(255,255,255,.95);
+  --card-shadow:0 20px 60px rgba(35,35,30,.08);
   --danger:#9c3b32; --success:#3f6b4a;
-  --radius:6px; --shadow: 0 12px 32px -18px rgba(31,61,47,.28);
-  --font-display:'Fraunces',serif; --font-body:'Inter',sans-serif; --font-read:'Source Serif 4',serif;
-  --sidebar-w:242px; --sidebar-w-collapsed:74px;
+  --radius:14px; --shadow: var(--card-shadow);
+  --font-display:'Inter',sans-serif; --font-body:'Inter',sans-serif; --font-read:'Inter',sans-serif;
+  --transition: background .45s ease, color .45s ease, border-color .45s ease, box-shadow .45s ease;
+}
+body.dark{
+  --ivory:#060708; --paper:#111318; --paper-alt:#0d0f12;
+  --ink:#f5f5f2; --ink-muted:rgba(255,255,255,.66); --ink-dim:rgba(255,255,255,.40);
+  --forest:#ffffff; --forest-deep:#e7e7e4; --forest-soft:rgba(170,220,240,.12);
+  --gold:#a9dff2; --gold-soft:#cdeef9;
+  --line:rgba(255,255,255,.11); --line-strong:rgba(255,255,255,.2);
+  --surface-glass:rgba(20,22,27,.62); --border-glass:rgba(255,255,255,.15);
+  --button:#ffffff; --button-text:#090a0b;
+  --hero-glow:rgba(120,190,230,.17);
+  --card-shadow:0 30px 80px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
 html,body{height:100%;}
-body{background:var(--ivory);color:var(--ink);font-family:var(--font-body);min-height:100%;-webkit-font-smoothing:antialiased;}
+body{background:var(--ivory);color:var(--ink);font-family:var(--font-body);min-height:100%;-webkit-font-smoothing:antialiased;transition:var(--transition);}
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 50% 12%, var(--hero-glow), transparent 42%);
+  transition:var(--transition);}
+body.__disabled_grain::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background-image:
     radial-gradient(rgba(31,61,47,.06) 1px, transparent 1px),
     repeating-linear-gradient(90deg, rgba(19,42,32,.03) 0px, rgba(19,42,32,.03) 1px, transparent 1px, transparent 46px),
     repeating-linear-gradient(0deg, rgba(19,42,32,.022) 0px, rgba(19,42,32,.022) 1px, transparent 1px, transparent 46px);
   background-size:3px 3px, 46px 46px, 46px 46px;}
-body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+body::after{content:none;}
+body.__disabled_noise::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   opacity:.6;mix-blend-mode:multiply;
   background:radial-gradient(ellipse at center, transparent 45%, rgba(19,42,32,.07) 145%),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.08  0 0 0 0 0.16  0 0 0 0 0.12  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
@@ -44,90 +66,103 @@ button{font-family:inherit;cursor:pointer;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px;}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px;}
-.eyebrow{font-family:var(--font-display);font-style:italic;font-size:14px;letter-spacing:.03em;color:var(--gold);}
+.eyebrow{font-family:var(--font-display);font-style:normal;font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:11.5px;color:var(--gold);}
 
-.app{position:relative;z-index:1;display:flex;min-height:100vh;}
+/* =====================================================
+   HERO BERANDA — disamakan persis format hero NOVA
+   (tes_web0.html): eyebrow pil, judul besar tebal, grid
+   titik-titik lembut di latar, deskripsi, tombol aksi.
+   Hanya dipakai di halaman Beranda; halaman lain tetap.
+===================================================== */
+.hero{position:relative;min-height:64vh;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:74px 24px 54px;overflow:hidden;border-radius:22px;margin-bottom:26px;
+  background:var(--paper);border:1px solid var(--line);box-shadow:var(--card-shadow);}
+.hero-background{position:absolute;inset:0;z-index:0;
+  background:radial-gradient(circle at 50% 30%, var(--hero-glow), transparent 42%), var(--paper);transition:var(--transition);}
+.hero-grid{position:absolute;inset:0;z-index:0;opacity:.5;
+  background-image:linear-gradient(rgba(100,100,100,.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100,100,100,.09) 1px, transparent 1px);
+  background-size:64px 64px;mask-image:linear-gradient(to bottom, black, transparent 82%);}
+body.dark .hero-grid{opacity:.3;
+  background-image:linear-gradient(rgba(255,255,255,.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.10) 1px, transparent 1px);}
+.hero-content{position:relative;z-index:1;max-width:820px;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;margin-bottom:22px;
+  border:1px solid var(--line);background:color-mix(in srgb, var(--paper) 92%, transparent);backdrop-filter:blur(12px);
+  border-radius:999px;color:var(--ink-muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.22em;font-weight:700;}
+.hero-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold);}
+.hero h1{font-family:var(--font-display);font-size:clamp(38px, 7vw, 76px);line-height:.94;letter-spacing:-.02em;font-weight:800;color:var(--ink);}
+.hero h1 span{display:block;color:var(--ink-dim);}
+.hero-description{max-width:600px;margin:22px auto 0;color:var(--ink-muted);font-size:14.5px;line-height:1.75;}
+.hero-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:28px;}
+.hero-actions .btn-glass{background:var(--surface-glass);border:1px solid var(--border-glass);color:var(--ink);backdrop-filter:blur(12px);}
+.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:6px 0 16px;flex-wrap:wrap;}
+.section-heading h2{font-family:var(--font-display);font-size:20px;font-weight:800;letter-spacing:-.01em;}
+@media (max-width:720px){.hero{min-height:auto;padding:56px 18px 40px;}}
 
-/* ---- Sidebar ---- */
-.sidebar{width:var(--sidebar-w);flex:none;background:linear-gradient(185deg, var(--forest), var(--forest-deep));color:var(--paper);
-  display:flex;flex-direction:column;padding:18px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;
-  transition:width .22s ease;}
-@media (min-width:881px){
-  .sidebar.collapsed{
-    width:var(--sidebar-w-collapsed);padding:18px 10px;
-    position:fixed;left:14px;top:14px;bottom:14px;height:auto;
-    border-radius:16px;box-shadow:0 24px 60px -20px rgba(10,20,15,.5);z-index:60;
-  }
-  body.sidebar-floating .main{margin-left:calc(var(--sidebar-w-collapsed) + 28px);}
-}
-.sidebar-top{display:flex;align-items:center;gap:6px;margin-bottom:14px;}
-.brand{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;}
-.brand-mark{width:34px;height:34px;flex:none;}
-.brand-mark svg{width:100%;height:100%;}
-.brand-text{min-width:0;overflow:hidden;white-space:nowrap;transition:opacity .15s;}
-.sidebar.collapsed .brand-text{opacity:0;width:0;}
-.brand-name{font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:.01em;line-height:1.2;}
-.brand-sub{display:block;font-size:9.5px;color:rgba(246,241,230,.55);letter-spacing:.07em;margin-top:2px;text-transform:uppercase;}
-.sidebar-toggle{position:absolute;top:24px;right:-13px;width:26px;height:26px;flex:none;border-radius:50%;
-  border:1px solid var(--line-strong);background:var(--paper);color:var(--forest);
-  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px -6px rgba(31,61,47,.4);z-index:70;transition:right .22s ease;}
-.sidebar-toggle:hover{border-color:var(--gold);color:var(--gold);}
-.sidebar-toggle svg{width:13px;height:13px;transition:transform .2s;}
-.sidebar.collapsed .sidebar-toggle svg{transform:rotate(180deg);}
 
-.company-block{padding:0 2px 14px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,.12);font-size:10px;line-height:1.55;color:rgba(246,241,230,.58);white-space:nowrap;overflow:hidden;transition:opacity .15s,max-height .15s;}
-.sidebar.collapsed .company-block{opacity:0;max-height:0;padding:0;margin:0;border:none;}
+.app{position:relative;z-index:1;display:block;min-height:100vh;}
 
-.nav-group-label{font-size:9.5px;letter-spacing:.1em;color:rgba(246,241,230,.4);text-transform:uppercase;padding:10px 10px 5px;white-space:nowrap;overflow:hidden;}
-.sidebar.collapsed .nav-group-label{opacity:0;height:6px;padding:6px 0 0;}
-.nav{display:flex;flex-direction:column;gap:3px;}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 11px;border-radius:5px;color:rgba(246,241,230,.72);
-  font-size:13px;font-weight:500;border:none;border-left:2px solid transparent;background:none;width:100%;text-align:left;
-  transition:.15s;white-space:nowrap;overflow:hidden;}
-.nav-item svg{width:16px;height:16px;flex:none;opacity:.85;}
-.nav-item .label{overflow:hidden;text-overflow:ellipsis;transition:opacity .15s;}
-.sidebar.collapsed .nav-item{justify-content:center;padding:10px 6px;}
-.sidebar.collapsed .nav-item .label,.sidebar.collapsed .nav-item .tag{display:none;}
-.nav-item:hover{color:var(--paper);background:rgba(255,255,255,.05);}
-.nav-item.active{color:#fff;background:rgba(255,255,255,.08);border-left-color:var(--gold-soft);}
-.nav-item.locked svg.lock-ic{opacity:.55;}
-.nav-item .tag{margin-left:auto;font-size:9.5px;color:rgba(246,241,230,.55);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:1px 6px;}
+/* =====================================================
+   NAVBAR — disamakan persis dengan referensi (NOVA navbar):
+   pil melayang, glass blur, logo + nav-links + theme switch.
+   Menggantikan sidebar sepenuhnya.
+===================================================== */
+.navbar{position:fixed;top:18px;left:50%;transform:translateX(-50%);
+  width:min(1180px, calc(100% - 32px));min-height:64px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:10px 20px;background:var(--surface-glass);
+  backdrop-filter:blur(24px) saturate(130%);-webkit-backdrop-filter:blur(24px) saturate(130%);
+  border:1px solid var(--border-glass);border-radius:18px;
+  box-shadow:0 15px 45px rgba(0,0,0,.07);z-index:100;transition:var(--transition);}
+.logo{font-size:17px;font-weight:800;letter-spacing:5px;color:var(--ink);text-shadow:0 1px 1px rgba(0,0,0,.08);flex:none;white-space:nowrap;}
+.logo small{display:block;font-size:8.5px;font-weight:600;letter-spacing:.12em;color:var(--ink-muted);margin-top:2px;}
+.nav-links{display:flex;align-items:center;gap:4px;list-style:none;flex-wrap:wrap;justify-content:center;flex:1;padding:0 10px;}
+.nav-item{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;color:var(--ink);
+  font-size:12.5px;font-weight:600;border:none;background:none;white-space:nowrap;transition:.2s ease;cursor:pointer;}
+.nav-item svg{display:none;}
+.nav-item:hover{color:var(--ink);background:rgba(127,127,127,.08);}
+.nav-item.active{color:var(--button-text);background:var(--button);}
+.nav-item.locked{opacity:.6;}
+.nav-item.locked{padding:9px;border-radius:50%;}
+.nav-item.locked .label{display:none;}
+.nav-item.locked svg{display:inline-block;width:16px;height:16px;margin:0;opacity:.8;}
+.nav-item .tag{margin-left:2px;font-size:9px;color:var(--ink-dim);border:1px solid var(--line-strong);border-radius:5px;padding:0 5px;}
+.nav-item.active .tag{color:rgba(255,255,255,.75);border-color:rgba(255,255,255,.3);}
 
-.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);}
-.status-pill{display:flex;align-items:center;gap:8px;font-size:10px;color:rgba(246,241,230,.55);padding:6px 4px;white-space:nowrap;overflow:hidden;}
-.sidebar.collapsed .status-pill .label{display:none;}
-.status-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
-.status-dot.on{background:#7fbf8e;box-shadow:0 0 6px #7fbf8e;}
+.theme-switch{display:flex;align-items:center;gap:5px;padding:4px;border:1px solid var(--line);background:rgba(127,127,127,.07);border-radius:999px;flex:none;transition:var(--transition);}
+.theme-btn{width:32px;height:32px;border:none;background:transparent;color:var(--ink-muted);border-radius:50%;cursor:pointer;display:grid;place-items:center;font-size:14px;transition:.3s ease;}
+.theme-btn:hover{color:var(--ink);}
+.theme-btn.active{background:var(--paper);color:var(--ink);box-shadow:0 3px 10px rgba(0,0,0,.08);}
 
 /* ---- Main / top header ---- */
-.main{flex:1;min-width:0;display:flex;flex-direction:column;transition:margin-left .22s ease;}
-.topheader{position:fixed;top:14px;left:calc(var(--sidebar-w) + 30px);z-index:90;display:inline-flex;align-items:center;gap:14px;
+.main{width:100%;min-width:0;display:flex;flex-direction:column;padding-top:112px;}
+.topheader{position:fixed;top:98px;left:24px;z-index:90;display:inline-flex;align-items:center;gap:14px;
   padding:9px 12px 9px 20px;border-radius:999px;
-  background:rgba(255,253,248,.68);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  border:1px solid rgba(227,217,196,.75);box-shadow:0 16px 36px -18px rgba(31,61,47,.4);
+  background:var(--surface-glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--border-glass);box-shadow:0 16px 36px -18px rgba(0,0,0,.18);
   max-width:calc(100% - 60px);cursor:grab;user-select:none;
   transform:translateY(-140%);opacity:0;transition:transform .28s ease,opacity .28s ease;}
 .topheader.show{transform:translateY(0);opacity:1;}
 .topheader.dragging{cursor:grabbing;transition:none;}
-body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 30px);}
-.breadcrumb{font-size:13.5px;color:var(--ink-muted);font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.breadcrumb{font-size:13.5px;color:var(--ink);font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .breadcrumb b{color:var(--forest);}
 .topheader-right{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--ink-dim);padding-left:14px;border-left:1px solid var(--line);flex:none;}
 .topheader-btn{width:24px;height:24px;flex:none;border-radius:50%;border:1px solid var(--line-strong);background:var(--paper);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;transition:.15s;}
 .topheader-btn:hover{border-color:var(--gold);color:var(--gold);}
 .topheader-btn svg{width:12px;height:12px;}
 
-.headline-ticker-wrap{background:var(--forest-deep);overflow:hidden;position:relative;}
-.headline-ticker-wrap::after{content:"";position:absolute;top:0;right:0;bottom:0;width:36px;background:linear-gradient(90deg, transparent, var(--forest-deep));pointer-events:none;}
+.headline-ticker-wrap{background:var(--paper);border-bottom:1px solid var(--line);overflow:hidden;position:relative;margin:10px 30px 26px;border-radius:14px;box-shadow:var(--card-shadow);}
+.headline-ticker-wrap::after{content:"";position:absolute;top:0;right:0;bottom:0;width:36px;background:linear-gradient(90deg, transparent, var(--paper));pointer-events:none;}
 .headline-ticker{display:flex;gap:10px;padding:9px 20px;overflow-x:auto;scrollbar-width:none;cursor:grab;user-select:none;}
 .headline-ticker.dragging{cursor:grabbing;}
 .headline-ticker::-webkit-scrollbar{display:none;}
-.headline-chip{flex:none;display:flex;align-items:center;gap:7px;padding:6px 13px;border-radius:99px;background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.14);color:rgba(246,241,230,.85);font-size:11.5px;white-space:nowrap;transition:.15s;}
-.headline-chip:hover{border-color:var(--gold-soft);color:#fff;background:rgba(255,255,255,.12);}
-.headline-chip .dot{width:5px;height:5px;border-radius:50%;background:var(--gold-soft);flex:none;}
+.headline-chip{flex:none;display:flex;align-items:center;gap:7px;padding:6px 13px;border-radius:99px;background:var(--paper-alt);
+  border:1px solid var(--line);color:var(--ink-muted);font-size:11.5px;font-weight:500;white-space:nowrap;transition:.15s;}
+.headline-chip:hover{border-color:var(--gold);color:var(--ink);background:var(--forest-soft);}
+.headline-chip .dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex:none;}
 
-.content-wrap{padding:26px 30px 60px;flex:1;}
+.content-wrap{padding:34px 30px 60px;flex:1;}
 .page-title{font-family:var(--font-display);font-size:32px;font-weight:600;letter-spacing:.005em;}
 .page-desc{color:var(--ink-muted);font-size:15.5px;margin-top:8px;max-width:640px;line-height:1.65;}
 .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap;}
@@ -143,6 +178,27 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .cat-tab:hover{color:var(--forest);}
 .cat-tab.active{color:var(--forest);border-bottom-color:var(--gold);}
 
+/* =====================================================
+   FEATURE SECTION — panel gelap gaya "Intelligence in
+   motion" (NOVA), dipakai khusus untuk tab Artikel.
+===================================================== */
+.feature-panel{grid-column:1/-1;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:52px 40px 44px;margin-bottom:24px;
+  display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;align-items:flex-end;}
+.feature-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.feature-title{font-family:var(--font-display);font-weight:800;font-size:clamp(30px,4.6vw,52px);
+  line-height:.98;letter-spacing:-.02em;color:var(--ink);max-width:520px;}
+.feature-desc{max-width:340px;color:var(--ink-muted);font-size:14px;line-height:1.75;}
+.feature-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:8px;}
+.feature-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:24px 22px 26px;
+  cursor:pointer;transition:.18s ease;}
+.feature-card:hover{border-color:var(--gold-soft);transform:translateY(-3px);}
+.feature-card-icon{width:40px;height:40px;border-radius:11px;background:var(--forest-soft);
+  display:flex;align-items:center;justify-content:center;color:var(--gold);margin-bottom:26px;}
+.feature-card-icon svg{width:18px;height:18px;}
+.feature-card h3{font-size:17px;font-weight:800;color:var(--ink);margin-bottom:9px;}
+.feature-card p{font-size:13px;line-height:1.65;color:var(--ink-muted);}
+@media (max-width:720px){.feature-panel{padding:34px 22px 30px;}}
+
 /* ---- Panel ---- */
 .panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
 .panel-gold-rule{height:3px;background:linear-gradient(90deg, var(--forest), var(--gold));}
@@ -150,6 +206,11 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .stat-card{padding:15px 17px;}
 .stat-label{font-size:11px;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase;}
 .stat-value{font-family:var(--font-display);font-size:23px;margin-top:7px;color:var(--forest);}
+.dash-notif{display:inline-flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;
+  background:var(--paper);border:1px solid var(--line);box-shadow:var(--card-shadow);
+  font-size:12.5px;font-weight:600;color:var(--ink-muted);margin-bottom:22px;}
+.dash-notif-dot{width:8px;height:8px;border-radius:50%;background:var(--ink-dim);flex:none;}
+.dash-notif-dot.on{background:#4caf6e;box-shadow:0 0 8px rgba(76,175,110,.6);}
 
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:5px;border:1px solid var(--line-strong);
   background:var(--paper);color:var(--ink);font-size:12.5px;font-weight:600;transition:.15s;white-space:nowrap;}
@@ -158,7 +219,7 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .btn-primary{background:var(--forest);color:var(--paper);border-color:var(--forest);}
 .btn-primary:hover{background:var(--forest-deep);color:var(--paper);border-color:var(--forest-deep);}
 .btn-gold{background:var(--gold);color:#2a1c0c;border-color:var(--gold);}
-.btn-gold:hover{background:#9c723c;color:#fff;}
+.btn-gold:hover{background:#9c723c;color:var(--ink);}
 .btn-ghost{background:transparent;}
 .btn-danger:hover{border-color:var(--danger);color:var(--danger);}
 .btn-sm{padding:6px 11px;font-size:11.5px;}
@@ -214,14 +275,14 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .photo-tile:hover img{transform:scale(1.05);}
 .photo-tile .p-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%, rgba(19,42,32,.82));display:flex;flex-direction:column;justify-content:flex-end;padding:10px;opacity:0;transition:.2s;}
 .photo-tile:hover .p-overlay{opacity:1;}
-.p-overlay .p-title{font-size:11.5px;font-weight:600;color:#fff;}
+.p-overlay .p-title{font-size:11.5px;font-weight:600;color:var(--ink);}
 .p-overlay .p-actions{display:flex;gap:6px;margin-top:6px;}
-.p-overlay .icon-btn{background:rgba(19,42,32,.65);border-color:rgba(255,255,255,.2);color:#fff;}
+.p-overlay .icon-btn{background:rgba(19,42,32,.65);border-color:rgba(255,255,255,.2);color:var(--ink);}
 
 .video-tile{background:#132a20;aspect-ratio:16/10;}
 .video-tile:not(:has(img)){display:flex;align-items:center;justify-content:center;}
 .video-play-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;
-  background:rgba(19,42,32,.68);border:1.5px solid rgba(255,255,255,.55);color:#fff;display:flex;align-items:center;justify-content:center;
+  background:rgba(19,42,32,.68);border:1.5px solid rgba(255,255,255,.55);color:var(--ink);display:flex;align-items:center;justify-content:center;
   pointer-events:none;transition:.2s;}
 .video-play-badge svg{width:18px;height:18px;margin-left:2px;}
 .video-tile:hover .video-play-badge{background:var(--gold);border-color:var(--gold);transform:translate(-50%,-50%) scale(1.08);}
@@ -232,10 +293,43 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .buletin-card .card-desc{min-height:44px;}
 .buletin-card .card-actions{margin-top:auto;}
 
+/* =====================================================
+   RAK BUKU BULETIN — tampilan seperti rak buku sungguhan:
+   tiap edisi jadi "punggung buku" berdiri di rak kayu.
+===================================================== */
+.bookshelf-wrap{background:linear-gradient(180deg, var(--paper-alt), var(--paper));border:1px solid var(--line);
+  border-radius:20px;padding:8px 8px 0;box-shadow:var(--card-shadow);overflow:hidden;}
+.bookshelf{--book-h:186px;--row-gap:46px;
+  display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:16px;row-gap:var(--row-gap);
+  padding:30px 22px 0;min-height:120px;
+  background-image:
+    linear-gradient(to bottom, transparent 0, transparent calc(var(--book-h)), rgba(255,255,255,.35) calc(var(--book-h)), rgba(255,255,255,.35) calc(var(--book-h) + 3px),
+      #8a6640 calc(var(--book-h) + 3px), #6b4c2c calc(var(--book-h) + 28px), rgba(0,0,0,.28) calc(var(--book-h) + 28px), transparent calc(var(--book-h) + 34px));
+  background-size:100% calc(var(--book-h) + var(--row-gap));
+  background-position:0 30px;background-repeat:repeat-y;}
+body.dark .bookshelf{background-image:
+    linear-gradient(to bottom, transparent 0, transparent calc(var(--book-h)), var(--line) calc(var(--book-h)), var(--line) calc(var(--book-h) + 3px),
+      #4a3520 calc(var(--book-h) + 3px), #2e2013 calc(var(--book-h) + 28px), rgba(0,0,0,.5) calc(var(--book-h) + 28px), transparent calc(var(--book-h) + 34px));}
+.shelf-book{flex:none;width:44px;height:var(--book-h);border-radius:3px 8px 8px 3px;position:relative;cursor:pointer;
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;
+  box-shadow:inset -4px 0 8px rgba(0,0,0,.28), inset 3px 0 5px rgba(255,255,255,.18), 0 10px 16px -8px rgba(0,0,0,.4);
+  transition:transform .2s ease, box-shadow .2s ease;}
+.shelf-book:hover{transform:translateY(-10px) rotate(-1deg);box-shadow:inset -4px 0 8px rgba(0,0,0,.28), inset 3px 0 5px rgba(255,255,255,.18), 0 20px 26px -10px rgba(0,0,0,.45);}
+.shelf-book-band{position:absolute;top:14px;left:4px;right:4px;height:5px;border-radius:2px;background:rgba(255,255,255,.35);}
+.shelf-book-band.b2{top:24px;}
+.shelf-book-title{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--font-display);font-size:11px;font-weight:800;
+  color:rgba(255,255,255,.94);letter-spacing:.01em;max-height:calc(var(--book-h) - 56px);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.4);}
+.shelf-book-date{position:absolute;top:10px;left:0;right:0;text-align:center;writing-mode:vertical-rl;
+  font-size:8px;font-weight:600;color:var(--ink-muted);letter-spacing:.03em;}
+.bookshelf-empty{padding:40px 20px;text-align:center;color:var(--ink-dim);font-size:13px;}
+@media (max-width:600px){.bookshelf{--book-h:150px;padding:24px 14px 0;column-gap:11px;}.shelf-book{width:36px;}}
+
+
 /* ---- Modal ---- */
 .modal-backdrop{position:fixed;inset:0;background:rgba(19,29,22,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
 .modal-backdrop.open{display:flex;}
-.modal{width:100%;max-width:500px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:24px;box-shadow:0 30px 80px -20px rgba(19,42,32,.4);max-height:88vh;overflow-y:auto;}
+.modal{width:100%;max-width:500px;background:var(--paper);position:relative;z-index:260;margin-top:72px;border:1px solid var(--line);border-radius:10px;padding:24px;box-shadow:0 30px 80px -20px rgba(19,42,32,.4);max-height:88vh;overflow-y:auto;}
 .modal.modal-sm{max-width:360px;}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
 .modal-title{font-family:var(--font-display);font-size:17px;font-weight:600;}
@@ -254,7 +348,7 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
 .tab-switch{display:flex;gap:5px;background:var(--paper-alt);border:1px solid var(--line);border-radius:7px;padding:4px;margin-bottom:18px;}
 .tab-switch button{flex:1;padding:8px;border-radius:5px;background:none;border:none;color:var(--ink-muted);font-size:12px;font-weight:600;}
-.tab-switch button.active{background:var(--forest);color:#fff;}
+.tab-switch button.active{background:var(--forest);color:var(--ink);}
 .tab-switch button:disabled{opacity:.35;cursor:not-allowed;}
 
 /* ---- Reader / Lightbox (unchanged pattern) ---- */
@@ -264,8 +358,8 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
   position:absolute;top:16px;left:0;right:0;margin:0 auto;z-index:5;width:fit-content;
   display:flex;align-items:center;gap:14px;
   padding:7px 10px 7px 16px;border-radius:999px;
-  background:rgba(15,26,20,.9);backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+  border:1px solid var(--line-strong);
   box-shadow:0 18px 45px -16px rgba(0,0,0,.55);
   max-width:92vw;cursor:grab;user-select:none;
   transform:translateY(-140%);opacity:0;transition:transform .28s ease,opacity .28s ease;
@@ -275,14 +369,14 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .reader-header-l{display:flex;align-items:center;gap:10px;min-width:0;}
 .reader-header-l .card-icon{width:28px;height:28px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#dcb98a;flex:none;}
 .reader-title-block{min-width:0;}
-.reader-title{font-family:var(--font-display);font-size:13.5px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(38vw,320px);}
-.reader-sub{font-size:10px;color:rgba(255,255,255,.55);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(38vw,320px);}
-.reader-header-r{display:flex;align-items:center;gap:6px;flex:none;}
-.reader-header .btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#fff;padding:6px 10px;font-size:11px;}
+.reader-title{font-family:var(--font-display);font-size:13.5px;font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(38vw,320px);}
+.reader-sub{font-size:10px;color:#666;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(38vw,320px);}
+.reader-header-r{display:flex;align-items:center;gap:6px;flex:none;pointer-events:auto;z-index:60;}
+.reader-header .btn{background:var(--paper);border-color:var(--line-strong);color:#111;padding:6px 10px;font-size:11px;}
 .reader-header .btn:hover{border-color:var(--gold-soft);color:var(--gold-soft);}
 .reader-body{flex:1;position:relative;min-height:0;overflow:hidden;}
-.reader-body iframe{width:100%;height:100%;border:0;display:block;background:#fff;}
-.reader-hover-zone{position:absolute;top:0;left:0;right:0;height:70px;z-index:4;}
+.reader-body iframe{width:100%;height:100%;border:0;display:block;background:#fff;overflow:auto;scroll-behavior:smooth;}
+.reader-hover-zone{position:absolute;top:0;left:0;right:0;height:70px;z-index:3;pointer-events:none;}
 .reader-note-area{max-width:740px;margin:0 auto;height:100%;overflow-y:auto;padding:120px 26px 100px;background:var(--paper);}
 .reader-note-area.docx-mode{max-width:900px;background:transparent;padding:120px 22px 100px;}
 .docx-page{background:#fffdf9;padding:58px 66px;box-shadow:0 22px 55px -20px rgba(19,42,32,.4);border-radius:2px;color:#242019;
@@ -312,30 +406,109 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .no-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:rgba(255,255,255,.6);text-align:center;padding:20px;background:var(--forest-deep);}
 .no-preview svg{width:40px;height:40px;color:rgba(255,255,255,.35);}
 
+/* ==================================================================
+   MODE BACA BUKU (page-flip) — dipakai untuk Artikel/Berita/Dokumen
+   teks & PDF. Berdampingan dengan mode Scroll (reader-note-area /
+   iframe) lewat tombol Mode Buku / Mode Scroll di header pembaca.
+   ================================================================== */
+.reader-content-wrap{position:relative;height:100%;}
+.reader-pane{position:absolute;inset:0;}
+.reader-pane[hidden]{display:none!important;}
+
+.book-stage{height:100%;width:100%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 38%, #1c2e22 0%, #0f1a14 68%, #0a120e 100%);
+  padding:86px 18px 58px;overflow:hidden;touch-action:pan-y;}
+.book-viewer{position:relative;width:100%;max-width:1180px;height:100%;max-height:840px;
+  perspective:2800px;-webkit-perspective:2800px;perspective-origin:50% 50%;user-select:none;}
+.book-shell{position:relative;width:100%;height:100%;display:flex;border-radius:3px;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.7), 0 4px 18px rgba(0,0,0,.35);
+  background:#0000;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;}
+.book-page{position:relative;flex:1 1 50%;min-width:0;height:100%;background:var(--paper);overflow:hidden;
+  box-shadow:inset 0 0 40px -18px rgba(90,70,40,.28);}
+.book-page-left{border-radius:3px 0 0 3px;box-shadow:inset -14px 0 26px -20px rgba(19,42,32,.5), inset 0 0 40px -18px rgba(90,70,40,.28);}
+.book-page-right{border-radius:0 3px 3px 0;box-shadow:inset 14px 0 26px -20px rgba(19,42,32,.5), inset 0 0 40px -18px rgba(90,70,40,.28);}
+.book-viewer.single-page .book-page-left{display:none;}
+.book-viewer.single-page .book-page-right{flex:1 1 100%;border-radius:3px;box-shadow:inset 0 0 40px -18px rgba(90,70,40,.28);}
+.book-viewer .book-spine{position:absolute;left:50%;top:0;bottom:0;width:26px;margin-left:-13px;z-index:6;pointer-events:none;
+  background:linear-gradient(90deg, rgba(19,42,32,0) 0%, rgba(19,42,32,.16) 45%, rgba(19,42,32,.22) 50%, rgba(19,42,32,.16) 55%, rgba(19,42,32,0) 100%);}
+.book-viewer.single-page .book-spine{display:none;}
+.book-page-inner{position:absolute;inset:0;overflow:hidden;padding:52px 44px 46px;
+  font-family:var(--font-read);font-size:16.5px;line-height:1.85;color:#2a2f26;background:var(--paper);}
+.book-page-inner.pdf-page{padding:0;display:flex;align-items:center;justify-content:center;background:#e9e4d6;}
+.book-page-inner.pdf-page img,.book-page-inner.pdf-page canvas{width:100%;height:100%;object-fit:contain;background:#fff;}
+.book-page-inner h1,.book-page-inner h2,.book-page-inner h3{font-family:var(--font-display);margin:0 0 12px;color:var(--forest);line-height:1.3;}
+.book-page-inner p{margin:0 0 13px;}
+.book-page-inner ul{margin:0 0 13px 20px;}
+.book-page-num{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10.5px;letter-spacing:.05em;color:var(--ink-dim);font-family:var(--font-body);}
+.book-page-cover-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);font-size:12px;font-style:italic;font-family:var(--font-display);}
+
+.book-leaf{position:absolute;top:0;left:50%;width:50%;height:100%;z-index:20;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;pointer-events:none;
+  visibility:hidden;opacity:0;
+  transition:transform .68s cubic-bezier(.45,.08,.16,1);}
+.book-leaf.flipping{visibility:visible;opacity:1;}
+.book-viewer.single-page .book-leaf{width:100%;left:0;}
+.book-leaf-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;background:var(--paper);}
+.book-leaf-back{transform:rotateY(180deg);}
+.book-leaf::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:linear-gradient(90deg, rgba(0,0,0,.22), rgba(0,0,0,0) 32%, rgba(0,0,0,0) 68%, rgba(0,0,0,.22));
+  opacity:0;transition:opacity .68s ease;}
+.book-leaf.flipping::before{opacity:1;}
+.book-leaf.dir-fwd{left:50%;transform-origin:left center;}
+.book-leaf.dir-back{left:0;transform-origin:right center;}
+.book-viewer.single-page .book-leaf.dir-fwd,.book-viewer.single-page .book-leaf.dir-back{left:0;transform-origin:left center;}
+
+.book-navzone{position:absolute;top:0;bottom:0;width:22%;z-index:15;cursor:pointer;}
+.book-navzone.zone-prev{left:0;}
+.book-navzone.zone-next{right:0;}
+.book-nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;z-index:22;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:var(--ink);display:flex;align-items:center;justify-content:center;
+  transition:.15s;backdrop-filter:blur(6px);}
+.book-nav-btn:hover{background:rgba(255,255,255,.18);border-color:var(--gold-soft);color:var(--gold-soft);}
+.book-nav-btn:disabled{opacity:.25;pointer-events:none;}
+.book-nav-btn.prev{left:-6px;}
+.book-nav-btn.next{right:-6px;}
+.book-nav-btn svg{width:18px;height:18px;}
+@media (max-width:720px){.book-nav-btn{display:none;}.book-stage{padding:78px 0 46px;}.book-page-inner{padding:38px 22px 34px;font-size:15px;}}
+
+.book-progress{position:absolute;left:0;right:0;bottom:16px;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:21;}
+.book-progress-track{width:min(280px,60vw);height:3px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden;}
+.book-progress-fill{height:100%;background:var(--gold-soft);border-radius:3px;transition:width .4s ease;}
+.book-progress-label{font-size:10.5px;color:rgba(255,255,255,.55);letter-spacing:.03em;}
+
+.book-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:rgba(255,255,255,.65);z-index:30;background:rgba(15,26,20,.4);}
+.book-loading svg{width:30px;height:30px;animation:book-spin 1s linear infinite;}
+@keyframes book-spin{to{transform:rotate(360deg);}}
+
+.mode-toggle-group{display:flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:2px;gap:2px;}
+.mode-toggle-btn{border:none;background:none;color:rgba(255,255,255,.65);font-size:10.5px;font-weight:600;padding:5px 10px;border-radius:999px;display:flex;align-items:center;gap:5px;transition:.15s;}
+.mode-toggle-btn svg{width:13px;height:13px;}
+.mode-toggle-btn.active{background:rgba(255,255,255,.14);color:var(--ink);}
+.mode-toggle-btn:not(.active):hover{color:var(--ink);}
+
 .lightbox{position:fixed;inset:0;background:#0b0f0c;z-index:300;display:none;align-items:center;justify-content:center;flex-direction:column;}
 .lightbox.open{display:flex;}
 .lightbox-header{
   position:absolute;top:16px;left:0;right:0;margin:0 auto;z-index:5;width:fit-content;
   display:flex;align-items:center;gap:16px;
   padding:7px 10px 7px 18px;border-radius:999px;
-  background:rgba(0,0,0,.72);backdrop-filter:blur(12px);
+  background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
   border:1px solid rgba(255,255,255,.14);
   box-shadow:0 18px 45px -16px rgba(0,0,0,.6);
   max-width:92vw;cursor:grab;user-select:none;
-  transform:translateY(-140%);opacity:0;transition:transform .28s ease,opacity .28s ease;color:#fff;
+  transform:translateY(-140%);opacity:0;transition:transform .28s ease,opacity .28s ease;color:var(--ink);
 }
 .lightbox-header.show{transform:translateY(0);opacity:1;}
 .lightbox-header.dragging{cursor:grabbing;transition:none;}
 .lightbox-stage{flex:1;width:100%;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
 .lightbox-stage img{max-width:92vw;max-height:88vh;object-fit:contain;border-radius:3px;box-shadow:0 30px 90px -20px rgba(0,0,0,.7);}
-.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(19,42,32,.5);border:1px solid rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;z-index:5;}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(19,42,32,.5);border:1px solid rgba(255,255,255,.2);color:var(--ink);display:flex;align-items:center;justify-content:center;z-index:5;}
 .lb-nav svg{width:18px;height:18px;}
 .lb-prev{left:20px;}.lb-next{right:20px;}
 .lb-nav:hover{border-color:var(--gold-soft);color:var(--gold-soft);}
 .lb-hover-zone{position:absolute;top:0;left:0;right:0;height:70px;z-index:4;}
 .lb-counter{font-size:11px;color:rgba(255,255,255,.65);}
-.lightbox-header #lbTitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(30vw,260px);}
-.lightbox-header .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff;padding:6px 10px;font-size:11px;}
+.lightbox-header{color:#111;}.lightbox-header #lbTitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(30vw,260px);}
+.lightbox-header .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:var(--ink);padding:6px 10px;font-size:11px;}
 
 .toast-wrap{position:fixed;bottom:22px;right:22px;z-index:400;display:flex;flex-direction:column;gap:10px;}
 .toast{background:var(--forest);color:var(--paper);border-left:3px solid var(--gold);padding:12px 16px;border-radius:6px;font-size:12.5px;min-width:230px;box-shadow:0 15px 40px -12px rgba(0,0,0,.35);animation:toastin .25s ease;}
@@ -354,71 +527,50 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 .lock-icon-wrap svg{width:24px;height:24px;}
 
 @media (max-width:880px){
-  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%!important;height:auto;flex-direction:row;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:100;box-shadow:0 -8px 26px -14px rgba(0,0,0,.45);}
-  .sidebar-top,.company-block,.nav-group-label,.sidebar-foot,.sidebar-toggle{display:none;}
-  .nav{flex-direction:row;width:100%;gap:0;overflow-x:visible;}
-  .nav-item{flex:1 1 0;min-width:0;flex-direction:column;justify-content:center;gap:3px;font-size:8.6px;padding:6px 2px 5px;
-    border-left:none;border-top:none;border-radius:9px;text-align:center;}
-  .nav-item.active{border-top-color:transparent;box-shadow:none;}
-  .nav-item.active::before{content:'';display:block;width:26px;height:2.5px;border-radius:2px;background:var(--gold-soft);margin:0 auto 4px;}
-  .nav-item .label{max-width:100%;font-weight:600;letter-spacing:0;}
-  .nav-item .tag{display:none;}
-  .nav-item svg{width:18px;height:18px;}
+  .navbar{top:10px;min-height:56px;padding:8px 12px;border-radius:16px;}
+  .logo{font-size:14px;letter-spacing:3px;}
+  .nav-links{position:absolute;top:100%;left:0;right:0;margin-top:8px;background:var(--surface-glass);backdrop-filter:blur(24px);
+    border:1px solid var(--border-glass);border-radius:16px;box-shadow:0 15px 45px rgba(0,0,0,.12);
+    flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding:8px;gap:2px;display:none;}
+  .navbar.menu-open .nav-links{display:flex;}
+  .nav-item{font-size:12px;padding:9px 12px;}
+  .nav-item.locked{padding:9px 12px;border-radius:999px;}
+  .nav-item.locked .label{display:inline;}
+  .menu-toggle-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:none;background:rgba(127,127,127,.1);color:var(--ink);}
+  .main{padding-top:96px;}
   .content-wrap{padding:20px 16px 96px;}
-  .topheader{left:14px!important;top:10px;padding:8px 10px 8px 16px;max-width:calc(100% - 28px);}
+  .headline-ticker-wrap{margin:0 16px 16px;}
+  .topheader{left:14px!important;top:82px;padding:8px 10px 8px 16px;max-width:calc(100% - 28px);}
   .settings-grid{grid-template-columns:1fr;}
 }
-@media (max-width:400px){
-  .nav-item{font-size:8px;padding:6px 1px 5px;}
-  .nav-item svg{width:17px;height:17px;}
+@media (min-width:881px){
+  .menu-toggle-btn{display:none;}
 }
 </style>
 </head>
+
 <body>
 
 <div class="app">
-  <aside class="sidebar" id="sidebar">
-    <button class="sidebar-toggle" id="sidebarToggleBtn" title="Ciutkan/luaskan sidebar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  <nav class="navbar" id="navbar">
+    <div class="logo">RTH<small>Rumah Tinggal Hijau</small></div>
+
+    <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="Menu" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
-    <div class="sidebar-top">
-      <div class="brand">
-        <div class="brand-mark">
-          <svg viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="18" stroke="#dcb98a" stroke-width="1.4"/>
-            <path d="M20 30c-6-2-9-7-8-14 5 1 9 5 8 14z" fill="#dcb98a"/>
-            <path d="M20 30c6-2 9-7 8-14-5 1-9 5-8 14z" fill="#f6f1e6" opacity=".85"/>
-            <path d="M20 30V15" stroke="#132a20" stroke-width="1.2"/>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <div class="brand-name">Portal RTH</div>
-          <span class="brand-sub" id="brandSub">Rumah Tinggal Hijau</span>
-        </div>
-      </div>
-    </div>
 
-    <div class="company-block">
-      PT. Persada Sejahtera Agro Makmur<br>Desa Rantau Bangkiang, Katingan, Kalteng
-    </div>
-
-    <div class="nav-group-label">Utama</div>
-    <nav class="nav">
+    <div class="nav-links" id="navLinks">
       <button class="nav-item active" data-view="beranda" title="Beranda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
         <span class="label">Beranda</span>
       </button>
-    </nav>
-
-    <div class="nav-group-label">Berita &amp; Arsip</div>
-    <nav class="nav">
       <button class="nav-item" data-view="konten" data-category="artikel" title="Artikel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5V6a2 2 0 0 1 2-2h13v15.5"/><path d="M6 22a2 2 0 0 1-2-2V6"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
         <span class="label">Artikel</span>
       </button>
       <button class="nav-item" data-view="konten" data-category="berita" title="Berita Terkini">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/><circle cx="18" cy="16" r="0" /></svg>
-        <span class="label">Berita Terkini</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+        <span class="label">Berita</span>
       </button>
       <button class="nav-item" data-view="konten" data-category="dokumentasi" title="Dokumentasi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>
@@ -429,13 +581,9 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5V6a2 2 0 0 1 2-2h13v15.5"/><path d="M6 22a2 2 0 0 1-2-2V6"/><rect x="8" y="7" width="6" height="6" rx="1"/><path d="M8 16h8M8 19h5"/></svg>
         <span class="label">Buletin</span>
       </button>
-    </nav>
-
-    <div class="nav-group-label">Media &amp; Sistem</div>
-    <nav class="nav">
       <button class="nav-item" data-view="gallery" title="Galeri Foto">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>
-        <span class="label">Galeri Foto</span>
+        <span class="label">Galeri</span>
         <span class="tag" id="navPhotoCount">0</span>
       </button>
       <button class="nav-item" data-view="video" title="Video">
@@ -446,16 +594,17 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
       <button class="nav-item locked" data-view="settings" title="Pengaturan (terkunci)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.04H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15z"/></svg>
         <span class="label">Pengaturan</span>
-        <svg class="lock-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;margin-left:auto;"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
       </button>
-    </nav>
-
-    <div class="sidebar-foot">
-      <div class="status-pill"><span class="status-dot" id="sideStatusDot"></span> <span class="label" id="sideStatusText">Mode lokal</span></div>
     </div>
-  </aside>
+
+    <div class="theme-switch">
+      <button class="theme-btn active" id="lightBtn" onclick="setTheme('light')" aria-label="Mode terang" type="button">☀</button>
+      <button class="theme-btn" id="darkBtn" onclick="setTheme('dark')" aria-label="Mode gelap" type="button">☾</button>
+    </div>
+  </nav>
 
   <main class="main">
+
     <div class="topheader" id="topheader">
       <div class="breadcrumb"><b>Portal RTH</b> <span id="breadcrumbText">/ Beranda</span></div>
       <div class="topheader-right">
@@ -474,81 +623,55 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 
       <!-- ===== BERANDA ===== -->
       <section class="view active" id="view-beranda">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Portal Informasi</div>
-            <h1 class="page-title" id="berandaTitle">Berita &amp; Informasi RTH — Rumah Tinggal Hijau</h1>
-            <p class="page-desc">Kumpulan berita, artikel, dan dokumen program Rumah Tinggal Hijau (RTH) PT. Persada Sejahtera Agro Makmur — diperbarui otomatis dari arsip Drive.</p>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
-            <button class="btn btn-primary" id="btnRefreshBeranda">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-              Perbarui Sekarang
-            </button>
-            <span style="font-size:11px;color:var(--ink-dim);" id="lastUpdatedText">Belum pernah diperbarui</span>
+        <div class="hero">
+          <div class="hero-background"></div>
+          <div class="hero-grid"></div>
+          <div class="hero-content">
+            <div class="hero-eyebrow">Portal Informasi PSAM</div>
+            <h1 id="berandaTitle">RUMAH<br><span>TINGGAL HIJAU</span></h1>
+            <p class="hero-description">Kumpulan berita, artikel, dan dokumen program Rumah Tinggal Hijau (RTH) PT. Persada Sejahtera Agro Makmur — diperbarui otomatis dari arsip Drive.</p>
+            <div class="hero-actions">
+              <button class="btn btn-primary" id="btnRefreshBeranda">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+                Perbarui Sekarang
+              </button>
+              <span class="btn btn-glass" id="lastUpdatedText" style="pointer-events:none;">Belum pernah diperbarui</span>
+            </div>
           </div>
         </div>
 
-        <div class="dash-info-row">
-          <div class="panel stat-card"><div class="stat-label">Total Berita &amp; Dokumen</div><div class="stat-value" id="statDocs">0</div></div>
-          <div class="panel stat-card"><div class="stat-label">Total Foto</div><div class="stat-value" id="statPhotos">0</div></div>
-          <div class="panel stat-card"><div class="stat-label">Sumber Arsip</div><div class="stat-value" id="statStorage">Lokal</div></div>
-          <div class="panel stat-card"><div class="stat-label">Status Drive</div><div class="stat-value" id="statDrive">Terputus</div></div>
+        <div class="dash-notif" id="berandaNotif">
+          <span class="dash-notif-dot" id="berandaNotifDot"></span>
+          <span id="berandaNotifText">Mode lokal — Google Drive belum tersambung</span>
         </div>
 
+        <div class="section-heading"><h2>Sorotan Terbaru</h2></div>
         <div id="berandaFeatured"></div>
         <div class="grid" id="berandaGrid" style="margin-top:18px;"></div>
       </section>
 
       <!-- ===== KONTEN BERKATEGORI (Artikel / Berita Terkini / Dokumentasi) ===== -->
       <section class="view" id="view-konten">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Berita &amp; Arsip</div>
-            <h1 class="page-title" id="kontenTitle">Artikel</h1>
-            <p class="page-desc" id="kontenDesc">Kumpulan tulisan seputar program Rumah Tinggal Hijau.</p>
-          </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:18px;">
           <button class="btn btn-primary" id="btnAddDoc">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             Tambah Konten
           </button>
         </div>
-
-        <div class="cat-tabs" id="catTabs">
-          <button class="cat-tab" data-cat="semua">Semua Kategori</button>
-          <button class="cat-tab" data-cat="artikel">Artikel</button>
-          <button class="cat-tab" data-cat="berita">Berita Terkini</button>
-          <button class="cat-tab" data-cat="dokumentasi">Dokumentasi</button>
-        </div>
-
         <div class="grid" id="kontenGrid"></div>
       </section>
 
       <!-- ===== BULETIN ===== -->
       <section class="view" id="view-buletin">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Buletin &amp; Publikasi</div>
-            <h1 class="page-title">Buletin</h1>
-            <p class="page-desc">Daftar edisi buletin dari folder Google Drive. Pilih edisi untuk membaca PDF dalam mode layar penuh.</p>
-          </div>
-        </div>
         <div class="toolbar">
           <button class="btn btn-primary" id="btnAddBuletin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Tambah Edisi</button>
           <button class="btn" id="btnRefreshBuletin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Muat Ulang dari Drive</button>
         </div>
-        <div class="grid" id="buletinGrid"></div>
+        <div class="bookshelf-wrap"><div class="bookshelf" id="buletinGrid"></div></div>
       </section>
 
       <!-- ===== GALLERY ===== -->
       <section class="view" id="view-gallery">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Dokumentasi Visual</div>
-            <h1 class="page-title">Galeri Foto</h1>
-            <p class="page-desc">Tambahkan foto dari tautan share atau unggah dari perangkat. Klik foto untuk melihat dalam mode layar penuh.</p>
-          </div>
-        </div>
         <div class="toolbar">
           <button class="btn btn-primary" id="btnAddPhoto">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
@@ -564,13 +687,6 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 
       <!-- ===== VIDEO ===== -->
       <section class="view" id="view-video">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Dokumentasi Visual</div>
-            <h1 class="page-title">Video</h1>
-            <p class="page-desc">Unggah video dari perangkat atau tempel tautan share Google Drive. Video Drive diputar langsung lewat penampil bawaan Drive; video yang disimpan di peramban ini bisa diputar tanpa koneksi internet.</p>
-          </div>
-        </div>
         <div class="toolbar">
           <button class="btn btn-primary" id="btnAddVideo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
@@ -586,13 +702,6 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
 
       <!-- ===== SETTINGS ===== -->
       <section class="view" id="view-settings">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Konfigurasi</div>
-            <h1 class="page-title">Pengaturan Portal</h1>
-            <p class="page-desc">Area ini terkunci password untuk mencegah perubahan tidak sengaja.</p>
-          </div>
-        </div>
         <div class="settings-grid">
           <div class="panel settings-panel">
             <h3>Koneksi Google Apps Script</h3>
@@ -761,17 +870,6 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
           <input type="url" id="docWeblinkUrl" placeholder="https://contoh.com/artikel">
           <div class="field-hint">Halaman akan disisipkan (embed) apa adanya di dalam pembaca layar penuh. Sebagian situs membatasi penyisipan (X-Frame-Options) — kalau begitu, pakai tombol "Buka di Tab Baru" di pembaca.</div>
         </div>
-        <div class="field">
-          <label>Thumbnail Kartu (opsional)</label>
-          <input type="url" id="docWeblinkThumbUrl" placeholder="URL gambar, atau kosongkan untuk pakai tangkapan layar halaman utama situs secara otomatis">
-          <div class="upload-drop" id="docWeblinkThumbDrop" style="margin-top:10px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-            <div>Klik untuk pilih gambar dari perangkat</div>
-            <div id="docWeblinkThumbFileName" style="margin-top:6px;font-size:11px;color:var(--gold);"></div>
-          </div>
-          <input type="file" id="docWeblinkThumbFile" accept="image/*" style="display:none;">
-          <div class="field-hint">Kalau dikosongkan, thumbnail otomatis diambil dari tangkapan layar halaman utama (homepage) situs tersebut.</div>
-        </div>
       </div>
 
       <div class="field">
@@ -865,10 +963,6 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         </div>
       </div>
       <div class="doc-tab-panel" data-panel="link" style="display:none;">
-        <div class="field">
-          <label>Judul Edisi</label>
-          <input type="text" id="buletinTitleLink" placeholder="mis. Buletin MSAL Group Edisi 15">
-        </div>
         <div class="field">
           <label>Link Share Google Drive (file, bukan folder)</label>
           <input type="url" id="buletinDriveUrl" placeholder="https://drive.google.com/file/d/....">
@@ -992,6 +1086,16 @@ body.sidebar-floating .topheader{left:calc(var(--sidebar-w-collapsed) + 28px + 3
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
         Kembali
       </button>
+      <div class="mode-toggle-group" id="readerModeToggle" style="display:none;">
+        <button class="mode-toggle-btn" data-mode="book" title="Mode Buku (page-flip)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5.5S5.5 4 8.5 4 13 5.5 13 5.5v14S10.5 18 8.5 18 3 19.5 3 19.5v-14z"/><path d="M21 5.5S18.5 4 15.5 4 11 5.5 11 5.5v14S13.5 18 15.5 18 21 19.5 21 19.5v-14z"/></svg>
+          Buku
+        </button>
+        <button class="mode-toggle-btn" data-mode="scroll" title="Mode Scroll">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          Scroll
+        </button>
+      </div>
       <button class="btn btn-sm btn-ghost" id="readerEditBtn" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
         Edit
@@ -1114,24 +1218,6 @@ let currentCategory = 'semua';
    ========================================================== */
 const SEED_FLAG = 'rth_seed_v2_loaded';
 const SEED_ARTICLES = [
-{ category:'artikel', title: "Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM", tags: "profil, definisi, tujuan", content: `# Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM
-
-Program Rumah Tinggal Hijau (RTH) adalah wujud komitmen PT Persada Sejahtera Agro Makmur (PSAM) untuk menghadirkan hunian karyawan yang aman, nyaman, dan produktif di Desa Rantau Bangkiang, Kecamatan Katingan, Kalimantan Tengah.
-
-## Sekapur Sirih
-
-Tim RTH mengucapkan terima kasih kepada seluruh karyawan yang telah berkontribusi dalam pembangunan portal ini. Besar harapan portal ini mampu menjembatani kegiatan sekaligus keluhan karyawan, sehingga setiap kondisi dapat dirasakan bersama dan dicarikan solusi terbaik demi keharmonisan, ketenteraman, dan kesejahteraan seluruh karyawan.
-
-## Definisi Program
-
-RTH dibangun untuk menciptakan hunian perumahan/emplasment yang aman, nyaman, dan produktif bagi karyawan. Pelaksanaannya membutuhkan kolaborasi tim operasional dan departemen pendukung untuk bersama-sama mencari akar masalah dan menyusun program kerja prioritas. Agar berkesinambungan, kegiatan sehari-hari selanjutnya diserahkan kepada penghuni perumahan melalui wadah paguyuban.
-
-## Tujuan Program
-
-- Menciptakan kebetahan karyawan untuk tinggal dan bekerja di perusahaan
-- Meningkatkan derajat kesehatan karyawan
-- Meningkatkan produktivitas karyawan
-- Mendukung pencapaian **Sustainability Yield Growth** perusahaan` },
 { category:'artikel', title: "Latar Belakang: Mengapa Program RTH Dibutuhkan", tags: "latar belakang, turnover karyawan", content: `# Latar Belakang Program RTH
 
 Tingginya angka turnover tenaga kerja lapangan menjadi salah satu tantangan utama di PT PSAM. Kondisi ini mendasari lahirnya program Rumah Tinggal Hijau sebagai pendekatan menyeluruh untuk menjaga kenyamanan dan kebetahan karyawan.
@@ -1274,88 +1360,6 @@ Sinergi, pencapaian target, produktivitas, keselamatan dan kesehatan kerja, sert
 ## Jenis Pertemuan
 
 Pertemuan rutin dilaksanakan setiap bulan sebelum tanggal 10, mencakup kunjungan kebun, kunjungan pabrik, dan pertemuan dalam ruangan untuk membahas hasil kunjungan lapangan hingga penyusunan PICA. Pertemuan tidak rutin digelar bila ditemukan kondisi di luar kebiasaan, seperti turunnya OER, naiknya FFA, tingginya stok janjang kosong, lambatnya sirkulasi kendaraan, atau kerusakan jalan.` },
-{ category:'dokumentasi', title: "Sertifikasi ISPO: Komitmen Keberlanjutan PT PSAM", tags: "ispo, sertifikasi, keberlanjutan", content: `# Sertifikasi ISPO PT PSAM
-
-Setelah proses selama tiga tahun, PT PSAM akhirnya berhasil mendapatkan sertifikasi Indonesian Sustainable Palm Oil (ISPO) — standar mutu pengelolaan bisnis kelapa sawit berkelanjutan di Indonesia yang diatur dalam Perpres 44/2020 dan Permentan 38/2020.
-
-## Apa itu ISPO
-
-ISPO adalah kebijakan Pemerintah Indonesia melalui Kementerian Pertanian untuk meningkatkan daya saing minyak sawit nasional di pasar dunia, sekaligus mendukung komitmen pengurangan gas rumah kaca dan perhatian terhadap isu lingkungan. Sistem ini dibentuk sejak 2009 untuk memastikan seluruh pelaku usaha kelapa sawit memenuhi standar pertanian yang berkelanjutan dan bertanggung jawab.
-
-## Manfaat Sertifikasi bagi Perusahaan
-
-- Membantu perusahaan memenuhi kepatuhan hukum terkait peraturan lingkungan dan pertanahan
-- Meningkatkan kesiapan menghadapi tekanan pasar yang hanya menyerap produk dari kebun tersertifikasi
-- Memenuhi tuntutan pasar nasional maupun internasional
-- Meningkatkan daya saing lewat pengelolaan sawit yang produktif
-- Turut menjaga kelestarian lingkungan
-
-## Dasar Hukum
-
-Payung hukum utama ISPO adalah PP No. 61 Tahun 2015, didukung sejumlah peraturan turunan dari Kementerian Pertanian, Kementerian Lingkungan Hidup dan Kehutanan, Kementerian ATR/BPN, hingga Kemenko Perekonomian — mengatur mulai dari petunjuk teknis sertifikasi, pengelolaan lingkungan kebun, hak atas tanah, sampai evaluasi kinerja implementasi.` },
-{ category:'berita', title: "Silaturahmi Adat: Kunjungan Panglima Jilah ke PT PSAM", tags: "panglima jilah, adat, silaturahmi", content: `# Kunjungan Panglima Jilah
-
-Panglima Jilah, atau Pangalangok Jilah, adalah pemimpin besar pasukan merah Tariu Borneo Bangkule Rajakng (TBBR) dari suku Dayak Kanayatn. Ia berasal dari Kabupaten Mempawah, Kalimantan Barat, tepatnya Desa Sambora, Kecamatan Toho, dan dikenal luas sebagai tokoh yang peduli terhadap adat, budaya, serta berbagai persoalan yang terjadi di tanah Kalimantan.
-
-Pada 19 September, di sela jadwalnya yang padat, Panglima Jilah berkenan hadir di PT PSAM dalam rangka silaturahmi bersama warga dan tokoh masyarakat di sekitar perusahaan — mempererat hubungan antara perusahaan dan komunitas adat setempat.` },
-{ category:'berita', title: "Apresiasi Cincin Masa Bakti 5 Tahun untuk Delapan Staf", tags: "penghargaan, cincin, masa bakti", content: `# Penyerahan Cincin Apresiasi Masa Bakti 5 Tahun
-
-PT PSAM memberikan apresiasi berupa cincin kepada delapan staf yang telah mengabdi selama lima tahun, sebagai bentuk penghargaan atas dedikasi mereka. Penyerahan dilaksanakan pada Kamis, 30 Agustus 2023 pukul 19.00 WIB.
-
-## Penerima Apresiasi
-
-1. Fitriadi R. Husaini (Asst. Humas)
-2. Novie Andhika F. (Kasie HRGA)
-3. Herwin (Asst. GIS)
-4. Yusuf Ruchban (Asst. Afdeling)
-5. Permahadi Prasetyo (Asst. Humas)
-6. Putra Adil T. (Asst. R&D)
-7. Valentinus Ixmanto (Asst. QC)
-8. Ibnu Maulana (Asst. Afdeling)` },
-{ category:'berita', title: "Semangat Kemerdekaan di Lingkungan RTH: HUT RI", tags: "hut ri, kemerdekaan", content: `# HUT RI di Lingkungan RTH
-
-Peringatan HUT Kemerdekaan Republik Indonesia dirayakan meriah di lingkungan perumahan karyawan, mulai dari upacara bendera hingga aneka lomba yang melibatkan karyawan beserta keluarga.
-
-## Kata-Kata Bijak Bung Karno
-
-*"Berpedomanlah pada harapan dan ketetapan hati. Berpedomanlah pada cita-cita, berpedomanlah pada impian dan angan-angan." — Ir. Soekarno*
-
-*"Kita bangsa besar, kita bukan bangsa tempe. Kita tidak akan mengemis, kita tidak akan minta-minta." — Ir. Soekarno*
-
-*"Seribu orang tua bisa bermimpi, satu orang pemuda bisa mengubah dunia." — Ir. Soekarno*
-
-Semangat kemerdekaan ini menjadi pengingat bagi seluruh keluarga besar RTH PSAM untuk terus bergotong royong membangun lingkungan perumahan yang mandiri dan sejahtera.` },
-{ category:'berita', title: "Jalan Sehat Meriahkan Akhir Pekan Karyawan", tags: "jalan sehat, koperasi karyawan", content: `# Jalan Sehat Minggu Pagi
-
-Kegiatan Jalan Sehat tahun lalu, yang digelar Minggu pagi 20 Agustus 2023, sukses mendapatkan antusiasme tinggi dari seluruh karyawan PT PSAM. Selain doorprize aneka perangkat elektronik, ratusan bingkisan sembako turut dibagikan berkat sponsor dari Koperasi Karyawan Sejahtera Untuk Semua.
-
-Perwakilan dari masing-masing kebun turut hadir memeriahkan acara, diiringi musik yang membuat suasana semakin akrab — memperkuat kebersamaan sekaligus menambah kebetahan karyawan bekerja di PT PSAM.
-
-## Rencana Tahun Ini
-
-Jalan Sehat kembali direncanakan pada Minggu, 18 Agustus 2024, dengan rute mengelilingi areal perumahan Kebun 2, disponsori Koperasi Karyawan dengan hadiah utama sepeda, mesin cuci, dispenser, setrika, magic com, dan sekitar 100 bingkisan sembako. Kegiatan ini terbuka gratis bagi seluruh karyawan, baik anggota koperasi maupun bukan.
-
-Pelaksanaan dimulai pukul 06.30 WIB dan ditutup sekitar pukul 15.00 WIB, dengan panitia gabungan dari staf, tim administrasi, mandor, hingga karyawan emplasment yang berperan besar dalam kesuksesan acara.` },
-{ category:'berita', title: "Juara RTH 2024: Afdeling 5 Raih Predikat Terbaik", tags: "juara rth, penghargaan afdeling", content: `# Juara RTH di PT PSAM
-
-Penilaian Rumah Tinggal Hijau untuk kompleks perumahan beserta seluruh kegiatannya — mencakup kebersihan lingkungan, paguyuban, hingga ketahanan pangan — telah rampung dilakukan. Dari 16 Afdeling yang dinilai, tiga besar berhasil ditetapkan:
-
-1. **Juara 1:** Afdeling 5, Kebun 2
-2. **Juara 2:** Afdeling 11, Kebun 3
-3. **Juara 3:** Afdeling 3, Kebun 1
-
-Masing-masing juara menerima piagam penghargaan serta uang tunai untuk mendukung progres perbaikan kompleks perumahan yang lebih baik ke depannya.
-
-## Apresiasi Lain yang Turut Diberikan
-
-Selain Juara RTH, penghargaan juga diberikan kepada tiga pemanen terbaik di masing-masing kebun — dinilai dari kehadiran, hasil kerja, kualitas panen, dan kualitas ancak — hasil kerja sama Tim SPT lintas departemen dalam kegiatan Gemba dan Safari ke Afdeling. Turnamen bola voli putra antarkebun turut digelar untuk mendukung semangat olahraga, dengan Kebun 3 sebagai juara 1, Kebun 1 juara 2, dan Kebun 2 juara 3.
-
-Penghargaan ini diharapkan memicu semangat karyawan dalam mengelola ekosistem lingkungan yang kondusif dan nyaman di masing-masing Afdeling, sekaligus menekan potensi turnover karyawan demi tercapainya produktivitas dan *Sustainability Yield Growth* di seluruh wilayah PT PSAM.` },
-{ category:'dokumentasi', title: "Buletin MSAL Group: 14 Edisi Kabar Perusahaan", tags: "buletin, msal group", content: `# Buletin MSAL Group
-
-Buletin MSAL Group hadir sebagai media informasi rutin bagi seluruh karyawan di lingkungan grup perusahaan, memuat kabar terbaru mulai dari kebijakan manajemen, kisah inspiratif planter, hingga capaian kinerja perusahaan.
-
-Hingga saat ini, Buletin MSAL Group telah terbit sebanyak 14 edisi. Seluruh edisi dapat diakses dan diunduh langsung melalui menu **Buletin** pada portal ini, yang terhubung langsung ke folder Google Drive resmi.` }
 ];
 
 function seedInitialArticles(){
@@ -1369,6 +1373,31 @@ function seedInitialArticles(){
       saveArr(LS_DOCS, localDocs);
     }
     localStorage.setItem(SEED_FLAG, '1');
+  }catch(e){}
+}
+/* Untuk pengguna yang sudah pernah membuka versi lama portal ini (dan
+   sudah tersimpan artikel bawaan lama di localStorage peramban mereka),
+   penggantian daftar SEED_ARTICLES di atas saja tidak menghapus data
+   lama yang sudah kadung tersimpan. Rutin ini membersihkan judul-judul
+   artikel/berita/dokumentasi bawaan yang sudah tidak dipakai lagi,
+   dijalankan sekali saja lewat penanda tersendiri. */
+const REMOVED_SEED_TITLES = [
+  "Mengenal Program Rumah Tinggal Hijau (RTH) PT PSAM",
+  "Sertifikasi ISPO: Komitmen Keberlanjutan PT PSAM",
+  "Silaturahmi Adat: Kunjungan Panglima Jilah ke PT PSAM",
+  "Apresiasi Cincin Masa Bakti 5 Tahun untuk Delapan Staf",
+  "Semangat Kemerdekaan di Lingkungan RTH: HUT RI",
+  "Jalan Sehat Meriahkan Akhir Pekan Karyawan",
+  "Juara RTH 2024: Afdeling 5 Raih Predikat Terbaik",
+  "Buletin MSAL Group: 14 Edisi Kabar Perusahaan",
+];
+function pruneRemovedSeedArticles(){
+  try{
+    if(localStorage.getItem('rth_prune_v1_done')) return;
+    const before = localDocs.length;
+    localDocs = localDocs.filter(d => !REMOVED_SEED_TITLES.includes(d.title));
+    if(localDocs.length !== before) saveArr(LS_DOCS, localDocs);
+    localStorage.setItem('rth_prune_v1_done', '1');
   }catch(e){}
 }
 
@@ -1522,21 +1551,26 @@ function formatBytes(n){
 }
 
 /* ==========================================================
-   SIDEBAR COLLAPSE
+   NAVBAR MOBILE MENU + THEME SWITCH (gantinya sidebar)
    ========================================================== */
-const sidebarEl = $('#sidebar');
-function applySidebarState(){
-  const collapsed = localStorage.getItem('rth_sidebar_collapsed') === '1';
-  sidebarEl.classList.toggle('collapsed', collapsed);
-  document.body.classList.toggle('sidebar-floating', collapsed);
-}
-$('#sidebarToggleBtn').addEventListener('click', ()=>{
-  const collapsed = !sidebarEl.classList.contains('collapsed');
-  sidebarEl.classList.toggle('collapsed', collapsed);
-  document.body.classList.toggle('sidebar-floating', collapsed);
-  localStorage.setItem('rth_sidebar_collapsed', collapsed ? '1':'0');
+const navbarEl = $('#navbar');
+$('#menuToggleBtn')?.addEventListener('click', ()=>{
+  navbarEl.classList.toggle('menu-open');
 });
-applySidebarState();
+$$('.nav-item').forEach(btn=> btn.addEventListener('click', ()=>{ navbarEl.classList.remove('menu-open'); }));
+
+function setTheme(mode){
+  const isDark = mode==='dark';
+  document.body.classList.toggle('dark', isDark);
+  $('#lightBtn')?.classList.toggle('active', !isDark);
+  $('#darkBtn')?.classList.toggle('active', isDark);
+  localStorage.setItem('rth_theme', mode);
+}
+(function initTheme(){
+  const saved = localStorage.getItem('rth_theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  setTheme(saved || (prefersDark ? 'dark' : 'light'));
+})();
 
 /* ==========================================================
    HEADER AWAL — mengambang, kompak, otomatis tersembunyi,
@@ -1697,17 +1731,35 @@ async function refreshBuletin(){
   }catch(e){ buletinFiles=[]; toast('Tidak bisa memuat Buletin dari Drive.',true); }
   renderBuletin();
 }
+const SPINE_PALETTE = [
+  ['#2f4d3a','#1c3226'], ['#7a3b2e','#552722'], ['#2c3e5c','#1b2740'],
+  ['#6b4423','#4a2e17'], ['#5c3d5c','#3d2740'], ['#8a6d1f','#5c4713'],
+  ['#3a5c58','#25403c'], ['#7a2e3b','#521f28']
+];
+function spineColorFor(seed){
+  let h=0; for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
+  return SPINE_PALETTE[h % SPINE_PALETTE.length];
+}
 function renderBuletin(){
   const grid=$('#buletinGrid'); if(!grid) return; grid.innerHTML='';
-  if(!buletinFiles.length){ grid.innerHTML='<div class="empty-state"><h4>Belum ada edisi buletin</h4><p>Tambahkan PDF baru atau muat ulang dari folder Google Drive.</p></div>'; return; }
-  buletinFiles.forEach(file=>{
-    const doc={...file,category:'buletin',mode:'remote',title:metaTitle(file)}; const el=document.createElement('div'); el.className='card buletin-card';
-    el.innerHTML=`${coverHtml(doc,true,'pdf')}<div class="card-body"><div class="card-title">${escapeHtml(metaTitle(doc))}</div><div class="card-desc">${escapeHtml(metaDescription(doc,'pdf'))}</div><div class="card-meta"><span class="badge b-drive">PDF · DRIVE</span><span>${file.modified?new Date(file.modified).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):''}</span></div><div class="card-actions"><button class="btn btn-gold btn-sm" data-act="read">Baca PDF</button><button class="icon-btn" data-act="edit" title="Edit tampilan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1-1 1z"/></svg></button></div></div>`;
-    el.addEventListener('click',e=>{if(e.target.closest('[data-act]'))return;openReader(doc,true);});
-    el.querySelector('[data-act="read"]').addEventListener('click',e=>{e.stopPropagation();openReader(doc,true);});
-    el.querySelector('[data-act="edit"]').addEventListener('click',e=>{e.stopPropagation();requireAuth(()=>openMetaModal(doc,true,'pdf',refreshBuletin));});
+  if(!buletinFiles.length){ grid.innerHTML='<div class="bookshelf-empty">Belum ada edisi buletin. Tambahkan PDF baru atau muat ulang dari folder Google Drive.</div>'; return; }
+  buletinFiles.forEach((file,i)=>{
+    const doc={...file,category:'buletin',mode:'remote',title:metaTitle(file)};
+    const title = metaTitle(doc);
+    const dateLabel = file.modified ? new Date(file.modified).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '';
+    const [c1,c2] = spineColorFor(title+i);
+    const widths=[42,48,44,52,40];
+    const el=document.createElement('div');
+    el.className='shelf-book';
+    el.style.width = widths[i%widths.length]+'px';
+    el.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+    el.title = title;
+    el.innerHTML = `<span class="shelf-book-band"></span><span class="shelf-book-band b2"></span>
+      <span class="shelf-book-date">${escapeHtml(dateLabel)}</span>
+      <span class="shelf-book-title">${escapeHtml(title)}</span>`;
+    el.addEventListener('click', ()=> openReader(doc,true));
     grid.appendChild(el);
-  }); hydrateLocalCovers(grid);
+  });
 }
 $('#btnAddBuletin').addEventListener('click',()=>requireAuth(()=>{$('#formBuletin').reset();pendingBuletinFile=null;$('#buletinFileName').textContent='';setBuletinTab('upload');$('#modalBuletin').classList.add('open');}));
 $('#btnRefreshBuletin').addEventListener('click',()=>{refreshBuletin();toast('Memuat ulang Buletin…');});
@@ -1729,8 +1781,7 @@ function initSiteName(){
   $('#autoRefreshToggle').checked = settings.autoRefresh !== false;
   if(settings.siteName){
     document.title = settings.siteName;
-    $('#brandSub').textContent = settings.siteName;
-    $('#berandaTitle').textContent = settings.siteName;
+    if($('#brandSub')) $('#brandSub').textContent = settings.siteName;
   }
 }
 $('#btnSaveReportUrl').addEventListener('click', ()=>{
@@ -1768,22 +1819,23 @@ async function apiPost(action, payload={}){
   catch(e){ throw new Error('Respons Apps Script bukan format yang valid. URL deployment kemungkinan sudah berubah/tidak aktif — periksa kembali di menu Pengaturan.'); }
 }
 async function apiSaveWeblink(payload={}){
-  // Catatan: sebelumnya ada fallback otomatis lewat GET setelah POST gagal.
-  // Itu dibuang karena berisiko mengirim DUA request penulisan hampir
-  // bersamaan (POST + GET) tanpa penguncian di sisi server, yang bisa
-  // membuat baris di Google Sheets saling menimpa/hilang, dan membuat
-  // simpan terasa lambat karena menunggu dua kali percobaan. Sekarang
-  // cukup satu percobaan lewat POST; kalau gagal, munculkan error apa
-  // adanya supaya user bisa coba lagi secara sadar (bukan otomatis ganda).
-  return await apiPost('saveWeblink', payload);
+  try{
+    return await apiPost('saveWeblink', payload);
+  }catch(postErr){
+    // Fallback khusus Web Link. GET dipakai karena Web App Apps Script lebih
+    // konsisten menerima GET dari halaman yang di-host lintas domain.
+    const r = await apiGet('saveWeblink', payload);
+    if(r && r.ok) return r;
+    throw postErr;
+  }
 }
 function refreshDriveStatusUI(connected){
   $('#driveStatus').classList.toggle('connected', !!connected);
   $('#driveStatusText').textContent = connected ? 'Tersambung ke Google Drive' : 'Belum tersambung';
-  $('#statDrive').textContent = connected ? 'Tersambung' : 'Terputus';
-  $('#statStorage').textContent = connected ? 'Google Drive' : 'Lokal';
-  $('#sideStatusDot').classList.toggle('on', !!connected);
-  $('#sideStatusText').textContent = connected ? 'Tersambung ke Drive' : 'Mode lokal';
+  $('#berandaNotifDot')?.classList.toggle('on', !!connected);
+  if($('#berandaNotifText')) $('#berandaNotifText').textContent = connected ? 'Tersambung ke Google Drive' : 'Mode lokal — Google Drive belum tersambung';
+  $('#sideStatusDot')?.classList.toggle('on', !!connected);
+  $('#sideStatusText') && ($('#sideStatusText').textContent = connected ? 'Tersambung ke Drive' : 'Mode lokal');
 }
 $('#btnSaveTestScript').addEventListener('click', async ()=>{
   const url = $('#scriptUrlInput').value.trim();
@@ -1916,16 +1968,6 @@ function docCategory(doc){ return doc.category || 'dokumentasi'; }
    (thumbnail Drive berlaku untuk PDF/gambar/dokumen), atau untuk file gambar
    yang tersimpan lokal di peramban; selain itu jatuh ke ikon penanda. ---------- */
 function driveThumbUrl(id){ return `https://drive.google.com/thumbnail?id=${id}&sz=w500`; }
-/* Thumbnail default untuk Tautan Web: tangkapan layar HALAMAN UTAMA (homepage)
- * situs tersebut, bukan halaman spesifik yang ditautkan — dipakai otomatis
- * kalau user belum mengunggah/menautkan gambar sendiri lewat Edit. Memakai
- * layanan mshots (WordPress) yang gratis dan tidak butuh API key. */
-function weblinkHomepageThumb(url){
-  try{
-    const origin = new URL(url).origin;
-    return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(origin)}?w=600`;
-  }catch(e){ return ''; }
-}
 function coverHtml(doc, isRemote, kind, featured){
   let imgSrc = '';
   let localCoverKey = '';
@@ -1937,8 +1979,6 @@ function coverHtml(doc, isRemote, kind, featured){
     imgSrc = driveThumbUrl(doc.id);
   } else if(doc.mode==='drive' && doc.driveId){
     imgSrc = driveThumbUrl(doc.driveId);
-  } else if(kind==='weblink' && doc.url){
-    imgSrc = weblinkHomepageThumb(doc.url);
   }
   const isLocalImg = !isRemote && doc.mode==='local' && (doc.mime||'').startsWith('image/');
   if(isLocalImg && !imgSrc && !localCoverKey) localCoverKey = doc.id;
@@ -2029,19 +2069,65 @@ function attachCardHandlers(el, doc, isRemote, kind, opts){
 function attachCompactHandlers(el, doc, isRemote){
   el.addEventListener('click', ()=> openReader(doc, isRemote));
 }
+const ARTIKEL_ICONS = [
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17h6v-2.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14l2 2 4-4"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.9.6 5 2.6 5 5.3"/></svg>`,
+];
+function renderArtikelFeaturePanel(list){
+  const wrap = document.createElement('div');
+  wrap.className = 'feature-panel';
+  const cardsHtml = list.slice(0,8).map((doc,i)=>{
+    const icon = ARTIKEL_ICONS[i % ARTIKEL_ICONS.length];
+    const desc = truncateText((doc.content||'').replace(/[#*_>-]/g,'').trim(), 110);
+    return `<div class="feature-card" data-id="${doc.id}">
+      <div class="feature-card-icon">${icon}</div>
+      <h3>${escapeHtml(doc.title)}</h3>
+      <p>${escapeHtml(desc)}</p>
+    </div>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div>
+      <div class="feature-eyebrow">01 — ARTIKEL</div>
+      <div class="feature-title">Program RTH<br>dari akar masalah.</div>
+    </div>
+    <p class="feature-desc">Latar belakang, tahapan pelaksanaan, dan program unggulan yang membentuk Rumah Tinggal Hijau — ditulis untuk dipahami seluruh karyawan.</p>
+    <div class="feature-cards" style="flex-basis:100%;">${cardsHtml}</div>
+  `;
+  wrap.querySelectorAll('.feature-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const doc = list.find(d=>d.id===card.dataset.id);
+      if(doc) openReader(doc, false);
+    });
+  });
+  return wrap;
+}
 function renderKonten(){
   $$('.cat-tab').forEach(t=> t.classList.toggle('active', t.dataset.cat===currentCategory));
   const label = currentCategory==='semua' ? 'Semua Kategori' : (CATEGORY_LABELS[currentCategory]||'Konten');
-  $('#kontenTitle').textContent = label;
-  $('#kontenDesc').textContent = CATEGORY_DESC[currentCategory] || 'Seluruh konten arsip Portal RTH dalam satu tempat.';
   const list = allDocs().filter(d => currentCategory==='semua' || docCategory(d)===currentCategory)
     .sort((a,b)=> new Date(b.modified||b.createdAt||0) - new Date(a.modified||a.createdAt||0));
   $('#navDocCount').textContent = allDocs().length;
-  $('#statDocs').textContent = allDocs().length;
+  if($('#statDocs')) $('#statDocs').textContent = allDocs().length;
   const grid = $('#kontenGrid');
   const isCompact = currentCategory === 'semua';
   grid.className = isCompact ? 'grid compact' : 'grid';
   grid.innerHTML = '';
+
+  if(currentCategory === 'artikel'){
+    if(list.length===0){
+      grid.innerHTML = `<div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
+        <h4>Belum ada artikel</h4>
+        <p>Tambahkan artikel baru lewat tombol Tambah Konten.</p>
+      </div>`;
+      return;
+    }
+    grid.appendChild(renderArtikelFeaturePanel(list));
+    return;
+  }
+
   if(list.length===0){
     grid.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
@@ -2075,7 +2161,6 @@ let pendingDocFile = null;
 function openDocModal(existing){
   $('#formDoc').reset();
   pendingDocFile = null;
-  $('#docWeblinkThumbFileName').textContent = '';
   $('#docEditId').value = existing?.id || '';
   $('#docEditRemote').value = existing?.isRemote ? '1' : '';
   $('#docFileName').textContent = '';
@@ -2088,7 +2173,7 @@ function openDocModal(existing){
     if(tab==='link'){ $('#docTitleLink').value = existing.title; $('#docDriveUrl').value = existing.originalUrl||''; }
     if(tab==='upload'){ $('#docTitleUpload').value = existing.title; $('#docFileName').textContent = existing.fileName||''; }
     if(tab==='note'){ $('#docTitleNote').value = existing.title; $('#docNoteContent').value = existing.content||''; $('#docNoteSaveToDrive').checked = !!existing.isRemote; $('#docNoteSaveToDrive').disabled = !!existing.isRemote; }
-    if(tab==='weblink'){ $('#docTitleWeblink').value = existing.title; $('#docWeblinkUrl').value = existing.url||''; const m=docMeta[existing.id]; $('#docWeblinkThumbUrl').value = (m&&m.thumbnail&&!m.thumbnail.startsWith('local:'))?m.thumbnail:''; $('#docWeblinkThumbFileName').textContent=''; }
+    if(tab==='weblink'){ $('#docTitleWeblink').value = existing.title; $('#docWeblinkUrl').value = existing.url||''; }
     $$('#docTabs button').forEach(b=> b.disabled = (b.dataset.tab!==tab));
   } else {
     $('#docModalTitle').textContent = 'Tambah Konten';
@@ -2107,8 +2192,6 @@ function setDocTab(tab){
   $$('.doc-tab-panel', $('#formDoc')).forEach(p=> p.style.display = (p.dataset.panel===tab ? '' : 'none'));
 }
 $('#docTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; setDocTab(b.dataset.tab); });
-$('#docWeblinkThumbDrop').addEventListener('click', ()=> $('#docWeblinkThumbFile').click());
-$('#docWeblinkThumbFile').addEventListener('change', e=>{ const f=e.target.files[0]; if(f) $('#docWeblinkThumbFileName').textContent = f.name; });
 $('#docDropZone').addEventListener('click', ()=> $('#docFileInput').click());
 $('#docFileInput').addEventListener('change', e=>{
   const f = e.target.files[0]; if(!f) return;
@@ -2208,24 +2291,11 @@ async function handleDocSubmit(){
       const url = $('#docWeblinkUrl').value.trim();
       if(!title || !url){ toast('Judul dan URL wajib diisi', true); return; }
       if(!/^https?:\/\//i.test(url)){ toast('URL harus diawali http:// atau https://', true); return; }
-      // Thumbnail: file yang diunggah > URL yang diketik manual > (kalau kosong,
-      // coverHtml() otomatis memakai tangkapan layar halaman utama situs).
-      const thumbFile = $('#docWeblinkThumbFile').files[0];
-      let thumbnail = $('#docWeblinkThumbUrl').value.trim();
-      if(thumbFile) thumbnail = await fileToDataURL(thumbFile);
-      const linkId = editId||uid();
       if(hasScript()){
-        const r=await apiSaveWeblink({id:linkId,title,url,category,tags});
+        const r=await apiSaveWeblink({id:editId||uid(),title,url,category,tags});
         if(!r.ok){toast('Gagal menyimpan tautan web ke Excel: '+(r.error||'endpoint saveWeblink belum tersedia'),true);return;}
-        // Thumbnail/keterangan kartu disimpan terpisah lewat sheet Metadata,
-        // sama seperti konten lain (foto/PDF/artikel dari Drive), supaya
-        // konsisten dan terlihat oleh semua orang.
-        await saveMeta(linkId, title, docMeta[linkId]?.description||'', thumbnail);
         await refreshWeblinks(); savedSuccessfully=true; toast(editId?'Tautan web diperbarui di Excel':'Tautan web tersimpan di Excel');
-      }else{
-        if(thumbnail) { docMeta[linkId]={...(docMeta[linkId]||{}), title, thumbnail}; saveObj(LS_META, docMeta); }
-        upsertLocalDoc({id:linkId,mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()}); savedSuccessfully=true; toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban');
-      }
+      }else{ upsertLocalDoc({id:editId||uid(),mode:'weblink',kind:'weblink',category,title,url,tags,createdAt:Date.now()}); savedSuccessfully=true; toast(editId?'Konten diperbarui di peramban':'Tautan web ditambahkan di peramban'); }
     }
   } finally {
     submitBtn.disabled = false;
@@ -2246,7 +2316,7 @@ $('#buletinTabs').addEventListener('click',e=>{const b=e.target.closest('button'
 $('#buletinDropZone').addEventListener('click',()=>$('#buletinFileInput').click());
 $('#buletinFileInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;pendingBuletinFile=f;$('#buletinFileName').textContent=f.name;if(!$('#buletinTitleUpload').value)$('#buletinTitleUpload').value=f.name.replace(/\.pdf$/i,'');});
 $('#formBuletin').addEventListener('submit',e=>{e.preventDefault();requireAuth(handleBuletinSubmit);});
-async function handleBuletinSubmit(){const mode=$('#formBuletin').dataset.mode||'upload',btn=$('#formBuletin button[type=submit]');btn.disabled=true;try{if(!hasScript()){toast('Sambungkan Apps Script agar Buletin tersimpan di Drive.',true);return;}if(mode==='upload'){if(!pendingBuletinFile){toast('Pilih file PDF terlebih dahulu',true);return;}const title=$('#buletinTitleUpload').value.trim()||pendingBuletinFile.name.replace(/\.pdf$/i,'');const dataUrl=await fileToDataURL(pendingBuletinFile);const r=await apiPost('upload',{folder:'buletin',folderId:settings.buletinFolderId||DEFAULT_BULETIN_FOLDER_ID,name:title+guessExt(pendingBuletinFile.name),mimeType:'application/pdf',base64:dataUrl.split(',')[1]});if(r.ok){toast('Edisi Buletin tersimpan di Drive');await refreshBuletin();}else toast('Gagal unggah Buletin: '+(r.error||''),true);}else{const id=extractDriveId($('#buletinDriveUrl').value.trim());if(!id){toast('Tautan Google Drive PDF tidak dikenali.',true);return;}const title=$('#buletinTitleLink').value.trim()||('Buletin PDF '+new Date().toLocaleDateString('id-ID'));const url=`https://drive.google.com/file/d/${id}/view`;const r=await apiPost('saveBulletinLink',{id:uid(),title,url});if(r.ok){toast('Tautan PDF Buletin tersimpan');await refreshBuletin();}else toast('Gagal menyimpan tautan PDF: '+(r.error||'endpoint saveBulletinLink belum tersedia'),true);}}finally{btn.disabled=false;pendingBuletinFile=null;$('#modalBuletin').classList.remove('open');}}
+async function handleBuletinSubmit(){const mode=$('#formBuletin').dataset.mode||'upload',btn=$('#formBuletin button[type=submit]');btn.disabled=true;try{if(!hasScript()){toast('Sambungkan Apps Script agar Buletin tersimpan di Drive.',true);return;}if(mode==='upload'){if(!pendingBuletinFile){toast('Pilih file PDF terlebih dahulu',true);return;}const title=$('#buletinTitleUpload').value.trim()||pendingBuletinFile.name.replace(/\.pdf$/i,'');const dataUrl=await fileToDataURL(pendingBuletinFile);const r=await apiPost('upload',{folder:'buletin',folderId:settings.buletinFolderId||DEFAULT_BULETIN_FOLDER_ID,name:title+guessExt(pendingBuletinFile.name),mimeType:'application/pdf',base64:dataUrl.split(',')[1]});if(r.ok){toast('Edisi Buletin tersimpan di Drive');await refreshBuletin();}else toast('Gagal unggah Buletin: '+(r.error||''),true);}else{const id=extractDriveId($('#buletinDriveUrl').value.trim());if(!id){toast('Tautan Google Drive PDF tidak dikenali.',true);return;}const r=await apiPost('saveBulletinLink',{id:uid(),driveId:id,folderId:settings.buletinFolderId||DEFAULT_BULETIN_FOLDER_ID});if(r.ok){toast('Tautan PDF Buletin tersimpan');await refreshBuletin();}else toast('Gagal menyimpan tautan PDF: '+(r.error||'endpoint saveBulletinLink belum tersedia'),true);}}finally{btn.disabled=false;pendingBuletinFile=null;$('#modalBuletin').classList.remove('open');}}
 
 /* ==========================================================
    IndexedDB (blob lokal)
@@ -2333,6 +2403,567 @@ function requestReaderFullscreen(){
   }catch(e){}
 }
 
+/* ==================================================================
+   MODE BACA BUKU — engine page-flip generik.
+   Dipakai untuk konten teks (Artikel/Berita/Google Docs/txt/md/docx)
+   dan PDF. Menyimulasikan buka buku asli: dua halaman berdampingan,
+   animasi lipat 3D yang halus lewat CSS transform, plus swipe/tap/
+   klik/panah keyboard untuk membalik halaman. Mode Scroll (tampilan
+   lama) tetap tersedia lewat tombol toggle di header pembaca.
+   ================================================================== */
+let pdfJsLoadPromise = null;
+function loadPdfJs(){
+  if(window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions.workerSrc) return Promise.resolve(window.pdfjsLib);
+  if(pdfJsLoadPromise) return pdfJsLoadPromise;
+  const PDFJS_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  pdfJsLoadPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = PDFJS_BASE+'pdf.min.js';
+    s.onload = async ()=>{
+      if(!window.pdfjsLib){ reject(new Error('pdf.js gagal dimuat')); return; }
+      // Banyak peramban (terutama saat file HTML ini dibuka langsung dari
+      // disk / file://, atau dari origin yang berbeda) MENOLAK membuat
+      // Web Worker langsung dari URL CDN lintas-origin — pdf.js pun gagal
+      // total untuk SEMUA PDF (lokal maupun Drive), bukan cuma yang
+      // kena CORS. Solusinya: unduh kode worker lewat fetch() (yang tidak
+      // kena batasan itu), lalu jalankan sebagai Blob URL "sendiri" yang
+      // dianggap sama-origin oleh peramban.
+      try{
+        const res = await fetch(PDFJS_BASE+'pdf.worker.min.js');
+        const code = await res.text();
+        const blobUrl = URL.createObjectURL(new Blob([code], {type:'text/javascript'}));
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.worker.min.js';
+if(window.pdfjsLib){
+  const _orig=pdfjsLib.getDocument.bind(pdfjsLib);
+  pdfjsLib.getDocument=(src)=>{
+    const task=_orig(src);
+    task.promise.catch(()=>{
+      try{pdfjsLib.GlobalWorkerOptions.workerSrc='https://unpkg.com/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs';}catch(e){}
+    });
+    return task;
+  };
+}
+
+      }catch(e){
+        // fallback terakhir: tetap arahkan ke URL CDN langsung (mungkin
+        // masih berhasil di sebagian peramban/origin).
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE+'pdf.worker.min.js'; window.pdfjsLib.disableWorker=false;
+      }
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = ()=> reject(new Error('pdf.js gagal dimuat (skrip CDN tidak bisa diakses)'));
+    document.head.appendChild(s);
+  });
+  return pdfJsLoadPromise;
+}
+
+const BOOK_ICON_LOADING = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-9-9"/></svg>`;
+
+const bookState = {
+  pages: [],        // array of HTML strings (text mode) or {img} objects (pdf mode)
+  spreads: [],       // array of [leftIdx|null, rightIdx|null]
+  spreadIndex: 0,
+  kind: null,        // 'html' | 'pdf'
+  singlePage: false,
+  container: null,   // .book-viewer element
+  resizeObs: null,
+  animating: false,
+  touchStartX: null, touchStartY: null,
+  keyHandler: null,
+};
+
+function resetBookState(){
+  bookState.pages = []; bookState.spreads = []; bookState.spreadIndex = 0; bookState.kind = null;
+  bookState.container = null; bookState.animating = false;
+  if(bookState.resizeObs){ bookState.resizeObs.disconnect(); bookState.resizeObs = null; }
+  if(bookState.keyHandler){ document.removeEventListener('keydown', bookState.keyHandler); bookState.keyHandler = null; }
+}
+
+function buildSpreadsFromPages(pageCount){
+  const spreads = [];
+  if(pageCount<=0) return spreads;
+  spreads.push([null, 0]);
+  let i=1;
+  while(i<pageCount){ spreads.push([i, (i+1<pageCount)? i+1 : null]); i+=2; }
+  return spreads;
+}
+/* Bangun urutan "spread" sesuai mode tampilan saat ini: dua halaman
+   berdampingan (desktop) atau satu halaman per giliran (mobile/sempit). */
+function buildSpreads(){
+  const n = bookState.pages.length;
+  if(bookState.singlePage) return Array.from({length:n}, (_,i)=>[null,i]);
+  return buildSpreadsFromPages(n);
+}
+function currentVisiblePageIdx(){
+  const s = bookState.spreads[bookState.spreadIndex];
+  if(!s) return 0;
+  const v = (s[1]!=null? s[1] : s[0]);
+  return v==null ? 0 : v;
+}
+function findSpreadIndexForPage(pageIdx, spreads){
+  for(let i=0;i<spreads.length;i++){ if(spreads[i][0]===pageIdx || spreads[i][1]===pageIdx) return i; }
+  return 0;
+}
+
+/* Memecah HTML panjang menjadi potongan-potongan yang pas tinggi satu
+   halaman buku, dengan mengukur elemen blok satu per satu di kontainer
+   tersembunyi berukuran identik dengan halaman sungguhan. */
+function paginateHtmlContent(html, sampleInnerEl){
+  const rect = sampleInnerEl.getBoundingClientRect();
+  const w = Math.max(rect.width, 200), h = Math.max(rect.height, 200);
+  const cs = getComputedStyle(sampleInnerEl);
+  const measurer = document.createElement('div');
+  measurer.style.cssText = `position:fixed;visibility:hidden;pointer-events:none;top:-9999px;left:-9999px;
+    width:${w}px;box-sizing:border-box;padding:${cs.padding};font-family:${cs.fontFamily};
+    font-size:${cs.fontSize};line-height:${cs.lineHeight};`;
+  measurer.className = 'book-page-inner';
+  document.body.appendChild(measurer);
+
+  const src = document.createElement('div');
+  src.innerHTML = html;
+  const nodes = Array.from(src.childNodes).filter(n=> !(n.nodeType===3 && !n.textContent.trim()));
+  const pages = [];
+  let bucket = document.createElement('div');
+  measurer.appendChild(bucket);
+
+  const fits = ()=> measurer.scrollHeight <= h + 1;
+
+  for(const node of nodes){
+    bucket.appendChild(node.cloneNode(true));
+    if(!fits()){
+      bucket.removeChild(bucket.lastChild);
+      if(bucket.childNodes.length){ pages.push(bucket.innerHTML); }
+      bucket = document.createElement('div');
+      measurer.innerHTML=''; measurer.appendChild(bucket);
+      bucket.appendChild(node.cloneNode(true));
+      // Jika satu node saja sudah melebihi tinggi halaman (mis. tabel besar),
+      // biarkan tetap satu halaman sendiri daripada terpotong tanpa akhir.
+    }
+  }
+  if(bucket.childNodes.length) pages.push(bucket.innerHTML);
+  document.body.removeChild(measurer);
+  return pages.length ? pages : [html];
+}
+
+function bookViewerMarkup(){
+  return `
+  <div class="book-stage" id="bookStage">
+    <div class="book-viewer" id="bookViewer">
+      <div class="book-shell" id="bookShell">
+        <div class="book-page book-page-left"><div class="book-page-inner" id="bookLeftInner"></div><div class="book-page-num" id="bookLeftNum"></div></div>
+        <div class="book-page book-page-right"><div class="book-page-inner" id="bookRightInner"></div><div class="book-page-num" id="bookRightNum"></div></div>
+        <div class="shelf-book"></div>
+        <div class="book-leaf" id="bookLeaf">
+          <div class="book-leaf-face book-leaf-front"><div class="book-page-inner" id="bookLeafFrontInner"></div></div>
+          <div class="book-leaf-face book-leaf-back"><div class="book-page-inner" id="bookLeafBackInner"></div></div>
+        </div>
+      </div>
+      <div class="book-navzone zone-prev" id="bookZonePrev"></div>
+      <div class="book-navzone zone-next" id="bookZoneNext"></div>
+      <button class="book-nav-btn prev" id="bookBtnPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="book-nav-btn next" id="bookBtnNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg></button>
+      <div class="book-progress">
+        <div class="book-progress-track"><div class="book-progress-fill" id="bookProgressFill" style="width:0%"></div></div>
+        <div class="book-progress-label" id="bookProgressLabel">Memuat…</div>
+      </div>
+    </div>
+    <div class="book-loading" id="bookLoading">${BOOK_ICON_LOADING}<div>Menyiapkan halaman…</div></div>
+  </div>`;
+}
+
+function bookPageContentHtml(idx){
+  if(idx===null || idx===undefined) return '';
+  if(bookState.kind==='pdf'){
+    const p = bookState.pages[idx];
+    if(!p) return '';
+    return `<img src="${p.img}" alt="Halaman ${idx+1}">`;
+  }
+  return bookState.pages[idx] || '';
+}
+function bookPageNumLabel(idx){
+  if(idx===null || idx===undefined) return '';
+  return String(idx+1);
+}
+
+function renderBookSpread(instant){
+  const s = bookState.spreads[bookState.spreadIndex];
+  if(!s) return;
+  const leftIdx = bookState.singlePage ? null : s[0];
+  const rightIdx = bookState.singlePage ? s[1]!=null? s[1] : s[0] : s[1];
+  const rightInner = $('#bookRightInner'), leftInner = $('#bookLeftInner');
+  const leftNum = $('#bookLeftNum'), rightNum = $('#bookRightNum');
+  const cls = bookState.kind==='pdf' ? 'book-page-inner pdf-page' : 'book-page-inner';
+  if(leftInner){ leftInner.className = cls; leftInner.innerHTML = bookPageContentHtml(leftIdx); }
+  rightInner.className = cls; rightInner.innerHTML = bookPageContentHtml(rightIdx);
+  if(leftNum) leftNum.textContent = bookPageNumLabel(leftIdx);
+  if(rightNum) rightNum.textContent = bookPageNumLabel(rightIdx);
+  updateBookProgress();
+}
+
+function updateBookProgress(){
+  const total = bookState.pages.length || 1;
+  const s = bookState.spreads[bookState.spreadIndex] || [0,0];
+  const shown = (s[1]!=null? s[1] : s[0]) ?? 0;
+  const pct = Math.min(100, Math.round(((shown+1)/total)*100));
+  const fill = $('#bookProgressFill'), label = $('#bookProgressLabel');
+  if(fill) fill.style.width = pct+'%';
+  if(label) label.textContent = `Halaman ${shown+1} dari ${total}`;
+}
+
+function forceReflow(el){ void el.offsetHeight; }
+function flipBook(direction){
+  if(bookState.animating) return;
+  const idx = bookState.spreadIndex;
+  const spreads = bookState.spreads;
+  if(direction==='next' && idx>=spreads.length-1) return;
+  if(direction==='prev' && idx<=0) return;
+  bookState.animating = true;
+
+  const leaf = $('#bookLeaf');
+  const frontInner = $('#bookLeafFrontInner'), backInner = $('#bookLeafBackInner');
+  const cls = bookState.kind==='pdf' ? 'book-page-inner pdf-page' : 'book-page-inner';
+  frontInner.className = cls; backInner.className = cls;
+  leaf.style.transition = 'none';
+  leaf.classList.remove('dir-fwd','dir-back');
+
+  if(bookState.singlePage){
+    // Mode satu halaman (layar sempit): leaf menutupi satu-satunya slot
+    // yang terlihat, membalik langsung ke halaman berikut/sebelumnya.
+    const curIdx = spreads[idx][1];
+    const targetIdx = direction==='next' ? spreads[idx+1][1] : spreads[idx-1][1];
+    frontInner.innerHTML = bookPageContentHtml(curIdx);
+    backInner.innerHTML = bookPageContentHtml(targetIdx);
+    leaf.classList.add(direction==='next' ? 'dir-fwd' : 'dir-back');
+    leaf.style.transform = 'rotateY(0deg)';
+    leaf.classList.add('flipping');
+    forceReflow(leaf);
+    leaf.style.transition = '';
+    leaf.style.transform = direction==='next' ? 'rotateY(-180deg)' : 'rotateY(180deg)';
+    let doneSingle = false;
+    const onEndSingle = ()=>{
+      if(doneSingle) return; doneSingle = true;
+      leaf.removeEventListener('transitionend', onEndSingle);
+      const ri = $('#bookRightInner'), rn = $('#bookRightNum');
+      if(ri){ ri.className = cls; ri.innerHTML = bookPageContentHtml(targetIdx); }
+      if(rn) rn.textContent = bookPageNumLabel(targetIdx);
+      leaf.classList.remove('flipping');
+      leaf.style.transition='none'; leaf.style.transform='rotateY(0deg)';
+      bookState.spreadIndex = direction==='next' ? idx+1 : idx-1;
+      updateBookProgress();
+      bookState.animating = false;
+      updateBookNavButtons();
+    };
+    leaf.addEventListener('transitionend', onEndSingle);
+    setTimeout(onEndSingle, 850);
+    return;
+  }
+
+  if(direction==='next'){
+    const cur = spreads[idx], nxt = spreads[idx+1];
+    const frontIdx = bookState.singlePage ? (cur[1]!=null?cur[1]:cur[0]) : cur[1];
+    const backIdx  = bookState.singlePage ? (nxt[1]!=null?nxt[1]:nxt[0]) : nxt[0];
+    frontInner.innerHTML = bookPageContentHtml(frontIdx);
+    backInner.innerHTML = bookPageContentHtml(backIdx);
+    // perbarui sisi kanan tersembunyi di baliknya sebelum animasi berjalan
+    $('#bookRightInner').className = cls;
+    $('#bookRightInner').innerHTML = bookPageContentHtml(nxt[1]);
+    if($('#bookRightNum')) $('#bookRightNum').textContent = bookPageNumLabel(nxt[1]);
+    leaf.classList.add('dir-fwd');
+    leaf.style.transform = 'rotateY(0deg)';
+    leaf.classList.add('flipping');
+    forceReflow(leaf);
+    leaf.style.transition = '';
+    leaf.style.transform = 'rotateY(-180deg)';
+    let doneFwd = false;
+    const onEnd = ()=>{
+      if(doneFwd) return; doneFwd = true;
+      leaf.removeEventListener('transitionend', onEnd);
+      const li = $('#bookLeftInner'), ln = $('#bookLeftNum');
+      if(li){ li.className = cls; li.innerHTML = bookPageContentHtml(backIdx); }
+      if(ln) ln.textContent = bookPageNumLabel(backIdx);
+      leaf.classList.remove('flipping');
+      leaf.style.transition='none'; leaf.style.transform='rotateY(0deg)';
+      bookState.spreadIndex = idx+1;
+      updateBookProgress();
+      bookState.animating = false;
+      updateBookNavButtons();
+    };
+    leaf.addEventListener('transitionend', onEnd);
+    setTimeout(onEnd, 850);
+  } else {
+    const cur = spreads[idx], prv = spreads[idx-1];
+    const frontIdx = bookState.singlePage ? (cur[0]!=null?cur[0]:cur[1]) : cur[0];
+    const backIdx  = bookState.singlePage ? (prv[1]!=null?prv[1]:prv[0]) : prv[1];
+    frontInner.innerHTML = bookPageContentHtml(frontIdx);
+    backInner.innerHTML = bookPageContentHtml(backIdx);
+    const li0 = $('#bookLeftInner');
+    if(li0){ li0.className = cls; li0.innerHTML = bookPageContentHtml(prv[0]); }
+    if($('#bookLeftNum')) $('#bookLeftNum').textContent = bookPageNumLabel(prv[0]);
+    leaf.classList.add('dir-back');
+    leaf.style.transform = 'rotateY(0deg)';
+    leaf.classList.add('flipping');
+    forceReflow(leaf);
+    leaf.style.transition = '';
+    leaf.style.transform = 'rotateY(180deg)';
+    let doneBack = false;
+    const onEnd = ()=>{
+      if(doneBack) return; doneBack = true;
+      leaf.removeEventListener('transitionend', onEnd);
+      const ri = $('#bookRightInner'), rn = $('#bookRightNum');
+      if(ri){ ri.className = cls; ri.innerHTML = bookPageContentHtml(backIdx); }
+      if(rn) rn.textContent = bookPageNumLabel(backIdx);
+      leaf.classList.remove('flipping');
+      leaf.style.transition='none'; leaf.style.transform='rotateY(0deg)';
+      bookState.spreadIndex = idx-1;
+      updateBookProgress();
+      bookState.animating = false;
+      updateBookNavButtons();
+    };
+    leaf.addEventListener('transitionend', onEnd);
+    setTimeout(onEnd, 850);
+  }
+}
+
+function updateBookNavButtons(){
+  const prevBtn = $('#bookBtnPrev'), nextBtn = $('#bookBtnNext');
+  if(prevBtn) prevBtn.disabled = bookState.spreadIndex<=0;
+  if(nextBtn) nextBtn.disabled = bookState.spreadIndex>=bookState.spreads.length-1;
+}
+
+function wireBookInteractions(viewerEl){
+  $('#bookBtnPrev').addEventListener('click', ()=>flipBook('prev'));
+  $('#bookBtnNext').addEventListener('click', ()=>flipBook('next'));
+  $('#bookZonePrev').addEventListener('click', ()=>flipBook('prev'));
+  $('#bookZoneNext').addEventListener('click', ()=>flipBook('next'));
+
+  const onTouchStart = e=>{ const t=e.touches[0]; bookState.touchStartX=t.clientX; bookState.touchStartY=t.clientY; };
+  const onTouchEnd = e=>{
+    if(bookState.touchStartX==null) return;
+    const t=e.changedTouches[0];
+    const dx = t.clientX-bookState.touchStartX, dy = t.clientY-bookState.touchStartY;
+    bookState.touchStartX=null;
+    if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.3){
+      if(dx<0) flipBook('next'); else flipBook('prev');
+    }
+  };
+  viewerEl.addEventListener('touchstart', onTouchStart, {passive:true});
+  viewerEl.addEventListener('touchend', onTouchEnd, {passive:true});
+
+  bookState.keyHandler = e=>{
+    if(!readerOverlay.classList.contains('open')) return;
+    if(document.activeElement && ['TEXTAREA','INPUT'].includes(document.activeElement.tagName)) return;
+    if(e.key==='ArrowRight') flipBook('next');
+    else if(e.key==='ArrowLeft') flipBook('prev');
+  };
+  document.addEventListener('keydown', bookState.keyHandler);
+
+  bookState.resizeObs = new ResizeObserver(debounce(()=>{
+    if(bookState.kind==='html' && bookState._sourceHtml) reflowHtmlBook(bookState._sourceHtml, true);
+    else if(bookState.kind==='pdf' && bookState.pages.length) relayoutPdfBook();
+    else applyBookLayoutMode();
+  }, 220));
+  bookState.resizeObs.observe(viewerEl);
+}
+
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+
+function applyBookLayoutMode(){
+  const viewer = bookState.container;
+  if(!viewer) return;
+  // Ambang batas dinaikkan ke 860px: di layar tablet/iPad potret, dua
+  // halaman berdampingan jadi terlalu sempit dan terlihat "bertumpuk"/
+  // terjepit. Di bawah ambang ini pakai mode satu halaman yang lebih lega.
+  const single = viewer.getBoundingClientRect().width < 860;
+  bookState.singlePage = single;
+  viewer.classList.toggle('single-page', single);
+}
+
+/* Mode buku untuk konten teks (artikel/berita/gdoc/txt/md/docx). */
+async function reflowHtmlBook(html, isResize){
+  const prevPage = isResize ? currentVisiblePageIdx() : 0;
+  bookState._sourceHtml = html;
+  bookState.kind = 'html';
+  applyBookLayoutMode();
+  const sample = $('#bookRightInner');
+  if(!sample) return;
+  sample.className = 'book-page-inner';
+  const pages = paginateHtmlContent(html, sample);
+  bookState.pages = pages;
+  bookState.spreads = buildSpreads();
+  bookState.spreadIndex = isResize ? findSpreadIndexForPage(prevPage, bookState.spreads) : 0;
+  const loading = $('#bookLoading'); if(loading) loading.style.display='none';
+  renderBookSpread();
+  updateBookNavButtons();
+}
+function relayoutPdfBook(){
+  const prevPage = currentVisiblePageIdx();
+  applyBookLayoutMode();
+  bookState.spreads = buildSpreads();
+  bookState.spreadIndex = findSpreadIndexForPage(prevPage, bookState.spreads);
+  renderBookSpread();
+  updateBookNavButtons();
+}
+
+async function openBookForHtml(paneEl, html){
+  paneEl.innerHTML = bookViewerMarkup();
+  const viewer = $('#bookViewer');
+  bookState.container = viewer;
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  wireBookInteractions(viewer);
+  await reflowHtmlBook(html, false);
+}
+
+/* Mode buku untuk PDF, lewat pdf.js — merender tiap halaman jadi gambar
+   supaya bisa "dibalik" seperti buku sungguhan. Untuk file lokal (blob)
+   ini selalu berhasil; untuk file di Drive dicoba juga, dan kalau gagal
+   (mis. dibatasi CORS) otomatis kembali ke Mode Scroll. */
+/* Validasi cepat: apakah buffer ini benar-benar file PDF (%PDF header)?
+   Dipakai supaya halaman peringatan HTML dari Google Drive (mis. untuk
+   file besar yang belum lolos pemindaian virus) tidak coba dirender
+   sebagai PDF, yang akan langsung gagal dan menjatuhkan ke Mode Scroll
+   padahal sebenarnya bisa dicoba lewat URL alternatif dulu. */
+function looksLikePdf(buf){
+  try{
+    const head = new Uint8Array(buf.slice(0,5));
+    return String.fromCharCode(...head) === '%PDF-';
+  }catch(e){ return false; }
+}
+async function fetchArrayBufferQuick(url){
+  const res = await fetch(url, {credentials:'omit', mode:'cors'});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return await res.arrayBuffer();
+}
+/* Google Drive tidak mengirim header CORS pada tautan unduhan langsung,
+   jadi fetch() lintas-origin akan selalu ditolak peramban meski file
+   publik. Supaya Mode Buku tetap jadi pilihan dominan (bukan otomatis
+   jatuh ke Mode Scroll), byte PDF dicoba lagi lewat proxy CORS publik
+   yang meneruskan isi file apa adanya. */
+function corsProxyVariants(url){
+  const enc = encodeURIComponent(url);
+  return [
+    `https://api.allorigins.win/raw?url=${enc}`,
+    `https://corsproxy.io/?url=${enc}`,
+  ];
+}
+/* Coba beberapa varian URL Drive berurutan (unduhan langsung, lalu
+   varian confirm=t yang melewati halaman peringatan pemindaian virus
+   untuk file besar) supaya Mode Buku tetap jadi pilihan dominan untuk
+   PDF dari Drive, bukan langsung menyerah ke Mode Scroll. */
+async function resolvePdfArrayBuffer(source, onStatus){
+  if(source.data) return source.data;
+  const directUrls = source.urls || [source.url];
+  let lastErr = null;
+  // Tahap 1: coba akses langsung (berhasil untuk file publik yang
+  // kebetulan diteruskan lewat CDN yang mengizinkan CORS).
+  for(const url of directUrls){
+    try{
+      onStatus && onStatus('Mengambil berkas PDF…');
+      const buf = await fetchArrayBufferQuick(url);
+      if(looksLikePdf(buf)) return buf;
+      lastErr = new Error('Bukan berkas PDF valid (mungkin halaman peringatan Drive).');
+    }catch(e){ lastErr = e; }
+  }
+  // Tahap 2: banyak tautan Drive diblokir CORS langsung dari peramban.
+  // Coba lagi lewat proxy CORS publik supaya Mode Buku tetap bisa dipakai.
+  for(const url of directUrls){
+    for(const proxied of corsProxyVariants(url)){
+      try{
+        onStatus && onStatus('Mencoba jalur alternatif…');
+        const buf = await fetchArrayBufferQuick(proxied);
+        if(looksLikePdf(buf)) return buf;
+        lastErr = new Error('Bukan berkas PDF valid dari proxy.');
+      }catch(e){ lastErr = e; }
+    }
+  }
+  throw lastErr || new Error('Semua URL PDF gagal dimuat.');
+}
+async function openBookForPdf(paneEl, source){
+  paneEl.innerHTML = bookViewerMarkup();
+  const viewer = $('#bookViewer');
+  bookState.container = viewer;
+  bookState.kind = 'pdf';
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  applyBookLayoutMode();
+  wireBookInteractions(viewer);
+  try{
+    const pdfjsLib = await loadPdfJs();
+    const label0 = $('#bookProgressLabel'); if(label0) label0.textContent = 'Menyiapkan berkas PDF…';
+    const arrayBuffer = await resolvePdfArrayBuffer(source, (msg)=>{
+      const l = $('#bookProgressLabel'); if(l) l.textContent = msg;
+    });
+    const loadingTask = pdfjsLib.getDocument({data:arrayBuffer});
+    const pdf = await loadingTask.promise;
+    const pages = [];
+    const scale = 2;
+    for(let i=1;i<=pdf.numPages;i++){
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({scale});
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      await page.render({canvasContext:ctx, viewport}).promise;
+      pages.push({img: canvas.toDataURL('image/jpeg', 0.86)});
+      const label = $('#bookProgressLabel');
+      if(label) label.textContent = `Memuat halaman ${i} dari ${pdf.numPages}…`;
+    }
+    bookState.pages = pages;
+    bookState.spreads = buildSpreads();
+    bookState.spreadIndex = 0;
+    const loading = $('#bookLoading'); if(loading) loading.style.display='none';
+    renderBookSpread();
+    updateBookNavButtons();
+    return true;
+  }catch(e){
+    console.error('[Mode Buku] gagal memuat PDF:', e);
+    bookState._lastError = (e && e.message) ? e.message : String(e);
+    return false;
+  }
+}
+
+/* ---------- Penghubung ke reader: pasang dua panel (Buku + Scroll) dan
+   tombol toggle di header. Dipanggil dari openReader(). ---------- */
+function setupReaderPanes(body, {scrollHtml, bookSetup, defaultMode}){
+  resetBookState();
+  body.innerHTML = `<div class="reader-content-wrap">
+      <div class="reader-pane" id="readerScrollPane"></div>
+      <div class="reader-pane" id="readerBookPane" hidden></div>
+    </div>`;
+  $('#readerScrollPane').innerHTML = scrollHtml;
+  const toggle = $('#readerModeToggle');
+  const bookBtn = toggle.querySelector('[data-mode="book"]');
+  const scrollBtn = toggle.querySelector('[data-mode="scroll"]');
+  toggle.style.display = 'flex';
+
+  let mode = null;
+  async function setMode(next){
+    if(mode===next) return;
+    mode = next;
+    bookBtn.classList.toggle('active', next==='book');
+    scrollBtn.classList.toggle('active', next==='scroll');
+    if(next==='book'){
+      $('#readerScrollPane').hidden = true;
+      $('#readerBookPane').hidden = false;
+      if(!$('#readerBookPane').dataset.built){
+        $('#readerBookPane').dataset.built='1';
+        const ok = await bookSetup($('#readerBookPane'));
+        if(ok===false){
+          // gagal menyiapkan mode buku (mis. PDF terkunci CORS) — kembali ke scroll
+          const reason = bookState._lastError ? ` (${bookState._lastError})` : '';
+          toast('Mode Buku tidak tersedia untuk dokumen ini'+reason+', menampilkan Mode Scroll.', true);
+          bookBtn.disabled = true;
+          await setMode('scroll');
+        }
+      }
+    } else {
+      $('#readerBookPane').hidden = true;
+      $('#readerScrollPane').hidden = false;
+    }
+  }
+  bookBtn.onclick = ()=> setMode('book');
+  scrollBtn.onclick = ()=> setMode('scroll');
+  setMode(defaultMode||'book');
+}
+
 async function openReader(doc, isRemote){
   if(!isRemote && doc.mode==='drive' && doc.kind==='gfolder'){
     openFolderBrowser(doc.driveId, doc.title);
@@ -2354,22 +2985,39 @@ async function openReader(doc, isRemote){
   else externalBtn.style.display = 'none';
 
   const body = $('#readerBody');
+  $('#readerModeToggle').style.display = 'none';
+  resetBookState();
   body.innerHTML = `<div class="no-preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><div>Memuat…</div></div>`;
 
   if(isRemote){
     if(kind==='gdoc'){
       const r = await apiGet('docText', {id: doc.id});
-      if(r.ok) body.innerHTML = `<div class="reader-note-area"><div class="note-render">${renderNote(r.text)}</div></div>`;
-      else body.innerHTML = noPreviewHtml('Gagal memuat isi dokumen: '+r.error);
+      if(r.ok){
+        const scrollHtml = `<div class="reader-note-area"><div class="note-render">${renderNote(r.text)}</div></div>`;
+        setupReaderPanes(body, {
+          scrollHtml,
+          bookSetup: (pane)=> openBookForHtml(pane, `<div class="note-render">${renderNote(r.text)}</div>`),
+          defaultMode: 'book'
+        });
+      } else body.innerHTML = noPreviewHtml('Gagal memuat isi dokumen: '+r.error);
     } else if(kind==='gsheet' || kind==='gslide'){
       body.innerHTML = `<iframe src="${driveEmbedUrl(kind, doc.id)}"></iframe>`;
-    } else if((doc.mimeType||'').includes('pdf') || kind==='video'){
-      // Tampilan sama seperti Buletin: pratinjau langsung lewat penampil bawaan
-      // Google Drive di dalam iframe (bersih, tanpa unduh base64, tanpa batas
-      // ukuran file). Penampil Drive otomatis menampilkan pemutar video kalau
-      // mime-nya video — jadi teknik yang sama juga dipakai untuk memutar
-      // video online. Header tetap mengambang di atasnya.
+    } else if(kind==='video'){
       body.innerHTML = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview" allow="autoplay; picture-in-picture; fullscreen"></iframe>`;
+    } else if((doc.mimeType||'').includes('pdf')){
+      // Mode Buku default: PDF dirender per-halaman lewat pdf.js supaya bisa
+      // "dibalik" seperti buku sungguhan. Sumber file: viewer Drive bawaan
+      // (mode Scroll) sekaligus URL unduh langsung dicoba untuk pdf.js —
+      // kalau gagal (dibatasi CORS), otomatis jatuh ke Mode Scroll.
+      const scrollHtml = `<iframe src="https://drive.google.com/file/d/${doc.id}/preview" allow="autoplay; picture-in-picture; fullscreen"></iframe>`;
+      setupReaderPanes(body, {
+        scrollHtml,
+        bookSetup: (pane)=> openBookForPdf(pane, {urls: [
+          `https://drive.google.com/uc?export=download&id=${doc.id}`,
+          `https://drive.google.com/uc?id=${doc.id}&export=download&confirm=t`
+        ]}),
+        defaultMode: 'book'
+      });
     } else if((doc.mimeType||'').startsWith('image/')){
       body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;overflow:auto;"><img src="https://drive.google.com/thumbnail?id=${doc.id}&sz=w2000" alt="${escapeHtml(metaTitle(doc))}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
     } else if(isHtmlFile(doc.mimeType, doc.title||doc.name)){
@@ -2387,7 +3035,19 @@ async function openReader(doc, isRemote){
   } else if(doc.mode==='local'){
     const dataUrl = await idbGet(doc.id);
     if(!dataUrl){ body.innerHTML = noPreviewHtml('File tidak ditemukan di penyimpanan lokal.'); }
-    else if((doc.mime||'').includes('pdf')) body.innerHTML = `<iframe src="${dataUrl}"></iframe>`;
+    else if((doc.mime||'').includes('pdf')){
+      const scrollHtml = `<iframe src="${dataUrl}"></iframe>`;
+      setupReaderPanes(body, {
+        scrollHtml,
+        bookSetup: async (pane)=>{
+          try{
+            const buf = dataUrlToArrayBuffer(dataUrl);
+            return await openBookForPdf(pane, {data: buf});
+          }catch(e){ return false; }
+        },
+        defaultMode: 'book'
+      });
+    }
     else if((doc.mime||'').startsWith('image/')) body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#0f1a14;"><img src="${dataUrl}" style="max-width:92%;max-height:92%;object-fit:contain;border-radius:6px;"></div>`;
     else if((doc.mime||'').startsWith('video/')){
       // Video offline: dikonversi ke Blob URL (bukan data-URI raksasa di
@@ -2412,17 +3072,32 @@ async function openReader(doc, isRemote){
       try{
         const mammoth = await loadMammoth();
         const result = await mammoth.convertToHtml({ arrayBuffer: dataUrlToArrayBuffer(dataUrl) });
-        body.innerHTML = `<div class="reader-note-area docx-mode"><div class="docx-page">${result.value}</div></div>`;
+        const scrollHtml = `<div class="reader-note-area docx-mode"><div class="docx-page">${result.value}</div></div>`;
+        setupReaderPanes(body, {
+          scrollHtml,
+          bookSetup: (pane)=> openBookForHtml(pane, result.value),
+          defaultMode: 'book'
+        });
       }catch(e){
         body.innerHTML = noPreviewHtml('Gagal menampilkan pratinjau dokumen Word ini di peramban.', dataUrl, doc.fileName);
       }
     }
     else if((doc.mime||'').startsWith('text/') || /\.(md|txt)$/i.test(doc.fileName||'')){
       const text = base64ToUtf8(dataUrl.split(',')[1]);
-      body.innerHTML = `<div class="reader-note-area"><div class="note-render">${renderNote(text)}</div></div>`;
+      const scrollHtml = `<div class="reader-note-area"><div class="note-render">${renderNote(text)}</div></div>`;
+      setupReaderPanes(body, {
+        scrollHtml,
+        bookSetup: (pane)=> openBookForHtml(pane, `<div class="note-render">${renderNote(text)}</div>`),
+        defaultMode: 'book'
+      });
     } else body.innerHTML = noPreviewHtml('Pratinjau untuk jenis file ini belum didukung di browser.', dataUrl, doc.fileName);
   } else if(doc.mode==='note'){
-    body.innerHTML = `<div class="reader-note-area"><div class="note-render">${renderNote(doc.content)}</div></div>`;
+    const scrollHtml = `<div class="reader-note-area"><div class="note-render">${renderNote(doc.content)}</div></div>`;
+    setupReaderPanes(body, {
+      scrollHtml,
+      bookSetup: (pane)=> openBookForHtml(pane, `<div class="note-render">${renderNote(doc.content)}</div>`),
+      defaultMode: 'book'
+    });
   } else if(doc.mode==='weblink'){
     // Sisipkan halaman/portal eksternal apa adanya. Sebagian situs melarang
     // penyisipan lewat header X-Frame-Options/CSP — kalau kosong/gagal, tombol
@@ -2442,6 +3117,8 @@ let folderBrowserState = null;
 async function openFolderBrowser(folderId, title){
   folderBrowserState = {folderId, title};
   currentDoc = null; currentDocIsRemote = false; currentDocKind = 'gfolder';
+  resetBookState();
+  $('#readerModeToggle').style.display = 'none';
   requestReaderFullscreen();
   $('#readerIcon').innerHTML = ICONS.gfolder;
   $('#readerTitle').textContent = title;
@@ -2538,6 +3215,8 @@ $('#readerCloseBtn').addEventListener('click', closeReader);
 function closeReader(){
   readerOverlay.classList.remove('open');
   if(document.pictureInPictureElement) document.exitPictureInPicture?.().catch(()=>{});
+  resetBookState();
+  $('#readerModeToggle').style.display = 'none';
   $('#readerBody').innerHTML = '';
   if(document.fullscreenElement) document.exitFullscreen?.();
   currentDoc = null;
@@ -2620,12 +3299,6 @@ function updateLastUpdatedText(){ $('#lastUpdatedText').textContent = lastUpdate
 setInterval(updateLastUpdatedText, 30000);
 
 async function refreshBeranda(){
-  // refreshRemoteDocs() di bawah ini SUDAH termasuk memuat Web Link
-  // (refreshWeblinks) & Metadata (refreshMetadata) — lihat definisinya.
-  // Sebelumnya Web Link yang sudah tersimpan tidak pernah tampil BUKAN
-  // karena pemanggilannya hilang di sini, tapi karena backend gagal total
-  // memuat Sheet (lihat perbaikan izin/scope & LockService sebelumnya).
-  // Dengan backend sudah benar, alur ini seharusnya sudah cukup.
   await Promise.all([refreshRemoteDocs(), refreshRemotePhotos()]);
   lastUpdatedAt = new Date();
   updateLastUpdatedText();
@@ -2642,7 +3315,7 @@ function renderBeranda(){
   const featuredWrap = $('#berandaFeatured');
   const grid = $('#berandaGrid');
   featuredWrap.innerHTML = ''; grid.innerHTML = '';
-  $('#statDocs').textContent = all.length;
+  if($('#statDocs')) $('#statDocs').textContent = all.length;
   if(all.length===0){
     grid.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
@@ -2724,7 +3397,7 @@ async function renderPhotos(){
   grid.innerHTML = '';
   const all = [...remotePhotos, ...localPhotos];
   $('#navPhotoCount').textContent = all.length;
-  $('#statPhotos').textContent = all.length;
+  if($('#statPhotos')) $('#statPhotos').textContent = all.length;
   if(all.length===0){
     grid.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5-9 9"/></svg>
@@ -3026,6 +3699,7 @@ $('#btnResetAll').addEventListener('click', ()=> requireAuth(async ()=>{
 (async function init(){
   await openDB().catch(()=> toast('Penyimpanan lokal (IndexedDB) tidak tersedia di browser ini', true));
   seedInitialArticles();
+  pruneRemovedSeedArticles();
   if(!settings.scriptUrl){ settings.scriptUrl = DEFAULT_SCRIPT_URL; saveSettings(settings); }
   if(!settings.buletinFolderId){ settings.buletinFolderId = DEFAULT_BULETIN_FOLDER_ID; saveSettings(settings); }
   if(!settings.databaseSheetId){ settings.databaseSheetId = DEFAULT_DATABASE_SHEET_ID; saveSettings(settings); }
@@ -3048,6 +3722,19 @@ $('#btnResetAll').addEventListener('click', ()=> requireAuth(async ()=>{
   }
   setupAutoRefresh();
 })();
+
+// === V13 FIX: pindahkan tombol Tambah Konten ke navbar TANPA memutus event ===
+document.addEventListener('DOMContentLoaded',()=>{
+  const btn=document.getElementById('btnAddDoc');
+  const theme=document.querySelector('.navbar .theme-switch');
+  if(btn && theme && !btn.dataset.moved){
+    btn.dataset.moved='1';
+    btn.style.marginRight='10px';
+    btn.style.marginBottom='0';
+    theme.parentNode.insertBefore(btn,theme);
+  }
+});
+
 </script>
 </body>
 </html>
